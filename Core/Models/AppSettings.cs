@@ -73,14 +73,4 @@ public class AppSettings
     /// Model identifier to use for AI Terminal queries.
     /// </summary>
     public string AiModel { get; set; } = "gpt-4o-mini";
-
-    // -----------------------------------------------------------------------
-    // CurseForge settings
-    // -----------------------------------------------------------------------
-
-    /// <summary>
-    /// Optional override CurseForge API key. When empty, the embedded default key
-    /// in <c>CurseForgeApiClient.EmbeddedApiKey</c> is used instead.
-    /// </summary>
-    public string? CurseForgeApiKey { get; set; }
 }

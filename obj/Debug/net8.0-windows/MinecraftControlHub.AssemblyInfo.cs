@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MinecraftControlHub")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6e3a0b64ccc9cc00a2125fe91f8ee78c085442c4")]
 [assembly: System.Reflection.AssemblyProductAttribute("MinecraftControlHub")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MinecraftControlHub")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
