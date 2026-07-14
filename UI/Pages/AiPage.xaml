@@ -155,24 +155,71 @@
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    <TextBlock helpers:TextLinkHelper.TextWithLinks="{Binding Text}"
-                               helpers:TextLinkHelper.LinkBrush="{DynamicResource BrushAccent}"
-                               FontFamily="{DynamicResource FontBody}"
-                               FontSize="13"
-                               TextWrapping="Wrap">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSuccess}" Value="True">
-                                        <Setter Property="Foreground" Value="{DynamicResource BrushOnline}"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding IsSuccess}" Value="False">
-                                        <Setter Property="Foreground" Value="{DynamicResource BrushDanger}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                    <StackPanel>
+                        <TextBlock helpers:TextLinkHelper.TextWithLinks="{Binding Text}"
+                                   helpers:TextLinkHelper.LinkBrush="{DynamicResource BrushAccent}"
+                                   FontFamily="{DynamicResource FontBody}"
+                                   FontSize="13"
+                                   TextWrapping="Wrap">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSuccess}" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource BrushOnline}"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsSuccess}" Value="False">
+                                            <Setter Property="Foreground" Value="{DynamicResource BrushDanger}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <!-- Fix with AI button — only visible on failure -->
+                        <Button x:Name="FixWithAiBtn"
+                                Content="⟳  Fix with AI"
+                                Click="FixWithAi_Click"
+                                Margin="0,10,0,2"
+                                Padding="14,8"
+                                HorizontalAlignment="Left"
+                                FontFamily="{DynamicResource FontBody}"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Cursor="Hand"
+                                Visibility="Collapsed"
+                                Background="{DynamicResource BrushAccent}"
+                                Foreground="White"
+                                BorderThickness="0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="bd"
+                                                        Background="{TemplateBinding Background}"
+                                                        CornerRadius="6"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bd" Property="Background" Value="{DynamicResource BrushAccentHover}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter TargetName="bd" Property="Opacity" Value="0.5"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSuccess}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
                 </Border>
             </Grid>
         </DataTemplate>

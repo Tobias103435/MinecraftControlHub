@@ -22,6 +22,9 @@ public partial class ServerPreviewWindow : Window
     private readonly ObservableCollection<PluginFileRow> _pluginFiles = new();
     private readonly ObservableCollection<DependencyIssue> _pluginIssues = new();
     private readonly HealthCheckService? _healthCheckService;
+    private readonly INexoraApiService? _nexoraApiService;
+    private readonly INexoraAccountService? _nexoraAccountService;
+    private readonly ObservableCollection<ServerFriendRow> _serverFriends = new();
     private System.Windows.Threading.DispatcherTimer? _healthTimer;
     private readonly List<double> _ramHistory = new();
     private const int RamHistoryMax = 40;
@@ -44,6 +47,9 @@ public partial class ServerPreviewWindow : Window
         PluginIssuesItemsControl.ItemsSource = _pluginIssues;
  
         _healthCheckService = serviceProvider?.GetService<HealthCheckService>();
+        _nexoraApiService = serviceProvider?.GetService<INexoraApiService>();
+        _nexoraAccountService = serviceProvider?.GetService<INexoraAccountService>();
+        ServerFriendsList.ItemsSource = _serverFriends;
         _healthTimer = new System.Windows.Threading.DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(5)
@@ -73,9 +79,9 @@ public partial class ServerPreviewWindow : Window
         await RefreshPluginSectionAsync(runCompatibilityCheck: true);
     }
 
-    private void SectionButton_Click(object sender, RoutedEventArgs e)
+    private void NavRadio_Checked(object sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.Tag is string sectionName)
+        if (sender is RadioButton radio && radio.Tag is string sectionName)
         {
             SetActiveSection(sectionName);
         }
@@ -121,17 +127,22 @@ public partial class ServerPreviewWindow : Window
 
     private void SetActiveSection(string sectionName)
     {
+        // Guard: during InitializeComponent, named elements may not exist yet
+        if (TerminalSection == null) return;
+
         TerminalSection.Visibility = Visibility.Collapsed;
-        FriendsSection.Visibility = Visibility.Collapsed;
+        HealthSection.Visibility   = Visibility.Collapsed;
+        FriendsSection.Visibility  = Visibility.Collapsed;
         SettingsSection.Visibility = Visibility.Collapsed;
-        PluginsSection.Visibility = Visibility.Collapsed;
+        PluginsSection.Visibility  = Visibility.Collapsed;
         AdvancedSection.Visibility = Visibility.Collapsed;
-        LogsSection.Visibility = Visibility.Collapsed;
+        LogsSection.Visibility     = Visibility.Collapsed;
 
         switch (sectionName)
         {
             case "Friends":
                 FriendsSection.Visibility = Visibility.Visible;
+                _ = LoadServerFriendsAsync();
                 break;
             case "Settings":
                 SettingsSection.Visibility = Visibility.Visible;
@@ -975,6 +986,143 @@ public partial class ServerPreviewWindow : Window
     private void ClearTerminal_Click(object sender, RoutedEventArgs e)
     {
         TerminalOutputTextBox.Text = string.Empty;
+    }
+
+    // ── Friends / Whitelist ───────────────────────────────────────────────
+
+    private async Task LoadServerFriendsAsync()
+    {
+        FriendsLoadingText.Visibility = Visibility.Visible;
+        FriendsEmptyText.Visibility   = Visibility.Collapsed;
+        ServerFriendsList.Visibility   = Visibility.Collapsed;
+
+        var token = _nexoraAccountService?.Current?.Token;
+        if (string.IsNullOrEmpty(token) || _nexoraApiService == null)
+        {
+            FriendsLoadingText.Visibility = Visibility.Collapsed;
+            FriendsEmptyText.Visibility   = Visibility.Visible;
+            FriendsEmptyText.Text         = "Log in to your Nexora account to manage your server whitelist.";
+            return;
+        }
+
+        try
+        {
+            var result = await _nexoraApiService.GetFriendsAsync(token);
+            FriendsLoadingText.Visibility = Visibility.Collapsed;
+
+            if (!result.Success || result.Data == null || result.Data.Count == 0)
+            {
+                FriendsEmptyText.Text       = result.Success
+                    ? "No friends found. Add friends from the Social page first."
+                    : (result.Error ?? "Could not load friends.");
+                FriendsEmptyText.Visibility = Visibility.Visible;
+                return;
+            }
+
+            // Get current whitelisted player names
+            var currentWhitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (!string.IsNullOrWhiteSpace(_server.WhitelistedPlayers))
+            {
+                foreach (var name in _server.WhitelistedPlayers.Split(new[] { ',', ';', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                    currentWhitelist.Add(name.Trim());
+            }
+
+            _serverFriends.Clear();
+            foreach (var friend in result.Data)
+            {
+                var isSelected = friend.MinecraftUsername != null
+                    && currentWhitelist.Contains(friend.MinecraftUsername);
+                _serverFriends.Add(new ServerFriendRow(
+                    friend.WebsiteUsername,
+                    friend.MinecraftUsername,
+                    friend.Initial,
+                    isSelected));
+            }
+
+            ServerFriendsList.Visibility = Visibility.Visible;
+            UpdateWhitelistSelectionState();
+        }
+        catch (Exception ex)
+        {
+            FriendsLoadingText.Visibility = Visibility.Collapsed;
+            FriendsEmptyText.Text       = $"Failed to load friends: {ex.Message}";
+            FriendsEmptyText.Visibility = Visibility.Visible;
+        }
+    }
+
+    private void FriendWhitelist_Changed(object sender, RoutedEventArgs e)
+        => UpdateWhitelistSelectionState();
+
+    private void WhitelistToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        // No extra logic needed; binding handles it.
+    }
+
+    private void UpdateWhitelistSelectionState()
+    {
+        var selected = _serverFriends.Where(f => f.IsSelected).ToList();
+        var count    = selected.Count;
+
+        FriendsSelectedCountText.Text = count > 0 ? $"{count} whitelisted" : string.Empty;
+    }
+
+    private async void SaveWhitelist_Click(object sender, RoutedEventArgs e)
+    {
+        if (_serverService == null) return;
+
+        // Build comma-separated list of Minecraft usernames from selected friends
+        var mcNames = _serverFriends
+            .Where(f => f.IsSelected && !string.IsNullOrWhiteSpace(f.MinecraftUsername))
+            .Select(f => f.MinecraftUsername!)
+            .ToList();
+
+        _server.WhitelistedPlayers = string.Join(",", mcNames);
+
+        // If whitelist is toggled off, clear it
+        if (!_server.WhiteListEnabled)
+            _server.WhitelistedPlayers = string.Empty;
+
+        try
+        {
+            await _serverService.UpdateServerAsync(_server);
+            await _serverService.UpdateServerPropertiesAsync(_server);
+            WhitelistStatusText.Text       = $"\u2713 Whitelist saved with {mcNames.Count} player(s).";
+            WhitelistStatusText.Foreground = (System.Windows.Media.Brush)FindResource("BrushSuccess");
+        }
+        catch (Exception ex)
+        {
+            WhitelistStatusText.Text       = $"Could not save whitelist: {ex.Message}";
+            WhitelistStatusText.Foreground = (System.Windows.Media.Brush)FindResource("BrushDanger");
+        }
+    }
+
+    private class ServerFriendRow : System.ComponentModel.INotifyPropertyChanged
+    {
+        private bool _isSelected;
+
+        public string  WebsiteUsername   { get; }
+        public string? MinecraftUsername { get; }
+        public string  Initial           { get; }
+
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                _isSelected = value;
+                PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(IsSelected)));
+            }
+        }
+
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+        public ServerFriendRow(string websiteUsername, string? minecraftUsername, string initial, bool isSelected)
+        {
+            WebsiteUsername   = websiteUsername;
+            MinecraftUsername = minecraftUsername;
+            Initial           = initial;
+            _isSelected       = isSelected;
+        }
     }
 
 }

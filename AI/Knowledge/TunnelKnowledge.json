@@ -2,87 +2,124 @@
   "tunnelProviders": {
     "playit": {
       "name": "playit.gg",
-      "description": "Free tunnel provider, no API key required. Easy to set up, good for casual use.",
+      "description": "Free tunnel provider. No account or API key required. Best for casual use.",
+      "officialWebsite": "https://playit.gg",
+      "downloadUrl": "https://playit.gg/download",
       "setupSteps": [
-        "Download playit.gg from [https://playit.gg/download](https://playit.gg/download)",
-        "Extract the downloaded ZIP file",
-        "Run the playit.exe application",
-        "Follow the on-screen setup wizard",
-        "Select your Minecraft server from the list",
-        "Copy the generated IP address and port",
-        "In Nexora Launcher, go to Settings → Tunnel providers",
-        "Enter the playit.exe path in the Playit executable field",
-        "Click 'Save tunnel settings'",
-        "You can now start tunnels from the Tunnel page"
+        "Step 1: Go to https://playit.gg/download — this is the ONLY official download page. Do NOT download playit from any other website.",
+        "Step 2: Click the 'Windows' download button to get the Windows installer.",
+        "Step 3: Run the downloaded installer (.exe) and follow the setup wizard.",
+        "Step 4: The playit.gg agent will install itself as a background service and open a web page showing your tunnel address.",
+        "Step 5: Copy the tunnel address shown (looks like: something.playit.gg:12345).",
+        "Step 6: In Nexora Launcher, open the Tunnel page.",
+        "Step 7: Select 'playit.gg' as your provider.",
+        "Step 8: Paste the address you copied into the address field.",
+        "Step 9: Click 'Start Tunnel' — your server is now accessible to friends."
       ],
-      "notes": "Playit.gg is completely free and doesn't require an account or API key. The generated IP may change each time you restart the tunnel."
+      "importantNotes": [
+        "ONLY download from https://playit.gg — any other site may be fake or contain malware.",
+        "The tunnel address changes each time you restart. Share the new address with friends.",
+        "No account or API key is needed — it is completely free."
+      ]
     },
     "ngrok": {
       "name": "ngrok",
-      "description": "Popular tunnel provider with stable IPs. Requires free account and API key.",
+      "description": "Popular tunnel provider with stable IPs. Requires a free account.",
+      "officialWebsite": "https://ngrok.com",
+      "signupUrl": "https://dashboard.ngrok.com/signup",
+      "authTokenUrl": "https://dashboard.ngrok.com/get-started/your-authtoken",
+      "downloadUrl": "https://ngrok.com/download",
       "setupSteps": [
-        "Create a free account at [https://dashboard.ngrok.com/signup](https://dashboard.ngrok.com/signup)",
-        "After signing up, go to [https://dashboard.ngrok.com/get-started/your-authtoken](https://dashboard.ngrok.com/get-started/your-authtoken)",
-        "Copy your authtoken (it looks like: 2abc...xyz)",
-        "Download ngrok from [https://ngrok.com/download](https://ngrok.com/download)",
-        "Extract the downloaded ZIP file",
-        "In Nexora Launcher, go to Settings → Tunnel providers",
-        "Paste your authtoken in the Ngrok API key field",
-        "Enter the ngrok.exe path in the Ngrok executable field",
-        "Click 'Save tunnel settings'",
-        "You can now start tunnels from the Tunnel page"
+        "Step 1: Go to https://dashboard.ngrok.com/signup — create a free account with your email or GitHub.",
+        "Step 2: After signing in, go to https://dashboard.ngrok.com/get-started/your-authtoken",
+        "Step 3: Click 'Copy' next to your authtoken. It looks like: 2abc123...xyz",
+        "Step 4: Go to https://ngrok.com/download and download ngrok for Windows.",
+        "Step 5: Extract the downloaded ZIP file to a folder you will remember (e.g. C:\\ngrok).",
+        "Step 6: In Nexora Launcher, open Settings.",
+        "Step 7: Under 'Tunnel Providers', find the ngrok section.",
+        "Step 8: Paste your authtoken into the 'Ngrok API key' field.",
+        "Step 9: Click the folder icon and select the ngrok.exe file you extracted.",
+        "Step 10: Click 'Save'. Go to the Tunnel page and select ngrok as your provider.",
+        "Step 11: Click 'Start Tunnel' — ngrok will show a stable public address."
       ],
-      "notes": "Ngrok provides a stable IP address that doesn't change. The free tier has limitations on connection time and bandwidth."
+      "importantNotes": [
+        "ONLY download ngrok from https://ngrok.com — other sites are not official.",
+        "Ngrok free tier gives you a stable address that stays the same across restarts.",
+        "Free tier has limits on session duration and connections per minute."
+      ]
     },
     "frp": {
       "name": "frp (Fast Reverse Proxy)",
-      "description": "Open-source tunnel solution. Requires a server or a service like Cloudflare Tunnel.",
+      "description": "Open-source, self-hosted tunnel. For advanced users who have their own server.",
+      "officialGitHub": "https://github.com/fatedier/frp",
+      "downloadUrl": "https://github.com/fatedier/frp/releases",
       "setupSteps": [
-        "Download frp from [https://github.com/fatedier/frp/releases](https://github.com/fatedier/frp/releases)",
-        "Extract the downloaded ZIP file",
-        "You need a frp server or use a service like Cloudflare Tunnel",
-        "Configure frps.ini (server) and frpc.ini (client) configuration files",
-        "In Nexora Launcher, go to Settings → Tunnel providers",
-        "Enter the frpc.exe path in the Frp executable field",
-        "If using a service with an API key, enter it in the Frp API key field",
-        "Click 'Save tunnel settings'",
-        "You can now start tunnels from the Tunnel page"
+        "Step 1: Go to https://github.com/fatedier/frp/releases — this is the ONLY official source.",
+        "Step 2: Download the latest Windows AMD64 release (file name: frp_x.x.x_windows_amd64.zip).",
+        "Step 3: Extract the ZIP file to a folder (e.g. C:\\frp).",
+        "Step 4: You need a server running frps (the frp server). If you do not have one, consider using ngrok or playit.gg instead.",
+        "Step 5: Edit frpc.toml (client config) with your server address and the Minecraft port.",
+        "Step 6: In Nexora Launcher, open Settings.",
+        "Step 7: Under 'Tunnel Providers', find the frp section.",
+        "Step 8: Select the frpc.exe file from the extracted folder.",
+        "Step 9: If your frp server requires a token, enter it in the 'Frp API key' field.",
+        "Step 10: Click 'Save'. Go to the Tunnel page, select frp, and click 'Start Tunnel'."
       ],
-      "notes": "FRP is more complex to set up than playit.gg or ngrok. It's recommended for advanced users who have their own server."
+      "importantNotes": [
+        "ONLY download frp from https://github.com/fatedier/frp/releases — other sources may be fake.",
+        "FRP requires your own server. If you do not have one, use ngrok or playit.gg instead.",
+        "This is the most complex provider to set up. Recommended for advanced users only."
+      ]
     },
     "bore": {
       "name": "bore.pub",
-      "description": "Simple, free tunnel provider. No API key required. Minimal setup.",
+      "description": "Simple, free tunnel. No account or API key required. Minimal setup.",
+      "officialGitHub": "https://github.com/ekzhang/bore",
+      "downloadUrl": "https://github.com/ekzhang/bore/releases",
       "setupSteps": [
-        "Download bore from [https://github.com/ekzhang/bore/releases](https://github.com/ekzhang/bore/releases)",
-        "Extract the downloaded ZIP file",
-        "In Nexora Launcher, go to Settings → Tunnel providers",
-        "Enter the bore.exe path in the Bore executable field",
-        "Click 'Save tunnel settings'",
-        "You can now start tunnels from the Tunnel page"
+        "Step 1: Go to https://github.com/ekzhang/bore/releases — this is the ONLY official download.",
+        "Step 2: Download the latest Windows release (file name contains 'x86_64-pc-windows').",
+        "Step 3: Extract the file to a folder (e.g. C:\\bore).",
+        "Step 4: In Nexora Launcher, open Settings.",
+        "Step 5: Under 'Tunnel Providers', find the bore section.",
+        "Step 6: Select the bore.exe file from the extracted folder.",
+        "Step 7: Click 'Save'. Go to the Tunnel page, select bore, and click 'Start Tunnel'.",
+        "Step 8: Bore will display a public address (something.bore.pub:12345). Share it with friends."
       ],
-      "notes": "Bore is very simple to use but may have less stable connections compared to ngrok. It's completely free."
+      "importantNotes": [
+        "ONLY download bore from https://github.com/ekzhang/bore/releases — other sources are not official.",
+        "Bore is completely free with no account needed.",
+        "Connections may be less stable than ngrok. Good for quick sessions with friends."
+      ]
     }
   },
   "generalTunnelInfo": {
-    "whatIsTunneling": "Tunneling allows you to make your local Minecraft server accessible over the internet without port forwarding. It creates a secure tunnel from your computer to a public server.",
+    "whatIsTunneling": "Tunneling makes your local Minecraft server accessible over the internet without port forwarding on your router. It creates a secure tunnel from your PC to a public address that friends can use to connect.",
     "whenToUse": [
-      "You don't have access to router port forwarding",
-      "You're on a restricted network (school, work)",
-      "You want a quick way to share your server with friends",
-      "You don't have a static public IP address"
+      "You cannot access your router settings to set up port forwarding",
+      "You are on a restricted network (school, office, shared WiFi)",
+      "You want a quick way to let friends join without permanent port changes",
+      "Your ISP does not give you a public IP address (CGNAT)"
     ],
-    "securityNotes": [
-      "Always use strong passwords on your Minecraft server",
-      "Be cautious about who you share your tunnel IP with",
-      "Free tunnel providers may have bandwidth limitations",
-      "Tunneling is generally safe but always use reputable providers"
+    "securityBestPractices": [
+      "ONLY download tunnel tools from their official websites listed above. Never from random download sites.",
+      "Use a strong password on your Minecraft server (set in server.properties: enforce-secure-profile=true)",
+      "Only share your tunnel address with people you trust",
+      "When done playing, stop the tunnel — do not leave it running 24/7",
+      "Free tunnel providers may log traffic. This is normal but be aware of it."
     ],
     "troubleshooting": {
-      "connectionFailed": "Check that the tunnel provider executable path is correct in Settings. Make sure your Minecraft server is actually running before starting the tunnel.",
-      "ipNotWorking": "Wait a few seconds after starting the tunnel. Some providers need time to establish the connection. Try refreshing the tunnel status.",
-      "portAlreadyInUse": "Another application may be using the port. Try a different port in your server settings."
+      "tunnelWillNotStart": "Check that the executable path in Settings points to the correct .exe file. Make sure you downloaded from the official source. Some antivirus programs may block tunnel tools — add an exception if needed.",
+      "friendsCannotConnect": "Make sure your Minecraft server is actually running first. Check that the tunnel shows an active status. Verify the address you shared matches what the tunnel page shows. Ask friends to use the exact address including the port number.",
+      "addressChanged": "Some providers (playit.gg, bore) give a new address each restart. This is normal. You need to share the new address each time. Ngrok gives a stable address on the free tier.",
+      "portMismatch": "The tunnel forwards to your server's port (default 25565). If you changed the server port in server.properties, make sure the tunnel is configured for the same port."
+    },
+    "whichProviderToChoose": {
+      "easiestForBeginners": "playit.gg — free, no account, simple setup",
+      "mostReliable": "ngrok — stable address, well-established service",
+      "mostPrivate": "frp — self-hosted, you control the server",
+      "quickestSetup": "bore — just download and go"
     }
   },
-  "linkFormat": "When providing links in your response, always use markdown format like this: [link text](https://example.com). This makes links clickable in the UI."
+  "linkFormat": "When providing links in your response, always use markdown format: [link text](https://example.com). Always include the full https:// URL so users can verify they are on the correct site."
 }

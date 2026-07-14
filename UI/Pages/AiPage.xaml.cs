@@ -98,6 +98,24 @@ public partial class AiPage : UserControl
             _viewModel?.CancelAction(msg);
     }
 
+    /// <summary>
+    /// "Fix with AI" button click — sends the failed execution result back to the AI
+    /// so it can analyse the errors and propose alternative actions (e.g. different mod).
+    /// </summary>
+    private async void FixWithAi_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn || _viewModel == null) return;
+
+        // The button lives inside a DataTemplate, so its DataContext is the TerminalMessage.
+        if (btn.DataContext is not TerminalMessage msg) return;
+
+        // Disable the button so the user cannot spam it.
+        btn.IsEnabled = false;
+        btn.Content   = "⏳ Analyzing…";
+
+        await _viewModel.AskAiAboutErrorAsync(msg.Text);
+    }
+
     private void ImportModFromFile_Click(object sender, RoutedEventArgs e)
     {
         var dlg = new Microsoft.Win32.OpenFileDialog

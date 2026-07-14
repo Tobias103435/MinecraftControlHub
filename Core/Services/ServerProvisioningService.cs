@@ -154,21 +154,48 @@ public class ServerProvisioningService : IServerProvisioningService
     public async Task WriteStartScriptsAsync(Server server)
     {
         var directory = server.ServerDirectory!;
-        var jarName = server.JarFileName ?? GetExpectedJarFileName(server);
         var minMem = server.MinMemoryMB;
         var maxMem = server.MaxMemoryMB;
         var javaCommand = !string.IsNullOrWhiteSpace(server.JavaPath) ? server.JavaPath : "java";
         var customJvmArgs = string.IsNullOrWhiteSpace(server.CustomJvmArgs) ? string.Empty : " " + server.CustomJvmArgs.Trim();
- 
-        var windowsScript = $"""
-            @echo off
-            "{javaCommand}" -Xms{minMem}M -Xmx{maxMem}M{customJvmArgs} -jar "{jarName}" nogui
-            """;
- 
-        var unixScript = $"""
-            #!/bin/bash
-            "{javaCommand}" -Xms{minMem}M -Xmx{maxMem}M{customJvmArgs} -jar "{jarName}" nogui
-            """;
+
+        // For Forge/NeoForge 1.17+, the installer creates run.bat/run.sh.
+        // We generate start scripts that call those instead of java -jar.
+        var forgeRunBat = Path.Combine(directory, "run.bat");
+        var forgeRunSh  = Path.Combine(directory, "run.sh");
+        var useForgeRunner = (server.Type is ServerType.Forge or ServerType.NeoForge)
+                             && (File.Exists(forgeRunBat) || File.Exists(forgeRunSh));
+
+        string windowsScript;
+        string unixScript;
+
+        if (useForgeRunner)
+        {
+            // Modern Forge: run.bat handles the classpath and launch. We wrap it to set RAM.
+            // Set JVM args via env var that the Forge run script respects.
+            windowsScript = $"""
+                @echo off
+                set JAVA_OPTS=-Xms{minMem}M -Xmx{maxMem}M{customJvmArgs}
+                call run.bat
+                """;
+            unixScript = $"""
+                #!/bin/bash
+                export JAVA_OPTS="-Xms{minMem}M -Xmx{maxMem}M{customJvmArgs}"
+                bash run.sh
+                """;
+        }
+        else
+        {
+            var jarName = server.JarFileName ?? GetExpectedJarFileName(server);
+            windowsScript = $"""
+                @echo off
+                "{javaCommand}" -Xms{minMem}M -Xmx{maxMem}M{customJvmArgs} -jar "{jarName}" nogui
+                """;
+            unixScript = $"""
+                #!/bin/bash
+                "{javaCommand}" -Xms{minMem}M -Xmx{maxMem}M{customJvmArgs} -jar "{jarName}" nogui
+                """;
+        }
 
         await File.WriteAllTextAsync(Path.Combine(directory, "start.bat"), windowsScript);
         await File.WriteAllTextAsync(Path.Combine(directory, "start.sh"), unixScript);
@@ -184,6 +211,7 @@ public class ServerProvisioningService : IServerProvisioningService
         try
         {
             using var http = new HttpClient();
+            http.Timeout = TimeSpan.FromMinutes(5); // Forge metadata + installer download can be slow
 
             switch (server.Type)
             {
@@ -214,6 +242,19 @@ public class ServerProvisioningService : IServerProvisioningService
             return;
         }
 
+        // For Forge/NeoForge 1.17+, the installer creates run.bat + libraries/ instead of a jar.
+        // If those exist, no placeholder is needed — the server is fully provisioned.
+        if (server.Type is ServerType.Forge or ServerType.NeoForge)
+        {
+            var hasRunScript = File.Exists(Path.Combine(server.ServerDirectory!, "run.bat"))
+                            || File.Exists(Path.Combine(server.ServerDirectory!, "run.sh"));
+            var hasLibraries = Directory.Exists(Path.Combine(server.ServerDirectory!, "libraries"));
+            if (hasRunScript && hasLibraries)
+            {
+                return;
+            }
+        }
+
         var fallbackName = GetExpectedJarFileName(server);
         var fallbackPath = Path.Combine(server.ServerDirectory!, fallbackName);
         if (!File.Exists(fallbackPath))
@@ -221,15 +262,6 @@ public class ServerProvisioningService : IServerProvisioningService
             await File.WriteAllTextAsync(fallbackPath, $"# Placeholder jar for {server.Type} {server.MinecraftVersion}\n# Real download failed or is not available\n");
         }
         server.JarFileName = Path.GetFileName(fallbackPath);
-
-        if (server.Type == ServerType.Forge || server.Type == ServerType.NeoForge)
-        {
-            var readmePath = Path.Combine(server.ServerDirectory!, "README.txt");
-            if (!File.Exists(readmePath))
-            {
-                await File.WriteAllTextAsync(readmePath, "This server has a placeholder jar. To run a Forge/NeoForge server, run the official installer or place the correct server jar in this folder and update start scripts accordingly.");
-            }
-        }
     }
 
     private static async Task DownloadVanillaJarAsync(Server server, HttpClient http)
@@ -369,11 +401,15 @@ public class ServerProvisioningService : IServerProvisioningService
             var proc = Process.Start(psi);
             if (proc != null)
             {
-                var exited = proc.WaitForExit(240000);
+                var stdoutTask = proc.StandardOutput.ReadToEndAsync();
+                var stderrTask = proc.StandardError.ReadToEndAsync();
+                var exited = proc.WaitForExit(300_000);
                 if (!exited)
                 {
-                    try { proc.Kill(); } catch { }
+                    try { proc.Kill(entireProcessTree: true); } catch { }
                 }
+                try { await stdoutTask; } catch { }
+                try { await stderrTask; } catch { }
             }
  
             await EnsureServerJarExistsAsync(server, http);
@@ -419,11 +455,15 @@ public class ServerProvisioningService : IServerProvisioningService
         var quiltProc = Process.Start(quiltPsi);
         if (quiltProc != null)
         {
-            var exited = quiltProc.WaitForExit(240000);
+            var stdoutTask = quiltProc.StandardOutput.ReadToEndAsync();
+            var stderrTask = quiltProc.StandardError.ReadToEndAsync();
+            var exited = quiltProc.WaitForExit(300_000);
             if (!exited)
             {
-                try { quiltProc.Kill(); } catch { }
+                try { quiltProc.Kill(entireProcessTree: true); } catch { }
             }
+            try { await stdoutTask; } catch { }
+            try { await stderrTask; } catch { }
         }
 
         server.JarFileName = FindBestJar(server.ServerDirectory!);
@@ -483,11 +523,18 @@ public class ServerProvisioningService : IServerProvisioningService
         var proc = Process.Start(psi);
         if (proc != null)
         {
-            var exited = proc.WaitForExit(240000);
+            // CRITICAL: read stdout/stderr asynchronously to prevent pipe buffer deadlock.
+            // If we don't drain the pipes, the child process blocks once the buffer fills (~4 KB).
+            var stdoutTask = proc.StandardOutput.ReadToEndAsync();
+            var stderrTask = proc.StandardError.ReadToEndAsync();
+            var exited = proc.WaitForExit(300_000); // 5 minutes — Forge installer downloads many libraries
             if (!exited)
             {
-                try { proc.Kill(); } catch { }
+                try { proc.Kill(entireProcessTree: true); } catch { }
             }
+            // Await drain tasks so we don't leak background reads.
+            try { await stdoutTask; } catch { }
+            try { await stderrTask; } catch { }
         }
 
         server.JarFileName = ChooseLauncherJar(server, FindBestJar(server.ServerDirectory!));
@@ -645,6 +692,17 @@ public class ServerProvisioningService : IServerProvisioningService
     {
         if (string.IsNullOrWhiteSpace(server.ServerDirectory) || !Directory.Exists(server.ServerDirectory))
             return false;
+
+        // For Forge/NeoForge 1.17+, the installer creates run.bat/run.sh + libraries/ folder
+        // instead of a simple server jar. Accept these as valid provisioning.
+        if (server.Type is ServerType.Forge or ServerType.NeoForge)
+        {
+            var runBat = Path.Combine(server.ServerDirectory, "run.bat");
+            var runSh  = Path.Combine(server.ServerDirectory, "run.sh");
+            var libs   = Path.Combine(server.ServerDirectory, "libraries");
+            if ((File.Exists(runBat) || File.Exists(runSh)) && Directory.Exists(libs))
+                return true;
+        }
 
         string? jarPath = null;
         if (!string.IsNullOrWhiteSpace(server.JarFileName))

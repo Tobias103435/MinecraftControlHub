@@ -1,0 +1,20 @@
+﻿MinecraftControlHub
+
+
+winexe
+C#
+.cs
+D:\Eigen project\MinecraftControlHub\MinecraftControlHub\obj\Debug\net8.0-windows\
+MinecraftControlHub
+none
+false
+TRACE;DEBUG;NET;NET8_0;NETCOREAPP
+D:\Eigen project\MinecraftControlHub\MinecraftControlHub\App.xaml
+262147100362
+4222086208
+100325466944
+2122133532658
+MainWindow.xaml;Styles\CheckBox.xaml;Styles\Controls.xaml;Styles\LightTheme.xaml;Styles\Theme.xaml;UI\Components\Sidebar.xaml;UI\Components\TopBar.xaml;UI\Pages\AccountPage.xaml;UI\Pages\AiPage.xaml;UI\Pages\FriendsPage.xaml;UI\Pages\HomePage.xaml;UI\Pages\ModsPage.xaml;UI\Pages\ServersPage.xaml;UI\Pages\SettingsPage.xaml;UI\Pages\TunnelPage.xaml;UI\Windows\BrowseModsWindow.xaml;UI\Windows\ContentBrowserWindow.xaml;UI\Windows\ContentVersionPickerDialog.xaml;UI\Windows\InstallationSettingsWindow.xaml;UI\Windows\ModVersionPickerWindow.xaml;UI\Windows\NexoraLoginWindow.xaml;UI\Windows\ServerPluginBrowserWindow.xaml;UI\Windows\ServerPreviewWindow.xaml;UI\Windows\ServerSettingsWindow.xaml;UI\Windows\ShareInstanceWindow.xaml;UI\Windows\ShareTunnelWindow.xaml;
+
+False
+

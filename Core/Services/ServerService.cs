@@ -204,8 +204,25 @@ public class ServerService : IServerService
         }
 
         // If already running, ignore
-        if (server.Status == ServerStatus.Running || server.Status == ServerStatus.Starting)
+        if (server.Status == ServerStatus.Running)
             return Task.CompletedTask;
+
+        // If stuck at Starting from a previous failed attempt, force-stop first
+        if (server.Status == ServerStatus.Starting)
+        {
+            if (_processes.TryGetValue(server.Id, out var oldProc))
+            {
+                try
+                {
+                    if (!oldProc.HasExited)
+                        oldProc.Kill(entireProcessTree: true);
+                }
+                catch { }
+                _processes.Remove(server.Id);
+                _processInputs.Remove(server.Id);
+            }
+            server.Status = ServerStatus.Stopped;
+        }
 
         server.Status = ServerStatus.Starting;
         server.LastStarted = DateTime.UtcNow;
@@ -245,18 +262,42 @@ public class ServerService : IServerService
             ? server.JavaPath
             : "java";
         var customJvmArgs = string.IsNullOrWhiteSpace(server.CustomJvmArgs) ? string.Empty : " " + server.CustomJvmArgs.Trim();
- 
-        var psi = new ProcessStartInfo
+
+        ProcessStartInfo psi;
+
+        // For Forge/NeoForge 1.17+, the server uses run.bat instead of java -jar.
+        // start.bat sets JAVA_OPTS and calls run.bat which handles the classpath.
+        var forgeStartBat = Path.Combine(serverDirectory, "start.bat");
+        var forgeRunBat = Path.Combine(serverDirectory, "run.bat");
+        if ((server.Type == ServerType.Forge || server.Type == ServerType.NeoForge) &&
+            File.Exists(forgeStartBat) && File.Exists(forgeRunBat))
         {
-            FileName = javaExecutable,
-            Arguments = $"-Xms{server.MinMemoryMB}M -Xmx{server.MaxMemoryMB}M{customJvmArgs} -jar \"{jarPath}\" nogui",
-            WorkingDirectory = server.ServerDirectory,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            RedirectStandardInput = true
-        };
+            psi = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c \"{forgeStartBat}\"",
+                WorkingDirectory = server.ServerDirectory,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true
+            };
+        }
+        else
+        {
+            psi = new ProcessStartInfo
+            {
+                FileName = javaExecutable,
+                Arguments = $"-Xms{server.MinMemoryMB}M -Xmx{server.MaxMemoryMB}M{customJvmArgs} -jar \"{jarPath}\" nogui",
+                WorkingDirectory = server.ServerDirectory,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true
+            };
+        }
 
         var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
 

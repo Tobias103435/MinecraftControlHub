@@ -102,6 +102,13 @@ public class AITerminalService
     public Task<AICommandBatchResult> ExecuteAsync(AICommandBatch batch)
         => _executor.ExecuteAsync(batch);
 
+    /// <summary>
+    /// Pre-validates an action plan by checking mod availability on Modrinth/CurseForge
+    /// before execution. Returns a list of mods that don't exist for the target version+loader.
+    /// </summary>
+    public Task<List<AICommandExecutor.ModValidationFailure>> ValidateModsAsync(AICommandBatch batch)
+        => _executor.ValidateModsAsync(batch);
+
     /// <summary>Parses an embedded JSON action plan from an AI response string.</summary>
     public static AICommandBatch? ParseActionPlan(string text)
     {

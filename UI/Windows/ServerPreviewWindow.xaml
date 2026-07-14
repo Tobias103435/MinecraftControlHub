@@ -102,72 +102,87 @@
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0"
-                Background="{StaticResource BrushPanelBackground}"
-                BorderBrush="{StaticResource BrushBorder}"
-                BorderThickness="0,0,1,0">
-            <StackPanel Margin="20,24,20,24">
-                <TextBlock Text="{Binding Name}"
-                           FontFamily="{StaticResource FontDisplay}"
-                           FontSize="18"
-                           FontWeight="SemiBold"
-                           Foreground="{StaticResource BrushTextPrimary}"
-                           Margin="0,0,0,12"
-                           TextWrapping="Wrap"/>
-                <TextBlock Text="{Binding Type, StringFormat=Type: {0}}"
-                           FontFamily="{StaticResource FontBody}"
-                           FontSize="13"
-                           Foreground="{StaticResource BrushTextSecondary}"
-                           Margin="0,0,0,8"/>
-                <TextBlock Text="{Binding MinecraftVersion, StringFormat=Version: {0}}"
-                           FontFamily="{StaticResource FontBody}"
-                           FontSize="13"
-                           Foreground="{StaticResource BrushTextSecondary}"
-                           Margin="0,0,0,16"/>
+                Background="{DynamicResource BrushSidebarBackground}">
+            <DockPanel LastChildFill="True">
 
-                <Button x:Name="TerminalButton"                        Content="Terminal"
-                        Tag="Terminal"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        HorizontalAlignment="Stretch"
-                        Margin="0,0,0,8"
-                        Click="SectionButton_Click"/>
-                <Button x:Name="FriendsButton"
-                        Content="Friends"
-                        Tag="Friends"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        HorizontalAlignment="Stretch"
-                        Margin="0,0,0,8"
-                        Click="SectionButton_Click"/>
-                <Button x:Name="SettingsButton"
-                        Content="Settings"
-                        Tag="Settings"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        HorizontalAlignment="Stretch"
-                        Margin="0,0,0,8"
-                        Click="SectionButton_Click"/>
-                <Button x:Name="PluginsButton"
-                        Content="Plugins/Mods"
-                        Tag="Plugins"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        HorizontalAlignment="Stretch"
-                        Margin="0,0,0,8"
-                        Click="SectionButton_Click"/>
-                <Button x:Name="AdvancedButton"
-                        Content="Advanced"
-                        Tag="Advanced"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        HorizontalAlignment="Stretch"
-                        Click="SectionButton_Click"/>
-                <Button x:Name="HealthButton"
-                        Content="Health"
-                        Tag="Health"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        HorizontalAlignment="Stretch"
-                        Margin="0,8,0,0"
-                        Click="SectionButton_Click"/>
-            </StackPanel>
+                <!-- Brand / Server name -->
+                <Border DockPanel.Dock="Top" Height="72" Padding="20,0">
+                    <StackPanel VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <Border Width="28" Height="28" CornerRadius="8" Background="{DynamicResource BrushAccent}">
+                                <TextBlock Text="S" FontFamily="{StaticResource FontDisplay}" FontSize="15"
+                                           Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="{Binding Name}"
+                                       Margin="10,0,0,0"
+                                       FontFamily="{StaticResource FontDisplay}"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="150"/>
+                        </StackPanel>
+                        <TextBlock FontFamily="{StaticResource FontBody}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource BrushTextMuted}">
+                            <Run Text="{Binding Type, Mode=OneWay}"/> · <Run Text="{Binding MinecraftVersion, Mode=OneWay}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- Separator -->
+                <Border DockPanel.Dock="Top" Height="1"
+                        Background="{DynamicResource BrushBorder}"
+                        Margin="16,0"/>
+
+                <!-- Nav items -->
+                <StackPanel Margin="0,8,0,0">
+                    <RadioButton GroupName="ServerNav" Tag="Terminal"
+                                 Style="{StaticResource NavItemStyle}"
+                                 IsChecked="True"
+                                 Checked="NavRadio_Checked">
+                        <TextBlock Text="Terminal" FontSize="13.5"/>
+                    </RadioButton>
+
+                    <RadioButton GroupName="ServerNav" Tag="Friends"
+                                 Style="{StaticResource NavItemStyle}"
+                                 Checked="NavRadio_Checked">
+                        <TextBlock Text="Friends" FontSize="13.5"/>
+                    </RadioButton>
+
+                    <RadioButton GroupName="ServerNav" Tag="Settings"
+                                 Style="{StaticResource NavItemStyle}"
+                                 Checked="NavRadio_Checked">
+                        <TextBlock Text="Settings" FontSize="13.5"/>
+                    </RadioButton>
+
+                    <RadioButton GroupName="ServerNav" Tag="Plugins"
+                                 Style="{StaticResource NavItemStyle}"
+                                 Checked="NavRadio_Checked">
+                        <TextBlock Text="Plugins/Mods" FontSize="13.5"/>
+                    </RadioButton>
+
+                    <RadioButton GroupName="ServerNav" Tag="Advanced"
+                                 Style="{StaticResource NavItemStyle}"
+                                 Checked="NavRadio_Checked">
+                        <TextBlock Text="Advanced" FontSize="13.5"/>
+                    </RadioButton>
+
+                    <RadioButton GroupName="ServerNav" Tag="Health"
+                                 Style="{StaticResource NavItemStyle}"
+                                 Checked="NavRadio_Checked">
+                        <TextBlock Text="Health" FontSize="13.5"/>
+                    </RadioButton>
+                </StackPanel>
+
+                <!-- Spacer -->
+                <Border/>
+            </DockPanel>
         </Border>
 
-        <Grid Grid.Column="1" Margin="24">
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="24">
             <Border x:Name="TerminalSection"
                     Background="{StaticResource BrushPanelBackground}"
                     BorderBrush="{StaticResource BrushBorder}"
@@ -178,7 +193,7 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="400"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0" Margin="0,0,0,16">
@@ -262,58 +277,180 @@
                             BorderBrush="{StaticResource BrushBorder}"
                             BorderThickness="1"
                             CornerRadius="12"
-                            Padding="16"
+                            Padding="20"
                             Visibility="Collapsed"
                             Grid.Column="1"
                             Grid.Row="0">
                         <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12" VerticalAlignment="Center">
-                                <TextBlock Text="Server Health" FontFamily="{StaticResource FontDisplay}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource BrushTextPrimary}"/>
-                                <Button x:Name="RefreshServerHealthBtn" Content="⟳ Refresh" Style="{StaticResource SecondaryButtonStyle}" Padding="12,8" Margin="12,0,0,0" Click="RefreshServerHealth_Click"/>
-                            </StackPanel>
 
-                            <Border Background="{DynamicResource BrushPanelBackground}" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="Overall Score" FontSize="12" Foreground="{DynamicResource BrushTextMuted}"/>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock x:Name="ServerOverallScoreText" Text="0" FontSize="28" FontWeight="SemiBold" Margin="0,0,12,0" Foreground="{DynamicResource BrushTextPrimary}"/>
-                                        <StackPanel>
-                                            <TextBlock x:Name="ServerOverallStatusText" Text="Unknown" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}"/>
-                                            <TextBlock x:Name="ServerOverallAdviceText" Text="No data" FontSize="11" Foreground="{DynamicResource BrushTextMuted}" TextWrapping="Wrap" MaxWidth="420"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-
-                            <Grid Margin="0,0,0,8">
+                            <!-- Header -->
+                            <Grid Margin="0,0,0,16">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="200" />
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="RAM Usage" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}"/>
-                                    <ProgressBar x:Name="ServerRamProgress" Height="8" Margin="0,6,0,6" Value="0" Maximum="100"/>
-                                    <TextBlock x:Name="ServerRamText" Text="0% of 2048MB" FontSize="11" Foreground="{DynamicResource BrushTextMuted}"/>
-
-                                    <!-- RAM sparkline -->
-                                    <Border Background="{DynamicResource BrushPanelElevated}" CornerRadius="6" Padding="6" Margin="0,6,0,0">
-                                        <Canvas x:Name="ServerRamSparklineCanvas" Width="360" Height="48" HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                                            <Polyline x:Name="ServerRamSparkline" Stroke="{DynamicResource BrushAccent}" StrokeThickness="2" Fill="Transparent"/>
-                                        </Canvas>
-                                    </Border>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Server Health"
+                                               FontFamily="{StaticResource FontDisplay}"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource BrushTextPrimary}"/>
+                                    <TextBlock x:Name="ServerOverallAdviceText"
+                                               Text="No data"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource BrushTextMuted}"
+                                               TextWrapping="Wrap"
+                                               MaxWidth="400"
+                                               Margin="0,4,0,0"/>
                                 </StackPanel>
-
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Java" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}"/>
-                                    <TextBlock x:Name="ServerJavaText" Text="Unknown" FontSize="11" Foreground="{DynamicResource BrushTextMuted}"/>
-                                    <TextBlock Text="Mods" FontSize="13" FontWeight="SemiBold" Margin="0,8,0,0" Foreground="{DynamicResource BrushTextPrimary}"/>
-                                    <TextBlock x:Name="ServerModsText" Text="Not scanned" FontSize="11" Foreground="{DynamicResource BrushTextMuted}"/>
-                                </StackPanel>
+                                <Button x:Name="RefreshServerHealthBtn"
+                                        Grid.Column="1"
+                                        Content="⟳ Refresh"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Padding="14,8"
+                                        VerticalAlignment="Center"
+                                        Click="RefreshServerHealth_Click"/>
                             </Grid>
 
-                            <TextBlock Text="Stability" FontSize="13" FontWeight="SemiBold" Margin="0,6,0,4" Foreground="{DynamicResource BrushTextPrimary}"/>
-                            <TextBlock x:Name="ServerStabilityText" Text="No recent crashes" FontSize="11" Foreground="{DynamicResource BrushTextMuted}"/>
+                            <!-- Overall Score Card -->
+                            <Border Background="{DynamicResource BrushPanelElevated}"
+                                    BorderBrush="{DynamicResource BrushBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="16"
+                                    Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- Score Number -->
+                                    <Border Grid.Column="0"
+                                            Width="64" Height="64"
+                                            CornerRadius="32"
+                                            Background="{DynamicResource BrushAccent}"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,16,0">
+                                        <TextBlock x:Name="ServerOverallScoreText"
+                                                   Text="0"
+                                                   FontSize="24"
+                                                   FontWeight="Bold"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                    <!-- Status Label -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Overall Score" FontSize="11" Foreground="{DynamicResource BrushTextMuted}"/>
+                                        <TextBlock x:Name="ServerOverallStatusText"
+                                                   Text="Unknown"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource BrushTextPrimary}"
+                                                   Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Metrics Grid: 2x2 -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="12"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- RAM Card -->
+                                <Border Grid.Column="0" Grid.Row="0"
+                                        Background="{DynamicResource BrushPanelElevated}"
+                                        BorderBrush="{DynamicResource BrushBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        Padding="14">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                            <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushAccent}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="RAM Usage" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}"/>
+                                        </StackPanel>
+                                        <TextBlock x:Name="ServerRamText" Text="0% of 2048MB" FontSize="11" Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,6"/>
+                                        <ProgressBar x:Name="ServerRamProgress" Height="6" Value="0" Maximum="100" Margin="0,0,0,8"/>
+                                        <!-- Sparkline -->
+                                        <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="6" Padding="4" Height="40">
+                                            <Canvas x:Name="ServerRamSparklineCanvas" Width="360" Height="32" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                                <Polyline x:Name="ServerRamSparkline" Stroke="{DynamicResource BrushAccent}" StrokeThickness="1.5" Fill="Transparent"/>
+                                            </Canvas>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Java Card -->
+                                <Border Grid.Column="2" Grid.Row="0"
+                                        Background="{DynamicResource BrushPanelElevated}"
+                                        BorderBrush="{DynamicResource BrushBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        Padding="14">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                            <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushOnline}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Java" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}"/>
+                                        </StackPanel>
+                                        <TextBlock x:Name="ServerJavaText"
+                                                   Text="Unknown"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource BrushTextMuted}"
+                                                   TextWrapping="Wrap"
+                                                   MaxWidth="220"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Mods Card -->
+                                <Border Grid.Column="0" Grid.Row="2"
+                                        Background="{DynamicResource BrushPanelElevated}"
+                                        BorderBrush="{DynamicResource BrushBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        Padding="14">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                            <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushAccent}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Mods" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}"/>
+                                        </StackPanel>
+                                        <TextBlock x:Name="ServerModsText"
+                                                   Text="Not scanned"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource BrushTextMuted}"
+                                                   TextWrapping="Wrap"
+                                                   MaxWidth="220"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Stability Card -->
+                                <Border Grid.Column="2" Grid.Row="2"
+                                        Background="{DynamicResource BrushPanelElevated}"
+                                        BorderBrush="{DynamicResource BrushBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        Padding="14">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                            <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushOnline}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Stability" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}"/>
+                                        </StackPanel>
+                                        <TextBlock x:Name="ServerStabilityText"
+                                                   Text="No recent crashes"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource BrushTextMuted}"
+                                                   TextWrapping="Wrap"
+                                                   MaxWidth="220"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
 
                         </StackPanel>
                     </Border>
@@ -326,93 +463,194 @@
                     Padding="24"
                     Visibility="Collapsed">
                 <StackPanel>
-                    <TextBlock Text="Friends"
+                    <TextBlock Text="Friends &amp; Whitelist"
                                FontFamily="{StaticResource FontDisplay}"
                                FontSize="20"
                                Foreground="{StaticResource BrushTextPrimary}"
-                               Margin="0,0,0,12"/>
-                    <TextBlock Text="Choose who can join your server and manage your trusted friends."
+                               Margin="0,0,0,4"/>
+                    <TextBlock Text="Manage who can join your server. Selected friends with linked Minecraft accounts will be added to the whitelist."
                                FontFamily="{StaticResource FontBody}"
                                FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}"
                                Margin="0,0,0,20"
                                TextWrapping="Wrap"/>
- 
+
+                    <!-- Whitelist toggle -->
                     <Border Background="{StaticResource BrushPanelElevated}"
                             BorderBrush="{StaticResource BrushBorder}"
                             BorderThickness="1"
-                            CornerRadius="12"
-                            Padding="18"
-                            Margin="0,0,0,20">
-                        <StackPanel>
-                            <TextBlock Text="Invite Access"
-                                       FontFamily="{StaticResource FontBody}"
-                                       FontSize="14"
-                                       Foreground="{StaticResource BrushTextPrimary}"
-                                       Margin="0,0,0,12"/>
-                            <Slider x:Name="FriendAccessSlider"
-                                    Minimum="0"
-                                    Maximum="2"
-                                    SmallChange="1"
-                                    LargeChange="1"
-                                    TickFrequency="1"
-                                    IsSnapToTickEnabled="True"
-                                    TickPlacement="BottomRight"
-                                    Margin="0,0,0,18"
-                                    Value="1"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Invite Only"
+                            CornerRadius="10"
+                            Padding="16"
+                            Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Enable Whitelist"
+                                           FontFamily="{StaticResource FontBody}"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource BrushTextPrimary}"/>
+                                <TextBlock Text="Only whitelisted players can join this server."
                                            FontFamily="{StaticResource FontBody}"
                                            FontSize="12"
                                            Foreground="{StaticResource BrushTextSecondary}"
-                                           Grid.Column="0"
-                                           TextAlignment="Center"/>
-                                <TextBlock Text="Friends"
-                                           FontFamily="{StaticResource FontBody}"
-                                           FontSize="12"
-                                           Foreground="{StaticResource BrushTextSecondary}"
-                                           Grid.Column="1"
-                                           TextAlignment="Center"/>
-                                <TextBlock Text="Allow All"
-                                           FontFamily="{StaticResource FontBody}"
-                                           FontSize="12"
-                                           Foreground="{StaticResource BrushTextSecondary}"
-                                           Grid.Column="2"
-                                           TextAlignment="Center"/>
-                            </Grid>
-                        </StackPanel>
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <CheckBox Grid.Column="1"
+                                      x:Name="WhitelistToggleCheckBox"
+                                      IsChecked="{Binding WhiteListEnabled}"
+                                      VerticalAlignment="Center"
+                                      Checked="WhitelistToggle_Changed"
+                                      Unchecked="WhitelistToggle_Changed"/>
+                        </Grid>
                     </Border>
- 
+
+                    <!-- Friends list header -->
                     <Border Background="{StaticResource BrushPanelElevated}"
                             BorderBrush="{StaticResource BrushBorder}"
                             BorderThickness="1"
-                            CornerRadius="12"
-                            Padding="18">
-                        <StackPanel>
-                            <TextBlock Text="Trusted Friends"
+                            CornerRadius="10"
+                            Padding="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Header row -->
+                            <Border Grid.Row="0"
+                                    BorderBrush="{StaticResource BrushBorder}"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="16,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="Trusted Friends"
+                                               FontFamily="{StaticResource FontDisplay}"
+                                               FontSize="14"
+                                               Foreground="{StaticResource BrushTextPrimary}"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1"
+                                               x:Name="FriendsSelectedCountText"
+                                               FontFamily="{StaticResource FontBody}"
+                                               FontSize="11"
+                                               Foreground="{StaticResource BrushTextMuted}"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Loading -->
+                            <TextBlock Grid.Row="1"
+                                       x:Name="FriendsLoadingText"
+                                       Text="Loading friends…"
                                        FontFamily="{StaticResource FontBody}"
-                                       FontSize="14"
-                                       Foreground="{StaticResource BrushTextPrimary}"
-                                       Margin="0,0,0,14"/>
-                            <CheckBox Style="{StaticResource FriendCheckboxStyle}" IsChecked="True">
-                                <TextBlock Text="Alex"
-                                           FontWeight="SemiBold"/>
-                            </CheckBox>
-                            <CheckBox Style="{StaticResource FriendCheckboxStyle}" IsChecked="True">
-                                <TextBlock Text="Mia"
-                                           FontWeight="SemiBold"/>
-                            </CheckBox>
-                            <CheckBox Style="{StaticResource FriendCheckboxStyle}" IsChecked="False">
-                                <TextBlock Text="Jordan"
-                                           FontWeight="SemiBold"/>
-                            </CheckBox>
-                        </StackPanel>
+                                       FontSize="13"
+                                       Foreground="{StaticResource BrushTextMuted}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,20"/>
+
+                            <!-- Empty -->
+                            <TextBlock Grid.Row="1"
+                                       x:Name="FriendsEmptyText"
+                                       Text="Not logged in to Nexora, or no friends found.&#x0a;Add friends from the Social page first."
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextMuted}"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Margin="20"
+                                       Visibility="Collapsed"/>
+
+                            <!-- Friends list -->
+                            <ItemsControl Grid.Row="2"
+                                          x:Name="ServerFriendsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="{StaticResource BrushBorder}"
+                                                BorderThickness="0,0,0,1"
+                                                Padding="16,12"
+                                                Cursor="Hand">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource BrushPanelBackground}"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Avatar -->
+                                                <Border Grid.Column="0"
+                                                        Width="38" Height="38" CornerRadius="19"
+                                                        Background="{StaticResource BrushAccent}"
+                                                        Margin="0,0,14,0">
+                                                    <TextBlock Text="{Binding Initial}"
+                                                               FontFamily="{StaticResource FontDisplay}"
+                                                               FontSize="16" Foreground="White"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+
+                                                <!-- Name + MC username -->
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding WebsiteUsername}"
+                                                               FontFamily="{StaticResource FontBody}"
+                                                               FontSize="13" FontWeight="SemiBold"
+                                                               Foreground="{StaticResource BrushTextPrimary}"/>
+                                                    <TextBlock FontFamily="{StaticResource FontBody}"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource BrushTextSecondary}"
+                                                               Margin="0,2,0,0"
+                                                               Visibility="{Binding MinecraftUsername, Converter={StaticResource NullToVisibilityConverter}}">
+                                                        <Run Text="MC: "/><Run Text="{Binding MinecraftUsername, Mode=OneWay}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+
+                                                <!-- Whitelist checkbox -->
+                                                <CheckBox Grid.Column="2"
+                                                          IsChecked="{Binding IsSelected}"
+                                                          VerticalAlignment="Center"
+                                                          Checked="FriendWhitelist_Changed"
+                                                          Unchecked="FriendWhitelist_Changed"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
                     </Border>
+
+                    <!-- Save whitelist button -->
+                    <Button x:Name="SaveWhitelistBtn"
+                            Content="Save Whitelist"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Padding="20,10"
+                            Margin="0,16,0,0"
+                            HorizontalAlignment="Left"
+                            Click="SaveWhitelist_Click"/>
+
+                    <!-- Status text -->
+                    <TextBlock x:Name="WhitelistStatusText"
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="12"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               TextWrapping="Wrap"
+                               Margin="0,10,0,0"/>
                 </StackPanel>
             </Border>
 
@@ -1084,5 +1322,6 @@
                 </StackPanel>
             </Border>
         </Grid>
+        </ScrollViewer>
     </Grid>
 </Window>

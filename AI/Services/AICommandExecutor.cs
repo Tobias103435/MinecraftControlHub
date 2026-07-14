@@ -74,6 +74,101 @@ public class AICommandExecutor
         return result;
     }
 
+    /// <summary>
+    /// Pre-validates an action plan by checking that all InstallMod commands reference
+    /// mods that actually exist on Modrinth or CurseForge for the target's version+loader.
+    /// Returns a list of invalid mods (empty if all valid).
+    /// </summary>
+    public async Task<List<ModValidationFailure>> ValidateModsAsync(AICommandBatch batch)
+    {
+        var failures = new List<ModValidationFailure>();
+
+        foreach (var cmd in batch.Commands.Where(c =>
+            c.Action.Equals("InstallMod", StringComparison.OrdinalIgnoreCase)))
+        {
+            var targetName = cmd.Parameters.GetValueOrDefault("targetName")
+                          ?? cmd.Parameters.GetValueOrDefault("installationName");
+            var modName = cmd.Parameters.GetValueOrDefault("modName");
+            if (string.IsNullOrWhiteSpace(targetName) || string.IsNullOrWhiteSpace(modName))
+                continue;
+
+            // Resolve target to get version + loader
+            string? mcVersion = null;
+            LoaderType? loader = null;
+            var installation = await FindInstallationByNameAsync(targetName);
+            if (installation != null)
+            {
+                mcVersion = installation.MinecraftVersion;
+                loader = installation.Loader;
+            }
+            else
+            {
+                var server = await FindServerByNameAsync(targetName);
+                if (server != null)
+                {
+                    mcVersion = server.MinecraftVersion;
+                    loader = server.Type switch
+                    {
+                        ServerType.Fabric   => LoaderType.Fabric,
+                        ServerType.Quilt    => LoaderType.Quilt,
+                        ServerType.Forge    => LoaderType.Forge,
+                        ServerType.NeoForge => LoaderType.NeoForge,
+                        _                   => LoaderType.Fabric
+                    };
+                }
+            }
+
+            if (mcVersion == null || loader == null)
+                continue; // Target doesn't exist yet (e.g. will be created in same batch)
+
+            // Search Modrinth
+            try
+            {
+                var modrinthPage = await _mods.SearchModsAsync(modName, mcVersion, loader, limit: 1);
+                var modrinthHit = modrinthPage.Hits.FirstOrDefault();
+                if (modrinthHit != null)
+                {
+                    // Verify a compatible version actually exists
+                    var version = await _mods.GetModVersionsAsync(modrinthHit.ModrinthId, mcVersion, loader);
+                    if (version.Count > 0)
+                        continue; // Valid on Modrinth
+                }
+            }
+            catch { /* API error — try CurseForge */ }
+
+            // Search CurseForge
+            try
+            {
+                var cfPage = await _mods.SearchUnifiedAsync(modName, mcVersion, loader, ModSource.CurseForge, limit: 1);
+                var cfHit = cfPage.Hits.FirstOrDefault();
+                if (cfHit != null)
+                    continue; // Valid on CurseForge (version resolution happens at install time)
+            }
+            catch { /* API error */ }
+
+            // Neither platform has this mod for this version+loader
+            failures.Add(new ModValidationFailure
+            {
+                ModName = modName,
+                TargetName = targetName,
+                MinecraftVersion = mcVersion,
+                Loader = loader.Value,
+                Reason = $"No compatible version of \"{modName}\" found for Minecraft {mcVersion} ({loader}) on Modrinth or CurseForge."
+            });
+        }
+
+        return failures;
+    }
+
+    public record ModValidationFailure
+    {
+        public string ModName { get; init; } = string.Empty;
+        public string TargetName { get; init; } = string.Empty;
+        public string MinecraftVersion { get; init; } = string.Empty;
+        public LoaderType Loader { get; init; }
+        public string Reason { get; init; } = string.Empty;
+    }
+
     private async Task<AICommandResult> ExecuteSingleAsync(AICommand cmd)
     {
         try
@@ -199,31 +294,65 @@ public class AICommandExecutor
     private async Task<AICommandResult> InstallModIntoInstallationAsync(
         Installation installation, string modName)
     {
-        var searchPage = await _mods.SearchModsAsync(modName,
+        // Step 1: Try Modrinth first
+        var modrinthPage = await _mods.SearchModsAsync(modName,
             installation.MinecraftVersion,
             installation.Loader,
             limit: 1);
 
-        var top = searchPage.Hits.FirstOrDefault();
-        if (top == null)
-            return new AICommandResult
+        var top = modrinthPage.Hits.FirstOrDefault();
+        if (top != null)
+        {
+            var result = await _mods.InstallModFromSearchAsync(installation, top);
+            if (result.Success)
             {
-                Success = false,
-                Message = $"No mod found on Modrinth matching '{modName}' for " +
-                          $"{installation.MinecraftVersion} ({installation.Loader})."
-            };
+                return new AICommandResult
+                {
+                    Success = true,
+                    Message = $"Installed '{result.PrimaryMod?.Name ?? modName}' (Modrinth) into '{installation.Name}'." +
+                              (result.InstalledDependencies.Count > 0
+                                  ? $" Also installed {result.InstalledDependencies.Count} dependency(ies)."
+                                  : string.Empty),
+                    Data = result
+                };
+            }
+            // Modrinth found the mod but no compatible version — try CurseForge as fallback.
+        }
 
-        var result = await _mods.InstallModFromSearchAsync(installation, top);
+        // Step 2: Try CurseForge fallback
+        try
+        {
+            var cfPage = await _mods.SearchUnifiedAsync(modName,
+                installation.MinecraftVersion,
+                installation.Loader,
+                source: ModSource.CurseForge,
+                limit: 1);
+
+            var cfTop = cfPage.Hits.FirstOrDefault();
+            if (cfTop != null)
+            {
+                var cfResult = await _mods.InstallModFromSearchAsync(installation, cfTop);
+                if (cfResult.Success)
+                {
+                    return new AICommandResult
+                    {
+                        Success = true,
+                        Message = $"Installed '{cfResult.PrimaryMod?.Name ?? modName}' (CurseForge) into '{installation.Name}'." +
+                                  (cfResult.InstalledDependencies.Count > 0
+                                      ? $" Also installed {cfResult.InstalledDependencies.Count} dependency(ies)."
+                                      : string.Empty),
+                        Data = cfResult
+                    };
+                }
+            }
+        }
+        catch { /* CurseForge API may be unavailable — fall through to error */ }
+
+        // Both platforms failed
         return new AICommandResult
         {
-            Success = result.Success,
-            Message = result.Success
-                ? $"Installed '{result.PrimaryMod?.Name ?? modName}' into '{installation.Name}'." +
-                  (result.InstalledDependencies.Count > 0
-                      ? $" Also installed {result.InstalledDependencies.Count} dependency(ies)."
-                      : string.Empty)
-                : (result.Error ?? $"Failed to install '{modName}'."),
-            Data = result
+            Success = false,
+            Message = $"No compatible version of \"{modName}\" found for Minecraft {installation.MinecraftVersion} ({installation.Loader}) on Modrinth or CurseForge."
         };
     }
 
@@ -249,20 +378,6 @@ public class AICommandExecutor
             _                   => LoaderType.Fabric   // Paper/Purpur/Vanilla: try Fabric as best-effort
         };
 
-        var searchPage = await _mods.SearchModsAsync(modName,
-            server.MinecraftVersion,
-            loader,
-            limit: 1);
-
-        var top = searchPage.Hits.FirstOrDefault();
-        if (top == null)
-            return new AICommandResult
-            {
-                Success = false,
-                Message = $"No mod found on Modrinth matching '{modName}' for " +
-                          $"{server.MinecraftVersion} ({server.Type})."
-            };
-
         // Build a thin Installation proxy so ModService can download the file.
         var proxy = new Installation
         {
@@ -273,17 +388,65 @@ public class AICommandExecutor
             GameDirectory    = server.ServerDirectory
         };
 
-        var result = await _mods.InstallModFromSearchAsync(proxy, top);
+        // Step 1: Try Modrinth first
+        var modrinthPage = await _mods.SearchModsAsync(modName,
+            server.MinecraftVersion,
+            loader,
+            limit: 1);
+
+        var top = modrinthPage.Hits.FirstOrDefault();
+        if (top != null)
+        {
+            var result = await _mods.InstallModFromSearchAsync(proxy, top);
+            if (result.Success)
+            {
+                return new AICommandResult
+                {
+                    Success = true,
+                    Message = $"Installed '{result.PrimaryMod?.Name ?? modName}' (Modrinth) into server '{server.Name}'." +
+                              (result.InstalledDependencies.Count > 0
+                                  ? $" Also installed {result.InstalledDependencies.Count} dependency(ies)."
+                                  : string.Empty),
+                    Data = result
+                };
+            }
+            // Modrinth found the mod but no compatible version — try CurseForge as fallback.
+        }
+
+        // Step 2: Try CurseForge fallback
+        try
+        {
+            var cfPage = await _mods.SearchUnifiedAsync(modName,
+                server.MinecraftVersion,
+                loader,
+                source: ModSource.CurseForge,
+                limit: 1);
+
+            var cfTop = cfPage.Hits.FirstOrDefault();
+            if (cfTop != null)
+            {
+                var cfResult = await _mods.InstallModFromSearchAsync(proxy, cfTop);
+                if (cfResult.Success)
+                {
+                    return new AICommandResult
+                    {
+                        Success = true,
+                        Message = $"Installed '{cfResult.PrimaryMod?.Name ?? modName}' (CurseForge) into server '{server.Name}'." +
+                                  (cfResult.InstalledDependencies.Count > 0
+                                      ? $" Also installed {cfResult.InstalledDependencies.Count} dependency(ies)."
+                                      : string.Empty),
+                        Data = cfResult
+                    };
+                }
+            }
+        }
+        catch { /* CurseForge API may be unavailable — fall through to error */ }
+
+        // Both platforms failed
         return new AICommandResult
         {
-            Success = result.Success,
-            Message = result.Success
-                ? $"Installed '{result.PrimaryMod?.Name ?? modName}' into server '{server.Name}'." +
-                  (result.InstalledDependencies.Count > 0
-                      ? $" Also installed {result.InstalledDependencies.Count} dependency(ies)."
-                      : string.Empty)
-                : (result.Error ?? $"Failed to install '{modName}' on server '{server.Name}'."),
-            Data = result
+            Success = false,
+            Message = $"No compatible version of \"{modName}\" found for Minecraft {server.MinecraftVersion} ({server.Type}) on Modrinth or CurseForge."
         };
     }
 
@@ -346,7 +509,22 @@ public class AICommandExecutor
             Type             = serverType
         };
 
-        server = await _servers.CreateServerAsync(server);
+        // Provisioning can take a long time (Forge downloads + installer). Apply a timeout
+        // so the AI can report back instead of hanging indefinitely.
+        var createTask = _servers.CreateServerAsync(server);
+        var completedTask = await Task.WhenAny(createTask, Task.Delay(TimeSpan.FromMinutes(6)));
+        if (completedTask != createTask)
+        {
+            return new AICommandResult
+            {
+                Success = false,
+                Message = $"Server '{name}' provisioning timed out after 6 minutes. " +
+                          $"The Forge/NeoForge installer may still be running in the background. " +
+                          $"Check the server folder at: {Path.Combine(AppPaths.ServersRoot, server.Id.ToString())}"
+            };
+        }
+
+        server = await createTask;
         var verification = await VerifyServerAsync(server);
         if (!verification.Success)
         {
@@ -374,12 +552,21 @@ public class AICommandExecutor
         if (server == null)
             return NotFound("Server", name);
 
+        if (server.Status == ServerStatus.Running)
+        {
+            return new AICommandResult
+            {
+                Success = true,
+                Message = $"Server '{name}' is already running."
+            };
+        }
+
         await _servers.StartServerAsync(server.Id);
 
         return new AICommandResult
         {
             Success = true,
-            Message = $"Server '{name}' is starting."
+            Message = $"Server '{name}' is starting. It may take 30-60 seconds to fully load."
         };
     }
 
