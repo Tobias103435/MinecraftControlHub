@@ -1,0 +1,190 @@
+﻿<Window x:Class="MinecraftControlHub.UI.Windows.NexoraLoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Nexora Login"
+        Width="460" Height="560"
+        MinWidth="460" MinHeight="560"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{DynamicResource BrushAppBackground}"
+        WindowStyle="SingleBorderWindow"
+        ShowInTaskbar="False"
+        Closing="Window_Closing">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
+    <Grid Margin="40,36">
+
+        <!-- ================= Choice View ================= -->
+        <StackPanel x:Name="ChoiceView" VerticalAlignment="Center">
+            <!-- Logo/Icon -->
+            <Border Width="72" Height="72"
+                    CornerRadius="20"
+                    Background="{DynamicResource BrushAccent}"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,20">
+                <Border.Effect>
+                    <DropShadowEffect Color="{StaticResource ColorAccent}" BlurRadius="24" ShadowDepth="0" Opacity="0.5"/>
+                </Border.Effect>
+                <TextBlock Text="N"
+                           FontFamily="{DynamicResource FontDisplay}"
+                           FontSize="38"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <TextBlock Text="Nexora"
+                       FontFamily="{DynamicResource FontDisplay}"
+                       FontSize="30"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource BrushTextPrimary}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,4"/>
+
+            <TextBlock Text="Sign in to launch"
+                       FontFamily="{DynamicResource FontBody}"
+                       FontSize="14"
+                       Foreground="{DynamicResource BrushTextSecondary}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,36"/>
+
+            <!-- Primary action -->
+            <Button Content="Sign In"
+                    Click="SignInCard_Click"
+                    Height="46"
+                    Margin="0,0,0,12"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    FontSize="14.5"/>
+
+            <!-- Secondary action -->
+            <Button Content="Create Account"
+                    Click="SignUp_Click"
+                    Height="46"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    FontSize="14.5"/>
+
+            <Button Content="Continue without account"
+                    Click="ContinueWithoutAccount_Click"
+                    Height="36"
+                    Margin="0,10,0,0"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    FontSize="13"/>
+
+            <TextBlock Text="Some features like Friends will be unavailable"
+                       FontFamily="{DynamicResource FontBody}"
+                       FontSize="11.5"
+                       Foreground="{DynamicResource BrushTextMuted}"
+                       HorizontalAlignment="Center"
+                       Margin="0,28,0,0"/>
+        </StackPanel>
+
+        <!-- ================= Login Form View ================= -->
+        <StackPanel x:Name="LoginFormView" Visibility="Collapsed" VerticalAlignment="Center">
+            <!-- Back Button -->
+            <Button Content="← Back"
+                    Click="Back_Click"
+                    Height="30"
+                    Width="72"
+                    HorizontalAlignment="Left"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    FontSize="12"
+                    Padding="10,0"
+                    Margin="0,0,0,20"/>
+
+            <TextBlock Text="Sign In"
+                       FontFamily="{DynamicResource FontDisplay}"
+                       FontSize="26"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource BrushTextPrimary}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,4"/>
+
+            <TextBlock Text="Enter your credentials"
+                       FontFamily="{DynamicResource FontBody}"
+                       FontSize="13"
+                       Foreground="{DynamicResource BrushTextSecondary}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,28"/>
+
+            <TextBlock Text="Email or Username" Style="{StaticResource InputLabelStyle}"/>
+            <TextBox x:Name="EmailOrUsernameBox"
+                     Text="{Binding EmailOrUsername, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{StaticResource InputTextBoxStyle}"
+                     Margin="0,0,0,16"/>
+
+            <TextBlock Text="Password" Style="{StaticResource InputLabelStyle}"/>
+            <PasswordBox x:Name="PasswordBox"
+                         Style="{StaticResource InputPasswordBoxStyle}"
+                         Margin="0,0,0,18"/>
+
+            <TextBlock x:Name="ErrorText"
+                       Text="{Binding Error}"
+                       Foreground="{DynamicResource BrushDanger}"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       Margin="2,0,0,16"
+                       Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+            <Button Content="Sign In"
+                    Command="{Binding LoginCommand}"
+                    Height="46"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    FontSize="14.5"/>
+        </StackPanel>
+
+        <!-- ================= Two-Factor View ================= -->
+        <StackPanel x:Name="TwoFactorView" Visibility="Collapsed" VerticalAlignment="Center">
+            <TextBlock Text="Two-Factor Verification"
+                       FontFamily="{DynamicResource FontDisplay}"
+                       FontSize="26"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource BrushTextPrimary}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,8"/>
+
+            <TextBlock Text="{Binding TwoFactorPrompt}"
+                       FontFamily="{DynamicResource FontBody}"
+                       FontSize="13"
+                       Foreground="{DynamicResource BrushTextSecondary}"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,28"/>
+
+            <TextBlock Text="Verification Code" Style="{StaticResource InputLabelStyle}"/>
+            <TextBox x:Name="TwoFactorCodeBox"
+                     Text="{Binding TwoFactorCode, UpdateSourceTrigger=PropertyChanged}"
+                     MaxLength="6"
+                     Style="{StaticResource InputTextBoxStyle}"
+                     Height="52"
+                     FontSize="24"
+                     FontFamily="Consolas"
+                     TextAlignment="Center"
+                     Margin="0,0,0,18"/>
+
+            <TextBlock Text="{Binding Error}"
+                       Foreground="{DynamicResource BrushDanger}"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       Margin="2,0,0,16"
+                       Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+            <Button Content="Verify"
+                    Command="{Binding VerifyCommand}"
+                    Height="46"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    FontSize="14.5"
+                    Margin="0,0,0,10"/>
+
+            <Button Content="← Back"
+                    Click="Back_Click"
+                    Height="30"
+                    HorizontalAlignment="Center"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    FontSize="12"
+                    Padding="14,0"/>
+        </StackPanel>
+    </Grid>
+</Window>

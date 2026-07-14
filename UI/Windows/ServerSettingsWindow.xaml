@@ -1,0 +1,458 @@
+<Window x:Class="MinecraftControlHub.UI.Windows.ServerSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
+        mc:Ignorable="d"
+        Title="{Binding Server.Name, StringFormat='{}{0} — Settings'}"
+        Width="960" Height="720"
+        MinWidth="680" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{StaticResource BrushAppBackground}"
+        d:DataContext="{d:DesignInstance viewmodels:ServerSettingsViewModel}">
+
+    <Window.Resources>
+
+        <!-- Sidebar nav button styles (mirrored from ServerPreviewWindow) -->
+        <Style x:Key="SideNavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushTextSecondary}"/>
+            <Setter Property="FontFamily" Value="{StaticResource FontBody}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                Margin="8,1">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource BrushPanelElevated}"/>
+                                <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SideNavActiveButtonStyle" TargetType="Button" BasedOn="{StaticResource SideNavButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource BrushPanelElevated}"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}"/>
+        </Style>
+
+    </Window.Resources>
+
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="185"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ===== Left sidebar ===== -->
+            <Border Grid.Column="0"
+                    Background="{StaticResource BrushSidebarBackground}"
+                    BorderBrush="{StaticResource BrushBorder}"
+                    BorderThickness="0,0,1,0">
+                <StackPanel Margin="0,16,0,0">
+                    <TextBlock Text="Settings"
+                               FontFamily="{StaticResource FontDisplay}" FontSize="11"
+                               Foreground="{StaticResource BrushTextMuted}" Margin="26,0,0,10"/>
+
+                    <Button x:Name="NavGeneral" Tag="General"
+                            Style="{StaticResource SideNavActiveButtonStyle}"
+                            Click="Nav_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚙" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="General" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="NavMods" Tag="Mods"
+                            Style="{StaticResource SideNavButtonStyle}"
+                            Click="Nav_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🧩" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Mods &amp; Plugins" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="NavAdvanced" Tag="Advanced"
+                            Style="{StaticResource SideNavButtonStyle}"
+                            Click="Nav_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔧" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Advanced" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- ===== Right content ===== -->
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="24,20,24,20">
+                <StackPanel>
+
+                    <!-- ===== GENERAL ===== -->
+                    <StackPanel Visibility="{Binding IsGeneralSection, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="General"
+                                   FontFamily="{StaticResource FontDisplay}" FontSize="16"
+                                   Foreground="{StaticResource BrushTextPrimary}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Basic server configuration."
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Server name"
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="NameBox"
+                                 Padding="10" Background="{StaticResource BrushPanelElevated}"
+                                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                 Foreground="{StaticResource BrushTextPrimary}" FontSize="13" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Minecraft version"
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="VersionBox" IsReadOnly="True"
+                                 Padding="10" Background="{StaticResource BrushPanelElevated}"
+                                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                 Foreground="{StaticResource BrushTextPrimary}" FontSize="13" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Server type"
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TypeBox" IsReadOnly="True"
+                                 Padding="10" Background="{StaticResource BrushPanelElevated}"
+                                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                 Foreground="{StaticResource BrushTextPrimary}" FontSize="13" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="MOTD (Message of the Day)"
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="MotdBox"
+                                 Padding="10" Background="{StaticResource BrushPanelElevated}"
+                                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                 Foreground="{StaticResource BrushTextPrimary}" FontSize="13" Margin="0,0,0,16"/>
+
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Gamemode"
+                                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                                           Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                                <ComboBox x:Name="GamemodeBox" Padding="10,6">
+                                    <ComboBoxItem Content="survival"/>
+                                    <ComboBoxItem Content="creative"/>
+                                    <ComboBoxItem Content="adventure"/>
+                                    <ComboBoxItem Content="spectator"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Difficulty"
+                                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                                           Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                                <ComboBox x:Name="DifficultyBox" Padding="10,6">
+                                    <ComboBoxItem Content="peaceful"/>
+                                    <ComboBoxItem Content="easy"/>
+                                    <ComboBoxItem Content="normal"/>
+                                    <ComboBoxItem Content="hard"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="Max players"
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="MaxPlayersBox"
+                                 Padding="10" Background="{StaticResource BrushPanelElevated}"
+                                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                 Foreground="{StaticResource BrushTextPrimary}" FontSize="13"
+                                 HorizontalAlignment="Left" Width="120" Margin="0,0,0,16"/>
+
+                        <WrapPanel Margin="0,4,0,0">
+                            <CheckBox x:Name="CheatsBox" Content="Allow cheats"
+                                      Foreground="{StaticResource BrushTextPrimary}"
+                                      FontFamily="{StaticResource FontBody}" FontSize="13"
+                                      Margin="0,0,28,10"/>
+                            <CheckBox x:Name="WhitelistBox" Content="Enable whitelist"
+                                      Foreground="{StaticResource BrushTextPrimary}"
+                                      FontFamily="{StaticResource FontBody}" FontSize="13"
+                                      Margin="0,0,28,10"/>
+                            <CheckBox x:Name="OnlineModeBox" Content="Online mode (paid accounts only)"
+                                      Foreground="{StaticResource BrushTextPrimary}"
+                                      FontFamily="{StaticResource FontBody}" FontSize="13"/>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <!-- ===== MODS & PLUGINS ===== -->
+                    <StackPanel Visibility="{Binding IsModsSection, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="Mods &amp; Plugins"
+                                   FontFamily="{StaticResource FontDisplay}" FontSize="16"
+                                   Foreground="{StaticResource BrushTextPrimary}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Manage mods, plugins and datapacks for this server."
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,16"/>
+
+                        <!-- Action buttons -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <Button Content="Browse"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Padding="14,8" Margin="0,0,10,0"
+                                    Click="BrowseMods_Click"/>
+                            <Button Content="Check for updates"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Padding="14,8" Margin="0,0,10,0"
+                                    IsEnabled="{Binding IsCheckingModUpdates, Converter={StaticResource InverseBoolConverter}}"
+                                    Click="CheckModUpdates_Click"/>
+                            <Button Content="Check dependencies"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Padding="14,8" Margin="0,0,10,0"
+                                    IsEnabled="{Binding IsCheckingDependencies, Converter={StaticResource InverseBoolConverter}}"
+                                    Click="CheckDependencies_Click"/>
+                            <Button Content="Open folder"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Padding="14,8"
+                                    Click="OpenModsFolder_Click"/>
+                        </StackPanel>
+
+                        <!-- Update status -->
+                        <TextBlock Text="{Binding UpdateStatus}"
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   TextWrapping="Wrap" Margin="0,0,0,8"
+                                   Visibility="{Binding HasUpdateStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- Dependency status -->
+                        <TextBlock Text="{Binding DependencyStatus}"
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   TextWrapping="Wrap" Margin="0,0,0,8"
+                                   Visibility="{Binding HasDependencyStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- Dependency issues list -->
+                        <ItemsControl ItemsSource="{Binding DependencyIssues}"
+                                      Margin="0,0,0,12"
+                                      Visibility="{Binding HasDependencyIssues, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource BrushPanelElevated}"
+                                            BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                            CornerRadius="6" Padding="10,8" Margin="0,0,0,4">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Description}"
+                                                       FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                       Foreground="{StaticResource BrushTextPrimary}"
+                                                       TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                            <Button Grid.Column="1" Content="Fix"
+                                                    Style="{StaticResource PrimaryButtonStyle}"
+                                                    Padding="12,5" Margin="10,0,4,0"
+                                                    Click="FixDependencyIssue_Click"/>
+                                            <Button Grid.Column="2" Content="Fix all"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Padding="12,5"
+                                                    Click="FixAllDependencyIssues_Click"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Border Height="1" Background="{StaticResource BrushBorder}" Margin="0,0,0,12"
+                                Visibility="{Binding HasDependencyIssues, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- Installed mods list with drag & drop -->
+                        <Border AllowDrop="True"
+                                DragOver="ModsDropZone_DragOver"
+                                Drop="ModsDropZone_Drop"
+                                BorderBrush="{StaticResource BrushBorder}"
+                                BorderThickness="1" CornerRadius="8" Padding="10"
+                                Background="{StaticResource BrushPanelBackground}"
+                                Margin="0,0,0,4">
+                            <StackPanel>
+                                <!-- Empty drop hint -->
+                                <Border Background="{StaticResource BrushPanelBackground}"
+                                        BorderBrush="{StaticResource BrushBorder}"
+                                        BorderThickness="1" CornerRadius="6"
+                                        Padding="0,8" Margin="0,0,0,8"
+                                        Visibility="{Binding HasMods, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                    <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
+                                               Foreground="{StaticResource BrushTextMuted}"
+                                               HorizontalAlignment="Center"
+                                               Text="⬇  Drop .jar files here to install a mod or plugin"/>
+                                </Border>
+                                <!-- Drop hint when mods present -->
+                                <TextBlock FontFamily="{StaticResource FontBody}" FontSize="11"
+                                           Foreground="{StaticResource BrushTextMuted}"
+                                           HorizontalAlignment="Right" Margin="0,0,4,6"
+                                           Text="⬇ Drop another .jar to add more"
+                                           Visibility="{Binding HasMods, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                <!-- Mod rows -->
+                                <ItemsControl ItemsSource="{Binding ModRows}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{StaticResource BrushPanelElevated}"
+                                                    BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                                    CornerRadius="8" Padding="12,10" Margin="0,0,0,6"
+                                                    Opacity="{Binding IsEnabled, Converter={StaticResource BoolToOpacityConverter}}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Enable/Disable toggle -->
+                                                    <ToggleButton Grid.Column="0"
+                                                                  IsChecked="{Binding IsEnabled, Mode=OneWay}"
+                                                                  ToolTip="{Binding IsEnabled, Converter={StaticResource BoolToEnableTooltipConverter}}"
+                                                                  Style="{StaticResource ModToggleStyle}"
+                                                                  Margin="0,0,12,0"
+                                                                  Click="ModToggle_Click"/>
+
+                                                    <!-- Name + version -->
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <TextBlock FontFamily="{StaticResource FontBody}" FontSize="13"
+                                                                   Foreground="{StaticResource BrushTextPrimary}"
+                                                                   Cursor="Hand" MouseLeftButtonUp="ModLink_Click">
+                                                            <Run Text="{Binding Mod.Name, Mode=OneWay}"/>
+                                                        </TextBlock>
+                                                        <TextBlock FontFamily="{StaticResource FontBody}" FontSize="11"
+                                                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,2,0,0">
+                                                            <Run Text="{Binding Mod.Version, Mode=OneWay}"/>
+                                                            <Run Text=" · "/>
+                                                            <Run Text="{Binding LoaderLabel, Mode=OneWay}"/>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding StatusText}"
+                                                                   Visibility="{Binding HasStatusText, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                   FontFamily="{StaticResource FontBody}" FontSize="11"
+                                                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,2,0,0"/>
+                                                    </StackPanel>
+
+                                                    <!-- Change version -->
+                                                    <Button Grid.Column="2"
+                                                            Content="Version"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            Padding="10,5" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                            Click="ChangeVersion_Click"/>
+
+                                                    <!-- Update button -->
+                                                    <Button Grid.Column="3"
+                                                            Content="{Binding UpdateLabel}"
+                                                            Style="{StaticResource PrimaryButtonStyle}"
+                                                            Padding="12,5" Margin="4,0,0,0" VerticalAlignment="Center"
+                                                            Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                            Click="UpdateModRow_Click"/>
+
+                                                    <!-- Uninstall -->
+                                                    <Button Grid.Column="4"
+                                                            Content="Uninstall"
+                                                            DataContext="{Binding Mod}"
+                                                            Style="{StaticResource DangerButtonStyle}"
+                                                            Padding="12,5" Margin="4,0,0,0" VerticalAlignment="Center"
+                                                            Click="UninstallMod_Click"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ===== ADVANCED ===== -->
+                    <StackPanel Visibility="{Binding IsAdvancedSection, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="Advanced"
+                                   FontFamily="{StaticResource FontDisplay}" FontSize="16"
+                                   Foreground="{StaticResource BrushTextPrimary}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Memory and server directory settings."
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Maximum RAM (MB)"
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="MaxMemBox"
+                                 Padding="10" Background="{StaticResource BrushPanelElevated}"
+                                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                 Foreground="{StaticResource BrushTextPrimary}" FontSize="13"
+                                 HorizontalAlignment="Left" Width="160" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Minimum RAM (MB)"
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="MinMemBox"
+                                 Padding="10" Background="{StaticResource BrushPanelElevated}"
+                                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                 Foreground="{StaticResource BrushTextPrimary}" FontSize="13"
+                                 HorizontalAlignment="Left" Width="160" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Server directory"
+                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="ServerDirBox" Grid.Column="0" IsReadOnly="True"
+                                     Padding="10" Background="{StaticResource BrushPanelElevated}"
+                                     BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                     Foreground="{StaticResource BrushTextPrimary}" FontSize="13"/>
+                            <Button Grid.Column="1" Content="Open"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Padding="14,8" Margin="8,0,0,0"
+                                    Click="OpenServerFolder_Click"/>
+                        </Grid>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Bottom action bar -->
+        <Border Grid.Row="1"
+                Background="{StaticResource BrushSidebarBackground}"
+                BorderBrush="{StaticResource BrushBorder}"
+                BorderThickness="0,1,0,0"
+                Padding="20,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Cancel"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="20,8" Margin="0,0,10,0"
+                        Click="Cancel_Click"/>
+                <Button Content="Save"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Padding="20,8"
+                        Click="Save_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

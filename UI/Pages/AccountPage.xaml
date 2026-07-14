@@ -1,0 +1,418 @@
+<UserControl x:Class="MinecraftControlHub.UI.Pages.AccountPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
+             xmlns:services="clr-namespace:MinecraftControlHub.Core.Services"
+             xmlns:helpers="clr-namespace:MinecraftControlHub.UI.Helpers"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
+             d:DataContext="{d:DesignInstance viewmodels:AccountPageViewModel}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,24,32,32" MaxWidth="860" HorizontalAlignment="Left">
+            <TextBlock Text="Account"
+                       FontFamily="{DynamicResource FontDisplay}"
+                       FontSize="24"
+                       Foreground="{DynamicResource BrushTextPrimary}"
+                       Margin="0,0,0,24"/>
+
+            <StackPanel Visibility="{Binding IsSignedOut, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Border Background="{DynamicResource BrushPanelBackground}"
+                        BorderBrush="{DynamicResource BrushBorder}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="24"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Minecraft account"
+                                   FontFamily="{DynamicResource FontDisplay}"
+                                   FontSize="16"
+                                   Foreground="{DynamicResource BrushTextPrimary}"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="Sign in with Microsoft to manage your Minecraft profile, including your account, skins, and capes."
+                                   FontFamily="{DynamicResource FontBody}"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,16"/>
+
+                        <Button Content="Sign in with Microsoft"
+                                Click="SignIn_Click"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Padding="24,12"
+                                MinWidth="240"
+                                HorizontalAlignment="Left"
+                                IsEnabled="{Binding IsSigningIn, Converter={StaticResource InverseBoolConverter}}">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="{DynamicResource BrushAccent}" CornerRadius="10" MinHeight="44" MinWidth="220" Padding="8,6">
+                                        <StackPanel Orientation="Horizontal"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center">
+                                            <Grid Width="28" Height="28" Margin="0,0,14,0">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition/><RowDefinition/>
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/><ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <Rectangle Grid.Row="0" Grid.Column="0" Fill="#F25022" Margin="0,0,1,1"/>
+                                                <Rectangle Grid.Row="0" Grid.Column="1" Fill="#7FBA00" Margin="1,0,0,1"/>
+                                                <Rectangle Grid.Row="1" Grid.Column="0" Fill="#00A4EF" Margin="0,1,1,0"/>
+                                                <Rectangle Grid.Row="1" Grid.Column="1" Fill="#FFB900" Margin="1,1,0,0"/>
+                                            </Grid>
+                                            <TextBlock Text="Sign in with Microsoft"
+                                                       Foreground="White"
+                                                       FontFamily="{StaticResource FontBody}"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#8B5CF6"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <Border Background="{DynamicResource BrushAppBackground}"
+                                BorderBrush="{DynamicResource BrushBorder}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16"
+                                Margin="0,14,0,0"
+                                Visibility="{Binding HasDeviceCode, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel>
+                                <TextBlock Text="Enter this code on the Microsoft sign-in page:"
+                                           FontFamily="{DynamicResource FontBody}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource BrushTextSecondary}"
+                                           Margin="0,0,0,8"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding DeviceCode}"
+                                               FontFamily="{DynamicResource FontDisplay}"
+                                               FontSize="22"
+                                               Foreground="{DynamicResource BrushTextPrimary}"
+                                               VerticalAlignment="Center"/>
+                                <Button Content="Copy"
+                                        Click="CopyCode_Click"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Padding="14,6"
+                                        Margin="16,0,0,0"
+                                        VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,10,0,0"><Run Text="Go to "/><Hyperlink NavigateUri="{Binding DeviceVerificationUri}" RequestNavigate="OpenLink_Click"><Run Text="microsoft.com/link"/></Hyperlink><Run Text=" and enter the code above."/></TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="{Binding AccountStatus}"
+                                   FontFamily="{DynamicResource FontBody}"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,14,0,0"
+                                   Visibility="{Binding HasAccountStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Border Background="{DynamicResource BrushPanelBackground}"
+                        BorderBrush="{DynamicResource BrushBorder}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="24"
+                        Margin="0,0,0,20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0"
+                                Width="160"
+                                Height="220"
+                                CornerRadius="12"
+                                Background="{DynamicResource BrushAppBackground}"
+                                BorderBrush="{DynamicResource BrushBorder}"
+                                BorderThickness="1"
+                                Margin="0,0,20,0">
+                            <Image helpers:AsyncImageLoader.SourceUrl="{Binding AvatarUrl}"
+                                   Stretch="Uniform"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Minecraft account"
+                                       FontFamily="{DynamicResource FontDisplay}"
+                                       FontSize="16"
+                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock Text="{Binding AccountName}"
+                                       FontFamily="{DynamicResource FontDisplay}"
+                                       FontSize="22"
+                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock Text="Manage your active Minecraft profile, then update your skins and capes below."
+                                       FontFamily="{DynamicResource FontBody}"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource BrushTextSecondary}"
+                                       TextWrapping="Wrap"
+                                       MaxWidth="420"/>
+                            <TextBlock Text="{Binding AccountStatus}"
+                                       FontFamily="{DynamicResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource BrushTextSecondary}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,12,0,0"
+                                       Visibility="{Binding HasAccountStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="2"
+                                Content="Sign out"
+                                Click="SignOut_Click"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="20,10"
+                                VerticalAlignment="Top"/>
+                    </Grid>
+                </Border>
+
+                <Border Background="{DynamicResource BrushPanelBackground}"
+                        BorderBrush="{DynamicResource BrushBorder}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="24"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Skins"
+                                   FontFamily="{DynamicResource FontDisplay}"
+                                   FontSize="16"
+                                   Foreground="{DynamicResource BrushTextPrimary}"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="Preview your current skins and switch to a new skin from a URL or a local PNG file."
+                                   FontFamily="{DynamicResource FontBody}"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,16"/>
+
+                        <ItemsControl ItemsSource="{Binding Skins}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type services:AppearanceItem}">
+                                    <Border Background="{DynamicResource BrushAppBackground}"
+                                            BorderBrush="{DynamicResource BrushBorder}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="12"
+                                            Margin="0,0,12,12"
+                                            Width="180">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Border Height="160"
+                                                        CornerRadius="8"
+                                                        Background="{DynamicResource BrushPanelBackground}">
+                                                    <Image helpers:AsyncImageLoader.SourceUrl="{Binding Url}"
+                                                           Stretch="Uniform"/>
+                                                </Border>
+                                                <Border Background="{DynamicResource BrushAccent}"
+                                                        CornerRadius="999"
+                                                        Padding="8,3"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Margin="8"
+                                                        Visibility="{Binding Active, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                    <TextBlock Text="Active"
+                                                               FontFamily="{DynamicResource FontBody}"
+                                                               FontSize="11"
+                                                               Foreground="White"/>
+                                                </Border>
+                                            </Grid>
+                                            <TextBlock Text="{Binding Variant, TargetNullValue=Classic}"
+                                                       FontFamily="{DynamicResource FontBody}"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource BrushTextSecondary}"
+                                                       Margin="0,10,0,0"/>
+                                            <TextBlock Text="{Binding Id}"
+                                                       FontFamily="{DynamicResource FontBody}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource BrushTextMuted}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Border Background="{DynamicResource BrushAppBackground}"
+                                BorderBrush="{DynamicResource BrushBorder}"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="16"
+                                Margin="0,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Change skin"
+                                           FontFamily="{DynamicResource FontDisplay}"
+                                           FontSize="14"
+                                           Foreground="{DynamicResource BrushTextPrimary}"
+                                           Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Skin image URL"
+                                           FontFamily="{DynamicResource FontBody}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource BrushTextSecondary}"
+                                           Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding SkinUrl, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="10"
+                                         Background="{DynamicResource BrushPanelBackground}"
+                                         BorderBrush="{DynamicResource BrushBorder}"
+                                         BorderThickness="1"
+                                         Foreground="{DynamicResource BrushTextPrimary}"
+                                         FontSize="13"
+                                         Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Variant"
+                                           FontFamily="{DynamicResource FontBody}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource BrushTextSecondary}"
+                                           Margin="0,0,0,6"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                    <RadioButton Content="Classic"
+                                                 GroupName="SkinVariant"
+                                                 IsChecked="{Binding IsClassicVariant}"
+                                                 Margin="0,0,20,0"
+                                                 Foreground="{DynamicResource BrushTextPrimary}"/>
+                                    <RadioButton Content="Slim"
+                                                 GroupName="SkinVariant"
+                                                 IsChecked="{Binding IsSlimVariant}"
+                                                 Foreground="{DynamicResource BrushTextPrimary}"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Apply URL skin"
+                                            Click="ApplyUrlSkin_Click"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Padding="20,10"
+                                            Margin="0,0,12,0"
+                                            HorizontalAlignment="Left"/>
+                                    <Button Content="Upload from file..."
+                                            Click="UploadSkin_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Padding="20,10"
+                                            HorizontalAlignment="Left"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{DynamicResource BrushPanelBackground}"
+                        BorderBrush="{DynamicResource BrushBorder}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="24"
+                        Margin="0,0,0,12">
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,8">
+                            <TextBlock Text="Capes"
+                                       DockPanel.Dock="Left"
+                                       FontFamily="{DynamicResource FontDisplay}"
+                                       FontSize="16"
+                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                       VerticalAlignment="Center"/>
+                            <Button Content="Hide cape"
+                                    Click="HideCape_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Padding="16,8"
+                                    HorizontalAlignment="Right"/>
+                        </DockPanel>
+                        <TextBlock Text="Choose an available cape, or hide it from your profile."
+                                   FontFamily="{DynamicResource FontBody}"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,16"/>
+
+                        <ItemsControl ItemsSource="{Binding Capes}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type services:AppearanceItem}">
+                                    <Border Background="{DynamicResource BrushAppBackground}"
+                                            BorderBrush="{DynamicResource BrushBorder}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="12"
+                                            Margin="0,0,12,12"
+                                            Width="220">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Border Height="120"
+                                                        CornerRadius="8"
+                                                        Background="{DynamicResource BrushPanelBackground}">
+                                                    <Image helpers:AsyncImageLoader.SourceUrl="{Binding Url}"
+                                                           Stretch="Uniform"/>
+                                                </Border>
+                                                <Border Background="{DynamicResource BrushAccent}"
+                                                        CornerRadius="999"
+                                                        Padding="8,3"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Margin="8"
+                                                        Visibility="{Binding Active, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                    <TextBlock Text="Active"
+                                                               FontFamily="{DynamicResource FontBody}"
+                                                               FontSize="11"
+                                                               Foreground="White"/>
+                                                </Border>
+                                            </Grid>
+                                            <TextBlock Text="{Binding Alias, TargetNullValue=Cape}"
+                                                       FontFamily="{DynamicResource FontDisplay}"
+                                                       FontSize="14"
+                                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                                       Margin="0,10,0,4"/>
+                                            <TextBlock Text="{Binding Id}"
+                                                       FontFamily="{DynamicResource FontBody}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource BrushTextMuted}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Margin="0,0,0,12"/>
+                                            <Button Content="Use"
+                                                    Click="UseCape_Click"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Padding="16,8"
+                                                    HorizontalAlignment="Left"
+                                                    IsEnabled="{Binding Active, Converter={StaticResource InverseBoolConverter}}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="{Binding AppearanceStatus}"
+                           FontFamily="{DynamicResource FontBody}"
+                           FontSize="12"
+                           Foreground="{DynamicResource BrushTextSecondary}"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding HasAppearanceStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
+

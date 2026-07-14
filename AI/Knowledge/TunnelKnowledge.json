@@ -1,0 +1,88 @@
+{
+  "tunnelProviders": {
+    "playit": {
+      "name": "playit.gg",
+      "description": "Free tunnel provider, no API key required. Easy to set up, good for casual use.",
+      "setupSteps": [
+        "Download playit.gg from [https://playit.gg/download](https://playit.gg/download)",
+        "Extract the downloaded ZIP file",
+        "Run the playit.exe application",
+        "Follow the on-screen setup wizard",
+        "Select your Minecraft server from the list",
+        "Copy the generated IP address and port",
+        "In Nexora Launcher, go to Settings → Tunnel providers",
+        "Enter the playit.exe path in the Playit executable field",
+        "Click 'Save tunnel settings'",
+        "You can now start tunnels from the Tunnel page"
+      ],
+      "notes": "Playit.gg is completely free and doesn't require an account or API key. The generated IP may change each time you restart the tunnel."
+    },
+    "ngrok": {
+      "name": "ngrok",
+      "description": "Popular tunnel provider with stable IPs. Requires free account and API key.",
+      "setupSteps": [
+        "Create a free account at [https://dashboard.ngrok.com/signup](https://dashboard.ngrok.com/signup)",
+        "After signing up, go to [https://dashboard.ngrok.com/get-started/your-authtoken](https://dashboard.ngrok.com/get-started/your-authtoken)",
+        "Copy your authtoken (it looks like: 2abc...xyz)",
+        "Download ngrok from [https://ngrok.com/download](https://ngrok.com/download)",
+        "Extract the downloaded ZIP file",
+        "In Nexora Launcher, go to Settings → Tunnel providers",
+        "Paste your authtoken in the Ngrok API key field",
+        "Enter the ngrok.exe path in the Ngrok executable field",
+        "Click 'Save tunnel settings'",
+        "You can now start tunnels from the Tunnel page"
+      ],
+      "notes": "Ngrok provides a stable IP address that doesn't change. The free tier has limitations on connection time and bandwidth."
+    },
+    "frp": {
+      "name": "frp (Fast Reverse Proxy)",
+      "description": "Open-source tunnel solution. Requires a server or a service like Cloudflare Tunnel.",
+      "setupSteps": [
+        "Download frp from [https://github.com/fatedier/frp/releases](https://github.com/fatedier/frp/releases)",
+        "Extract the downloaded ZIP file",
+        "You need a frp server or use a service like Cloudflare Tunnel",
+        "Configure frps.ini (server) and frpc.ini (client) configuration files",
+        "In Nexora Launcher, go to Settings → Tunnel providers",
+        "Enter the frpc.exe path in the Frp executable field",
+        "If using a service with an API key, enter it in the Frp API key field",
+        "Click 'Save tunnel settings'",
+        "You can now start tunnels from the Tunnel page"
+      ],
+      "notes": "FRP is more complex to set up than playit.gg or ngrok. It's recommended for advanced users who have their own server."
+    },
+    "bore": {
+      "name": "bore.pub",
+      "description": "Simple, free tunnel provider. No API key required. Minimal setup.",
+      "setupSteps": [
+        "Download bore from [https://github.com/ekzhang/bore/releases](https://github.com/ekzhang/bore/releases)",
+        "Extract the downloaded ZIP file",
+        "In Nexora Launcher, go to Settings → Tunnel providers",
+        "Enter the bore.exe path in the Bore executable field",
+        "Click 'Save tunnel settings'",
+        "You can now start tunnels from the Tunnel page"
+      ],
+      "notes": "Bore is very simple to use but may have less stable connections compared to ngrok. It's completely free."
+    }
+  },
+  "generalTunnelInfo": {
+    "whatIsTunneling": "Tunneling allows you to make your local Minecraft server accessible over the internet without port forwarding. It creates a secure tunnel from your computer to a public server.",
+    "whenToUse": [
+      "You don't have access to router port forwarding",
+      "You're on a restricted network (school, work)",
+      "You want a quick way to share your server with friends",
+      "You don't have a static public IP address"
+    ],
+    "securityNotes": [
+      "Always use strong passwords on your Minecraft server",
+      "Be cautious about who you share your tunnel IP with",
+      "Free tunnel providers may have bandwidth limitations",
+      "Tunneling is generally safe but always use reputable providers"
+    ],
+    "troubleshooting": {
+      "connectionFailed": "Check that the tunnel provider executable path is correct in Settings. Make sure your Minecraft server is actually running before starting the tunnel.",
+      "ipNotWorking": "Wait a few seconds after starting the tunnel. Some providers need time to establish the connection. Try refreshing the tunnel status.",
+      "portAlreadyInUse": "Another application may be using the port. Try a different port in your server settings."
+    }
+  },
+  "linkFormat": "When providing links in your response, always use markdown format like this: [link text](https://example.com). This makes links clickable in the UI."
+}

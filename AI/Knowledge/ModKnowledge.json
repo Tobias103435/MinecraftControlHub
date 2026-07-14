@@ -1,0 +1,90 @@
+{
+  "categories": {
+    "horror": {
+      "description": "Mods that add horror, fear, and suspense elements to Minecraft. Typically includes new monsters, dark atmospheres, and jump scares.",
+      "modrinthSearchTerms": ["horror", "scary", "dark", "creepy"],
+      "recommendedLoaders": ["Fabric", "Forge"],
+      "popularMods": [
+        { "name": "Creeping Winter", "description": "Adds chilling winter horror with new freeze-themed monsters" },
+        { "name": "The Midnight", "description": "A horror dimension with terrifying creatures and dark biomes" },
+        { "name": "Scape and Run: Parasites", "description": "Infected mobs mod with body horror elements" },
+        { "name": "Man from the Fog", "description": "Adds a terrifying entity that stalks players in the fog" },
+        { "name": "Better Nether", "description": "Dramatically expands the nether with horror-themed biomes" }
+      ],
+      "complementaryMods": ["Dynamic Lights", "Ambient Sounds", "Fog"],
+      "notes": "Horror packs work best with atmospheric mods like Dynamic Lights and Ambient Sounds for full immersion."
+    },
+    "technology": {
+      "description": "Mods that add machines, automation, energy systems, and high-tech content.",
+      "modrinthSearchTerms": ["technology", "machines", "automation", "energy", "factory"],
+      "recommendedLoaders": ["Fabric", "Forge"],
+      "popularMods": [
+        { "name": "Create", "description": "Mechanical contraptions, automation belts, and kinetic energy" },
+        { "name": "Applied Energistics 2", "description": "Advanced item and energy storage networks" },
+        { "name": "Mekanism", "description": "High-tech machines, power generation, and ore processing" },
+        { "name": "Thermal Expansion", "description": "Classic tech mod with machines and energy conduits" },
+        { "name": "Industrial Craft 2", "description": "The original tech mod with nuclear reactors" }
+      ],
+      "notes": "Technology mods often need a shared energy standard. Create uses Stress/RPM, while most others use Forge Energy or RF."
+    },
+    "magic": {
+      "description": "Mods that add magic systems, spells, rituals, and mystical dimensions.",
+      "modrinthSearchTerms": ["magic", "spells", "mystical", "arcane", "wizard"],
+      "recommendedLoaders": ["Fabric", "Forge"],
+      "popularMods": [
+        { "name": "Ars Nouveau", "description": "Spell crafting system and magical automation" },
+        { "name": "Iron's Spells 'n Spellbooks", "description": "RPG-style spell system with skill trees" },
+        { "name": "Blue Skies", "description": "Two magical dimensions with new biomes and items" },
+        { "name": "Botania", "description": "Nature-themed magic using flowers and runes" },
+        { "name": "Bewitchment", "description": "Witchcraft magic with cauldrons and familiars" }
+      ]
+    },
+    "optimization": {
+      "description": "Mods that improve game performance, reduce lag, and increase FPS without changing gameplay.",
+      "modrinthSearchTerms": ["optimization", "performance", "fps", "lag"],
+      "recommendedLoaders": ["Fabric"],
+      "popularMods": [
+        { "name": "Sodium", "description": "The most impactful FPS mod for Fabric. Replaces the rendering engine." },
+        { "name": "Lithium", "description": "Server-side and general game logic optimizations" },
+        { "name": "FerriteCore", "description": "Reduces memory (RAM) usage significantly" },
+        { "name": "ModernFix", "description": "Startup time and general performance improvements" },
+        { "name": "ImmediatelyFast", "description": "Optimizes immediate mode rendering" }
+      ],
+      "notes": "Sodium, Lithium, and FerriteCore together are considered the standard optimization trio for Fabric. Sodium is Fabric-only. Embeddium is the Forge port of Sodium."
+    },
+    "adventure": {
+      "description": "Mods that add new structures, dungeons, biomes, and exploration content.",
+      "modrinthSearchTerms": ["adventure", "dungeon", "exploration", "quest", "structures"],
+      "recommendedLoaders": ["Fabric", "Forge"],
+      "popularMods": [
+        { "name": "Dungeons and Taverns", "description": "Many new dungeon and structure types" },
+        { "name": "Alex's Mobs", "description": "Dozens of new animals and creatures" },
+        { "name": "When Dungeons Arise", "description": "Large and impressive generated dungeons" },
+        { "name": "Terralith", "description": "Dramatically improved world generation with new biomes" },
+        { "name": "Waystones", "description": "Fast travel network via magical stones" }
+      ]
+    },
+    "survival": {
+      "description": "Mods that add depth to survival mechanics like seasons, temperature, hunger, and thirst.",
+      "modrinthSearchTerms": ["survival", "hardcore", "realistic", "seasons", "temperature"],
+      "recommendedLoaders": ["Fabric", "Forge"],
+      "popularMods": [
+        { "name": "Serene Seasons", "description": "Adds four seasons that affect biomes, crops, and gameplay" },
+        { "name": "Tough as Nails", "description": "Temperature and thirst survival mechanics" },
+        { "name": "Farmer's Delight", "description": "Expanded farming, cooking, and food variety" },
+        { "name": "Pam's HarvestCraft", "description": "Huge variety of new crops and food items" }
+      ]
+    },
+    "decoration": {
+      "description": "Mods that add decorative blocks, furniture, and building options.",
+      "modrinthSearchTerms": ["decoration", "furniture", "building", "blocks", "decor"],
+      "recommendedLoaders": ["Fabric", "Forge"],
+      "popularMods": [
+        { "name": "Supplementaries", "description": "Decorative blocks and functional utility items" },
+        { "name": "Chipped", "description": "Hundreds of texture variants for vanilla blocks via a crafting table" },
+        { "name": "Macaw's Furniture", "description": "Realistic furniture sets for building" },
+        { "name": "MrCrayfish's Furniture Mod", "description": "Interactive furniture items" }
+      ]
+    }
+  }
+}

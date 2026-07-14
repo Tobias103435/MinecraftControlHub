@@ -1,0 +1,238 @@
+<Window x:Class="MinecraftControlHub.UI.Windows.ContentBrowserWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:helpers="clr-namespace:MinecraftControlHub.UI.Helpers"
+        xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
+        mc:Ignorable="d"
+        Title="{Binding WindowTitle}"
+        Width="860" Height="700"
+        MinWidth="600" MinHeight="460"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{StaticResource BrushAppBackground}"
+        d:DataContext="{d:DesignInstance viewmodels:ContentBrowserViewModel}">
+
+    <Grid Margin="28,22,28,18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="{Binding WindowTitle}"
+                   FontFamily="{StaticResource FontDisplay}"
+                   FontSize="22"
+                   Foreground="{StaticResource BrushTextPrimary}"
+                   Margin="0,0,0,18"/>
+
+        <!-- Search row -->
+        <Grid Grid.Row="1" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0"
+                     Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                     Padding="12"
+                     VerticalContentAlignment="Center"
+                     Background="{StaticResource BrushPanelElevated}"
+                     BorderBrush="{StaticResource BrushBorder}"
+                     BorderThickness="1"
+                     Foreground="{StaticResource BrushTextPrimary}"
+                     FontSize="14"
+                     KeyDown="SearchBox_KeyDown"/>
+            <Button Grid.Column="1"
+                    Content="Search"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Padding="22,10"
+                    Margin="8,0,0,0"
+                    Click="Search_Click"/>
+        </Grid>
+
+        <!-- Dependency check row (hidden for Worlds) -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10"
+                    Visibility="{Binding ShowDependencyCheck, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Button Content="{Binding DependencyCheckLabel}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Padding="14,7"
+                    IsEnabled="{Binding IsCheckingDeps, Converter={StaticResource InverseBoolConverter}}"
+                    Click="CheckDeps_Click"/>
+            <TextBlock Text="{Binding DependencyStatus}"
+                       VerticalAlignment="Center"
+                       Margin="12,0,0,0"
+                       FontFamily="{StaticResource FontBody}"
+                       FontSize="12"
+                       Foreground="{StaticResource BrushTextSecondary}"
+                       Visibility="{Binding HasDependencyStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        </StackPanel>
+
+        <!-- Sort + result count -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,12">
+            <TextBlock Text="Sort by"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"
+                       FontFamily="{StaticResource FontBody}"
+                       FontSize="13"
+                       Foreground="{StaticResource BrushTextSecondary}"/>
+            <ComboBox ItemsSource="{Binding SortOptions}"
+                      SelectedItem="{Binding SelectedSort}"
+                      Width="180"
+                      Padding="10,6"
+                      Background="{StaticResource BrushPanelElevated}"
+                      BorderBrush="{StaticResource BrushBorder}"
+                      BorderThickness="1"
+                      Foreground="{StaticResource BrushTextPrimary}"
+                      FontSize="13"/>
+            <TextBlock Text="{Binding TotalHits, StringFormat='{}{0:N0} results'}"
+                       VerticalAlignment="Center"
+                       Margin="16,0,0,0"
+                       FontFamily="{StaticResource FontBody}"
+                       FontSize="12"
+                       Foreground="{StaticResource BrushTextMuted}"
+                       Visibility="{Binding HasResults, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        </StackPanel>
+
+        <!-- Results list -->
+        <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+            <StackPanel>
+                <TextBlock Text="Searching…"
+                           FontFamily="{StaticResource FontBody}"
+                           FontSize="14"
+                           Foreground="{StaticResource BrushTextSecondary}"
+                           Margin="0,20,0,0"
+                           HorizontalAlignment="Center"
+                           Visibility="{Binding IsSearching, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <TextBlock Text="No results found. Try a different search term."
+                           FontFamily="{StaticResource FontBody}"
+                           FontSize="14"
+                           Foreground="{StaticResource BrushTextSecondary}"
+                           Margin="0,20,0,0"
+                           HorizontalAlignment="Center"
+                           Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <ItemsControl ItemsSource="{Binding SearchResults}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{StaticResource BrushPanelBackground}"
+                                    BorderBrush="{StaticResource BrushBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="16,12"
+                                    Margin="0,0,0,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="58"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Icon -->
+                                    <Border Grid.Column="0"
+                                            Width="48" Height="48"
+                                            CornerRadius="6"
+                                            Background="{StaticResource BrushPanelElevated}"
+                                            VerticalAlignment="Top">
+                                        <Image helpers:AsyncImageLoader.SourceUrl="{Binding IconUrl}"
+                                               Width="48" Height="48"
+                                               Stretch="UniformToFill"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </Border>
+
+                                    <!-- Info -->
+                                    <StackPanel Grid.Column="1" Margin="14,0,12,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontFamily="{StaticResource FontDisplay}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource BrushTextPrimary}"/>
+                                        <TextBlock Text="{Binding Description}"
+                                                   FontFamily="{StaticResource FontBody}"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource BrushTextSecondary}"
+                                                   TextWrapping="Wrap"
+                                                   MaxHeight="36"
+                                                   Margin="0,3,0,0"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                            <TextBlock FontFamily="{StaticResource FontBody}" FontSize="11" Foreground="{StaticResource BrushTextMuted}">
+                                                <Run Text="↓ "/><Run Text="{Binding Downloads, StringFormat='{}{0:N0}'}"/>
+                                            </TextBlock>
+                                            <TextBlock Text=" · " FontSize="11" Foreground="{StaticResource BrushTextMuted}"/>
+                                            <TextBlock Text="{Binding Author}" FontFamily="{StaticResource FontBody}" FontSize="11" Foreground="{StaticResource BrushTextMuted}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Install button -->
+                                    <Button Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Padding="18,8"
+                                            Click="Install_Click">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                                                <Setter Property="Content" Value="Install"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsInstalled}" Value="True">
+                                                        <Setter Property="Content" Value="Installed"/>
+                                                        <Setter Property="IsEnabled" Value="False"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Pagination -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0"
+                    Visibility="{Binding HasPagination, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Button Content="← Prev"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Padding="12,6"
+                    Margin="0,0,4,0"
+                    IsEnabled="{Binding CanGoPrevious}"
+                    Click="PrevPage_Click"/>
+            <ItemsControl ItemsSource="{Binding PageNumbers}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Content="{Binding}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="10,6"
+                                Margin="2,0"
+                                Click="PageNumber_Click"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Content="Next →"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Padding="12,6"
+                    Margin="4,0,0,0"
+                    IsEnabled="{Binding CanGoNext}"
+                    Click="NextPage_Click"/>
+        </StackPanel>
+
+        <!-- Status bar -->
+        <TextBlock Grid.Row="6"
+                   Text="{Binding InstallStatus}"
+                   FontFamily="{StaticResource FontBody}"
+                   FontSize="12"
+                   Foreground="{StaticResource BrushTextSecondary}"
+                   Margin="0,8,0,0"
+                   Visibility="{Binding HasInstallStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+    </Grid>
+</Window>

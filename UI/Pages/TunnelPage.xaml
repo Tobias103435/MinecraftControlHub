@@ -1,0 +1,1039 @@
+﻿<UserControl x:Class="MinecraftControlHub.UI.Pages.TunnelPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
+             xmlns:models="clr-namespace:MinecraftControlHub.Core.Models"
+             mc:Ignorable="d" d:DesignWidth="980" d:DesignHeight="900"
+             d:DataContext="{d:DesignInstance viewmodels:TunnelPageViewModel}">
+
+    <UserControl.Resources>
+
+        <SolidColorBrush x:Key="BrushProtocolTcp"     Color="{DynamicResource ColorPanelElevated}"/>
+        <SolidColorBrush x:Key="BrushProtocolTcpText" Color="{DynamicResource ColorAccent}"/>
+        <SolidColorBrush x:Key="BrushProtocolUdp"     Color="{DynamicResource ColorPanelElevated}"/>
+        <SolidColorBrush x:Key="BrushProtocolUdpText" Color="{DynamicResource ColorAccentHover}"/>
+        <SolidColorBrush x:Key="BrushRecommended"     Color="#6C5DD3"/>
+        <SolidColorBrush x:Key="BrushWarningBg"       Color="{DynamicResource ColorBorder}"/>
+        <SolidColorBrush x:Key="BrushWarningText"     Color="{DynamicResource ColorTextSecondary}"/>
+
+        <!-- Provider item in dropdown list -->
+        <DataTemplate x:Key="ProviderItemTemplate" DataType="{x:Type models:TunnelProvider}">
+            <Grid Margin="2,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding DisplayName}"
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="13" FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrushTextPrimary}"/>
+                    <TextBlock Text="{Binding Description}"
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="11"
+                               Foreground="{DynamicResource BrushTextSecondary}"
+                               TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+                <Border Grid.Column="1" CornerRadius="4" Padding="7,3"
+                        Margin="10,0,0,0" VerticalAlignment="Center"
+                        Background="{Binding Tier, Converter={StaticResource TierToBadgeBrushConverter}}">
+                    <TextBlock Text="{Binding PriceLabel}"
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="10" FontWeight="SemiBold"
+                               Foreground="{Binding Tier, Converter={StaticResource TierToTextBrushConverter}}"/>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Selected item shown in closed ComboBox -->
+        <DataTemplate x:Key="ProviderSelectedTemplate" DataType="{x:Type models:TunnelProvider}">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{Binding DisplayName}"
+                           FontFamily="{StaticResource FontBody}"
+                           FontSize="13" FontWeight="SemiBold"
+                           Foreground="{DynamicResource BrushTextPrimary}"
+                           VerticalAlignment="Center"/>
+                <Border CornerRadius="4" Padding="6,2" Margin="7,0,0,0" VerticalAlignment="Center"
+                        Background="{Binding Tier, Converter={StaticResource TierToBadgeBrushConverter}}">
+                    <TextBlock Text="{Binding PriceLabel}"
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="10" FontWeight="SemiBold"
+                               Foreground="{Binding Tier, Converter={StaticResource TierToTextBrushConverter}}"/>
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,4,0">
+        <StackPanel Margin="28,24,28,28">
+
+            <!-- ============================================================
+                 PAGE HEADER
+                 ============================================================ -->
+            <TextBlock Text="Tunnel"
+                       FontFamily="{StaticResource FontDisplay}" FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource BrushTextPrimary}"
+                       Margin="0,0,0,4"/>
+            <TextBlock Text="Make your Minecraft server reachable from anywhere — no router port-forwarding needed. Pick a tunnel provider per port and launch."
+                       FontFamily="{StaticResource FontBody}" FontSize="13"
+                       Foreground="{DynamicResource BrushTextSecondary}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,24"/>
+
+            <!-- ============================================================
+                 API KEY NOTICE BANNER
+                 ============================================================ -->
+            <Border Background="{DynamicResource BrushInfoBg}"
+                    BorderBrush="{DynamicResource BrushInfoText}"
+                    BorderThickness="1" CornerRadius="8"
+                    Padding="16,12" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="🔑  " FontSize="16" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock Text="Providers like ngrok and frp need an API key or auth token before they can start."
+                                       FontFamily="{StaticResource FontBody}" FontSize="13"
+                                       Foreground="{DynamicResource BrushInfoText}"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Text="Go to Settings → Tunnel providers to enter your keys. Free providers (playit.gg, bore.pub) work without any key."
+                                       FontFamily="{StaticResource FontBody}" FontSize="11"
+                                       Foreground="{DynamicResource BrushTextSecondary}"
+                                       TextWrapping="Wrap" Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Content="Open Settings"
+                            Command="{Binding GoToSettingsCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Padding="14,7" FontSize="12"
+                            Margin="16,0,0,0"
+                            VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- ============================================================
+                 SERVER SELECTOR
+                 ============================================================ -->
+            <Border Background="{DynamicResource BrushPanelBackground}"
+                    BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                    CornerRadius="10" Padding="20,16" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,20,0">
+                        <TextBlock Text="Server"
+                                   FontFamily="{StaticResource FontDisplay}" FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource BrushTextPrimary}"/>
+                        <TextBlock Text="Select the server to configure tunnels for"
+                                   FontFamily="{StaticResource FontBody}" FontSize="11"
+                                   Foreground="{DynamicResource BrushTextMuted}"/>
+                    </StackPanel>
+
+                    <!-- ItemStringFormat shows only the Name, not the full type name -->
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding Servers}"
+                              SelectedItem="{Binding SelectedServer}"
+                              ItemStringFormat="{}{0}"
+                              Height="44"
+                              FontFamily="{StaticResource FontBody}" FontSize="14">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:Server}">
+                                <TextBlock Text="{Binding Name}"
+                                           FontFamily="{StaticResource FontBody}"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource BrushTextPrimary}"
+                                           VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+            </Border>
+
+            <!-- Scanning indicator -->
+            <TextBlock Text="⟳  Scanning ports…"
+                       FontFamily="{StaticResource FontBody}" FontSize="13"
+                       Foreground="{DynamicResource BrushTextMuted}"
+                       HorizontalAlignment="Center" Margin="0,8,0,8"
+                       Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+            <!-- No server selected -->
+            <Border Background="{DynamicResource BrushPanelBackground}"
+                    BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                    CornerRadius="10" Padding="40,36"
+                    Visibility="{Binding HasSelectedServer, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+                    Margin="0,0,0,16">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="No server selected"
+                               FontFamily="{StaticResource FontDisplay}" FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrushTextPrimary}"
+                               HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                    <TextBlock Text="Select a server above to scan its ports."
+                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                               Foreground="{DynamicResource BrushTextSecondary}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ============================================================
+                 DETECTED PORTS  +  ADD CUSTOM PORT  (combined panel)
+                 ============================================================ -->
+            <Border Background="{DynamicResource BrushPanelBackground}"
+                    BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                    CornerRadius="10" Padding="20"
+                    Visibility="{Binding HasSelectedServer, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="0,0,0,16">
+                <StackPanel>
+
+                    <!-- Section header -->
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Ports"
+                                       FontFamily="{StaticResource FontDisplay}" FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource BrushTextPrimary}"/>
+                            <TextBlock Text="Detected ports are listed below. Enable the ones you want to tunnel. You can edit the port number and label directly — changes save automatically."
+                                       FontFamily="{StaticResource FontBody}" FontSize="11"
+                                       Foreground="{DynamicResource BrushTextMuted}"
+                                       TextWrapping="Wrap" Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Content="↻  Refresh"
+                                Command="{Binding RefreshPortsCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="12,6" FontSize="12"
+                                VerticalAlignment="Top"/>
+                    </Grid>
+
+                    <!-- Column headers -->
+                    <Border Background="{DynamicResource BrushAppBackground}"
+                            CornerRadius="6" Padding="12,8" Margin="0,8,0,6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="36"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="70"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="On"        Style="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="1" Text="Port"      Style="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="2" Text="Protocol"  Style="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="3" Text="Label"     Style="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="4" Text="Source"    Style="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="5" Text="Tunnel via" Style="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="6" Text=""          Style="{StaticResource TableHeaderStyle}"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Empty state -->
+                    <TextBlock Text="No ports detected for this server."
+                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                               Foreground="{DynamicResource BrushTextMuted}"
+                               HorizontalAlignment="Center" Margin="0,20,0,20"
+                               Visibility="{Binding HasPorts, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+
+                    <!-- Port rows — editable inline -->
+                    <ItemsControl ItemsSource="{Binding Ports}"
+                                  Visibility="{Binding HasPorts, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:PortInfo}">
+                                <Border Background="{DynamicResource BrushPanelElevated}"
+                                        BorderBrush="{DynamicResource BrushBorder}"
+                                        BorderThickness="1" CornerRadius="6"
+                                        Padding="12,8" Margin="0,0,0,4">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="36"/>
+                                            <ColumnDefinition Width="110"/>
+                                            <ColumnDefinition Width="80"/>
+                                            <ColumnDefinition Width="180"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="200"/>
+                                            <ColumnDefinition Width="70"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Enable checkbox -->
+                                        <CheckBox Grid.Column="0"
+                                                  IsChecked="{Binding IsEnabled}"
+                                                  VerticalAlignment="Center"/>
+
+                                        <!-- Port number — editable TextBox -->
+                                        <TextBox Grid.Column="1"
+                                                 Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource InputTextBoxStyle}"
+                                                 Height="32" FontSize="13" FontWeight="Bold"
+                                                 ToolTip="Click to edit the port number — saves automatically"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,6,0"/>
+
+                                        <!-- Protocol pill (read-only for detected, editable for custom) -->
+                                        <Border Grid.Column="2" CornerRadius="4"
+                                                Padding="7,3" Margin="0,0,6,0"
+                                                VerticalAlignment="Center">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="{DynamicResource BrushProtocolTcp}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Protocol}" Value="UDP">
+                                                            <Setter Property="Background" Value="{DynamicResource BrushProtocolUdp}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding Protocol}"
+                                                       FontFamily="{StaticResource FontBody}"
+                                                       FontSize="11" FontWeight="SemiBold"
+                                                       VerticalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource BrushProtocolTcpText}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Protocol}" Value="UDP">
+                                                                <Setter Property="Foreground" Value="{DynamicResource BrushProtocolUdpText}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+
+                                        <!-- Label / Purpose — editable TextBox -->
+                                        <TextBox Grid.Column="3"
+                                                 Text="{Binding Purpose, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource InputTextBoxStyle}"
+                                                 Height="32" FontSize="12"
+                                                 ToolTip="Click to edit the label — saves automatically"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,6,0"/>
+
+                                        <!-- Source badge -->
+                                        <TextBlock Grid.Column="4"
+                                                   Text="{Binding Source}"
+                                                   FontFamily="{StaticResource FontBody}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource BrushTextMuted}"
+                                                   VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="0,0,6,0"/>
+
+                                        <!-- Tunnel via — provider picker -->
+                                        <ContentControl Grid.Column="5"
+                                                        Tag="{Binding}"
+                                                        Loaded="PortRow_Loaded"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,8,0"/>
+
+                                        <!-- Remove (custom ports only) -->
+                                        <Button Grid.Column="6"
+                                                Content="Remove"
+                                                Tag="{Binding}"
+                                                Click="RemovePort_Click"
+                                                Style="{StaticResource DangerButtonStyle}"
+                                                Padding="6,3" FontSize="10"
+                                                Visibility="{Binding IsCustom, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- ── Divider ── -->
+                    <Border Background="{DynamicResource BrushBorder}" Height="1" Margin="0,18,0,18"/>
+
+                    <!-- ADD CUSTOM PORT — inline, directly under the port list -->
+                    <TextBlock Text="Add a custom port"
+                               FontFamily="{StaticResource FontDisplay}" FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
+                    <TextBlock Text="Manually add a port that isn't auto-detected (e.g. a plugin, voice chat, or RCON)."
+                               FontFamily="{StaticResource FontBody}" FontSize="11"
+                               Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,12"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="Port"
+                                   Style="{StaticResource TableHeaderStyle}"
+                                   VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding NewCustomPort, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputTextBoxStyle}"
+                                 Height="38" FontSize="13"/>
+
+                        <TextBlock Grid.Column="2" Text="Protocol"
+                                   Style="{StaticResource TableHeaderStyle}"
+                                   VerticalAlignment="Center" Margin="14,0,8,0"/>
+                        <ComboBox Grid.Column="3"
+                                  ItemsSource="{Binding Protocols}"
+                                  SelectedItem="{Binding NewCustomProtocol}"
+                                  Height="38" FontSize="13"/>
+
+                        <TextBlock Grid.Column="4" Text="Label"
+                                   Style="{StaticResource TableHeaderStyle}"
+                                   VerticalAlignment="Center" Margin="14,0,8,0"/>
+                        <TextBox Grid.Column="5"
+                                 Text="{Binding NewCustomPurpose, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputTextBoxStyle}"
+                                 Height="38" FontSize="13"/>
+
+                        <Button Grid.Column="6"
+                                Content="+ Add Port"
+                                Click="AddCustomPort_Click"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="18,8" Margin="12,0,0,0"
+                                VerticalAlignment="Center"/>
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+
+            <!-- ============================================================
+                 PROVIDER ASSIGNMENT CARDS  (enabled ports only)
+                 ============================================================ -->
+            <Border Background="{DynamicResource BrushPanelBackground}"
+                    BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                    CornerRadius="10" Padding="20"
+                    Visibility="{Binding HasAssignments, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="0,0,0,16">
+                <StackPanel>
+
+                    <TextBlock Text="Provider per port"
+                               FontFamily="{StaticResource FontDisplay}" FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
+                    <TextBlock Text="Choose how each enabled port is exposed. UDP ports need a provider that explicitly supports UDP. Providers needing an API key show a warning if none is configured."
+                               FontFamily="{StaticResource FontBody}" FontSize="11"
+                               Foreground="{DynamicResource BrushTextMuted}"
+                               TextWrapping="Wrap" Margin="0,0,0,18"/>
+
+                    <ItemsControl ItemsSource="{Binding Assignments}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:PortTunnelAssignment}">
+                                <Border Margin="0,0,0,10" CornerRadius="8"
+                                        Padding="16,14" BorderThickness="1">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background"  Value="{DynamicResource BrushPanelElevated}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BrushBorder}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsUsingRecommended}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource BrushRecommended}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+
+                                        <!-- Card header -->
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Port.Port}"
+                                                       FontFamily="{StaticResource FontDisplay}"
+                                                       FontSize="20" FontWeight="Bold"
+                                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                                       VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                                            <Border Grid.Column="1" CornerRadius="5"
+                                                    Padding="8,3" VerticalAlignment="Center" Margin="0,0,12,0">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="{DynamicResource BrushProtocolTcp}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Port.Protocol}" Value="UDP">
+                                                                <Setter Property="Background" Value="{DynamicResource BrushProtocolUdp}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding Port.Protocol}"
+                                                           FontFamily="{StaticResource FontBody}"
+                                                           FontSize="11" FontWeight="SemiBold"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource BrushProtocolTcpText}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Port.Protocol}" Value="UDP">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource BrushProtocolUdpText}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding Port.Purpose}"
+                                                       FontFamily="{StaticResource FontBody}"
+                                                       FontSize="14"
+                                                       Foreground="{DynamicResource BrushTextSecondary}"
+                                                       VerticalAlignment="Center"/>
+
+                                            <Border Grid.Column="3" CornerRadius="5"
+                                                    Padding="9,4" VerticalAlignment="Center"
+                                                    Background="{DynamicResource BrushRecommended}"
+                                                    Visibility="{Binding IsUsingRecommended, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <TextBlock Text="✓  Recommended"
+                                                           FontFamily="{StaticResource FontBody}"
+                                                           FontSize="10" FontWeight="SemiBold"
+                                                           Foreground="White"/>
+                                            </Border>
+                                        </Grid>
+
+                                        <!-- Provider dropdown (uses full item template so it's always themed) -->
+                                        <ComboBox ItemsSource="{Binding CompatibleProviders}"
+                                                  SelectedItem="{Binding SelectedProvider}"
+                                                  ItemTemplate="{StaticResource ProviderItemTemplate}"
+                                                  Height="52"
+                                                  Margin="0,0,0,4"/>
+
+                                        <!-- Needs API key hint -->
+                                        <Border Background="{DynamicResource BrushWarningBg}"
+                                                CornerRadius="6" Padding="10,6"
+                                                Margin="0,4,0,0"
+                                                Visibility="{Binding SelectedProvider.RequiresApiKey, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="⚠  " FontSize="11"
+                                                           Foreground="{DynamicResource BrushWarningText}"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock FontFamily="{StaticResource FontBody}" FontSize="11"
+                                                           Foreground="{DynamicResource BrushWarningText}"
+                                                           TextWrapping="Wrap">
+                                                    <Run Text="This provider needs an API key. "/>
+                                                    <Hyperlink Command="{Binding DataContext.GoToSettingsCommand,
+                                                               RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                               Foreground="{DynamicResource BrushInfoText}">
+                                                        Configure it in Settings →
+                                                    </Hyperlink>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Recommendation hint (when not recommended) -->
+                                        <TextBlock FontFamily="{StaticResource FontBody}" FontSize="11"
+                                                   Foreground="{DynamicResource BrushTextMuted}"
+                                                   Margin="0,4,0,0"
+                                                   Visibility="{Binding IsUsingRecommended, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                            <Run Text="Recommended: "/>
+                                            <Run Text="{Binding RecommendedProvider.DisplayName}"
+                                                 Foreground="{DynamicResource BrushRecommended}"/>
+                                        </TextBlock>
+
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- ============================================================
+                 LAUNCH TUNNELS
+                 ============================================================ -->
+            <Border Background="{DynamicResource BrushPanelBackground}"
+                    BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                    CornerRadius="10" Padding="20"
+                    Visibility="{Binding HasAssignments, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="0,0,0,16">
+                <StackPanel>
+
+                    <!-- Header row -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Launch Tunnels"
+                                       FontFamily="{StaticResource FontDisplay}" FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource BrushTextPrimary}"/>
+                            <TextBlock Text="Start all configured tunnels. Each enabled port gets its own connection."
+                                       FontFamily="{StaticResource FontBody}" FontSize="11"
+                                       Foreground="{DynamicResource BrushTextMuted}"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Content="Stop All"
+                                Command="{Binding StopAllTunnelsCommand}"
+                                Style="{StaticResource DangerButtonStyle}"
+                                Padding="18,9" FontSize="13"
+                                Margin="0,0,10,0"
+                                Visibility="{Binding HasActiveSessions, Converter={StaticResource BoolToVisibilityConverter}}"
+                                VerticalAlignment="Center"/>
+
+                        <Button Grid.Column="2"
+                                Content="▶  Launch All Tunnels"
+                                Command="{Binding LaunchAllTunnelsCommand}"
+                                Padding="18,9" FontSize="13"
+                                VerticalAlignment="Center">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsLaunching}" Value="True">
+                                            <Setter Property="Content" Value="Starting…"/>
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding HasActiveSessions}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+
+                    <!-- Session cards -->
+                    <ItemsControl ItemsSource="{Binding SessionViewModels}"
+                                  Visibility="{Binding HasAnySessions, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type viewmodels:TunnelSessionViewModel}">
+                                <Border CornerRadius="8" Padding="16,14"
+                                        BorderThickness="1" Margin="0,0,0,10">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background"  Value="{DynamicResource BrushPanelElevated}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BrushBorder}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRunning}"  Value="True">
+                                                    <Setter Property="BorderBrush" Value="#2E7D52"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsError}"    Value="True">
+                                                    <Setter Property="BorderBrush" Value="#7D2E2E"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsStarting}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource BrushRecommended}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+
+                                        <!-- Card header -->
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Status dot -->
+                                            <Ellipse Grid.Column="0" Width="10" Height="10"
+                                                     VerticalAlignment="Center" Margin="0,0,10,0">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse">
+                                                        <Setter Property="Fill" Value="{DynamicResource BrushTextMuted}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsRunning}"  Value="True">
+                                                                <Setter Property="Fill" Value="#4CAF7D"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsStarting}" Value="True">
+                                                                <Setter Property="Fill" Value="#B090F0"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsError}"    Value="True">
+                                                                <Setter Property="Fill" Value="#E57373"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+
+                                            <!-- Port number -->
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Port}"
+                                                       FontFamily="{StaticResource FontDisplay}"
+                                                       FontSize="18" FontWeight="Bold"
+                                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                                            <!-- Protocol pill -->
+                                            <Border Grid.Column="2" CornerRadius="4"
+                                                    Padding="7,3" Margin="0,0,12,0"
+                                                    VerticalAlignment="Center">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="{DynamicResource BrushProtocolTcp}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Protocol}" Value="UDP">
+                                                                <Setter Property="Background" Value="{DynamicResource BrushProtocolUdp}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding Protocol}"
+                                                           FontFamily="{StaticResource FontBody}"
+                                                           FontSize="10" FontWeight="SemiBold">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource BrushProtocolTcpText}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Protocol}" Value="UDP">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource BrushProtocolUdpText}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+
+                                            <!-- Provider name -->
+                                            <TextBlock Grid.Column="3"
+                                                       Text="{Binding ProviderName}"
+                                                       FontFamily="{StaticResource FontBody}"
+                                                       FontSize="13"
+                                                       Foreground="{DynamicResource BrushTextSecondary}"
+                                                       VerticalAlignment="Center"/>
+
+                                            <!-- State label -->
+                                            <TextBlock Grid.Column="4"
+                                                       Text="{Binding StateLabel}"
+                                                       FontFamily="{StaticResource FontBody}"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource BrushTextMuted}"
+                                                       VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                                            <!-- Stop button -->
+                                            <Button Grid.Column="5"
+                                                    Content="Stop"
+                                                    Command="{Binding DataContext.StopOneTunnelCommand,
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource DangerButtonStyle}"
+                                                    Padding="12,5" FontSize="11"
+                                                    VerticalAlignment="Center"
+                                                    Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                        </Grid>
+
+                                        <!-- Public address row -->
+                                        <Border Background="{DynamicResource BrushPanelBackground}"
+                                                CornerRadius="6" Padding="12,8"
+                                                Margin="0,0,0,6"
+                                                Visibility="{Binding HasAddress, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="Public address: "
+                                                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                           Foreground="{DynamicResource BrushTextMuted}"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding PublicAddress}"
+                                                           FontFamily="Consolas, Courier New, monospace"
+                                                           FontSize="13" FontWeight="Bold"
+                                                           Foreground="#4CAF7D"
+                                                           VerticalAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <!-- Copy address -->
+                                                <Button Grid.Column="2"
+                                                        Content="Copy address"
+                                                        Command="{Binding DataContext.CopyAddressCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Padding="12,4" FontSize="11"
+                                                        Margin="12,0,6,0"
+                                                        VerticalAlignment="Center"/>
+                                                <!-- Copy log -->
+                                                <Button Grid.Column="3"
+                                                        Content="Copy log"
+                                                        Tag="{Binding LogText}"
+                                                        Click="CopyLog_Click"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Padding="10,4" FontSize="11"
+                                                        VerticalAlignment="Center"/>
+                                                <!-- Share Tunnel -->
+                                                <Button Grid.Column="4"
+                                                        Content="Share Tunnel"
+                                                        Tag="{Binding}"
+                                                        Click="ShareTunnel_Click"
+                                                        Style="{StaticResource PrimaryButtonStyle}"
+                                                        Padding="12,4" FontSize="11"
+                                                        Margin="6,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Visibility="{Binding DataContext.IsNexoraLoggedIn,
+                                                                     RelativeSource={RelativeSource AncestorType=UserControl},
+                                                                     Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- playit.gg waiting banner: agent running but no address yet and no claim URL -->
+                                        <Border Background="{DynamicResource BrushPanelElevated}"
+                                                BorderBrush="{DynamicResource BrushAccent}" BorderThickness="1"
+                                                CornerRadius="6" Padding="14,12"
+                                                Margin="0,0,0,6"
+                                                Visibility="{Binding IsWaitingForPlayit, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <TextBlock Text="⏳  " FontSize="15" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="Waiting for playit.gg to assign a tunnel address…"
+                                                               FontFamily="{StaticResource FontDisplay}"
+                                                               FontSize="13" FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource BrushAccent}"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                           Foreground="{DynamicResource BrushTextSecondary}"
+                                                           TextWrapping="Wrap" Margin="0,0,0,10">
+                                                    playit.gg is running (you can see the tray icon), but it hasn't printed a tunnel address yet.
+                                                    This usually means one of two things:
+                                                </TextBlock>
+                                                <!-- Reason 1 -->
+                                                <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="5" Padding="12,10" Margin="0,0,0,6">
+                                                    <StackPanel>
+                                                        <TextBlock Text="1 — No tunnel configured in your playit.gg dashboard"
+                                                                   FontFamily="{StaticResource FontDisplay}"
+                                                                   FontSize="12" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource BrushAccent}" Margin="0,0,0,4"/>
+                                                        <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                                                   TextWrapping="Wrap">
+                                                            The playit agent needs a tunnel assignment on the website before it can hand out an address.
+                                                            Go to playit.gg → Tunnels → Add tunnel → TCP → port 25565, then come back here.
+                                                        </TextBlock>
+                                                        <Button Content="Open playit.gg dashboard"
+                                                                Tag="https://playit.gg/account/tunnels"
+                                                                Click="OpenClaimUrl_Click"
+                                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                                Padding="12,5" FontSize="11"
+                                                                HorizontalAlignment="Left"
+                                                                Margin="0,8,0,0"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                <!-- Reason 2 -->
+                                                <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="5" Padding="12,10">
+                                                    <StackPanel>
+                                                        <TextBlock Text="2 — First-time setup: agent not yet linked to your account"
+                                                                   FontFamily="{StaticResource FontDisplay}"
+                                                                   FontSize="12" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource BrushAccent}" Margin="0,0,0,4"/>
+                                                        <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                                                   TextWrapping="Wrap">
+                                                            A claim URL should appear in the log below.
+                                                            Expand "Show log", copy the https://claim.playit.gg/... link, and open it in your browser to link the agent.
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- generic waiting banner for non-playit providers -->
+                                        <Border Background="{DynamicResource BrushPanelElevated}"
+                                                BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                                                CornerRadius="6" Padding="14,10"
+                                                Margin="0,0,0,6"
+                                                Visibility="{Binding IsWaitingGeneric, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="⏳  " FontSize="14" VerticalAlignment="Center"/>
+                                                <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                           Foreground="{DynamicResource BrushTextSecondary}"
+                                                           TextWrapping="Wrap" VerticalAlignment="Center">
+                                                    Starting tunnel — waiting for a public address. Check the log below if this takes more than 10 seconds.
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
+
+                                                                                <!-- playit.gg claim URL banner (first-run setup) -->
+                                        <Border Background="{DynamicResource BrushPanelElevated}"
+                                                BorderBrush="{DynamicResource BrushOnline}" BorderThickness="1"
+                                                CornerRadius="6" Padding="14,10"
+                                                Margin="0,0,0,6"
+                                                Visibility="{Binding HasClaimUrl, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <StackPanel>
+                                                <TextBlock Text="⚡  Action required — one-time setup"
+                                                           FontFamily="{StaticResource FontDisplay}"
+                                                           FontSize="13" FontWeight="SemiBold"
+                                                           Foreground="#4CAF7D" Margin="0,0,0,4"/>
+                                                <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                           Foreground="{DynamicResource BrushTextSecondary}"
+                                                           TextWrapping="Wrap" Margin="0,0,0,8">
+                                                    playit.gg needs to be linked to your account once.
+                                                    Open the link below in your browser, log in (or create a free account),
+                                                    and click Claim. The tunnel will start automatically after that.
+                                                </TextBlock>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Column="0"
+                                                            Background="{DynamicResource BrushAppBackground}"
+                                                            CornerRadius="4" Padding="8,6">
+                                                        <TextBlock Text="{Binding ClaimUrl}"
+                                                                   FontFamily="Consolas, Courier New, monospace"
+                                                                   FontSize="11"
+                                                                   Foreground="#4CAF7D"
+                                                                   TextWrapping="Wrap"/>
+                                                    </Border>
+                                                    <Button Grid.Column="1"
+                                                            Content="Open in browser"
+                                                            Tag="{Binding ClaimUrl}"
+                                                            Click="OpenClaimUrl_Click"
+                                                            Style="{StaticResource PrimaryButtonStyle}"
+                                                            Padding="14,7" FontSize="12"
+                                                            Margin="10,0,0,0"
+                                                            VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Manual address entry (e.g. playit.gg run via its official wizard) -->
+                                        <Border Background="{DynamicResource BrushPanelElevated}"
+                                                BorderBrush="{DynamicResource BrushOnline}" BorderThickness="1"
+                                                CornerRadius="6" Padding="14,10"
+                                                Margin="0,0,0,6"
+                                                Visibility="{Binding RequiresManualAddress, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <StackPanel>
+                                                <TextBlock Text="Enter Your Public Address"
+                                                           FontFamily="{StaticResource FontDisplay}"
+                                                           FontSize="13" FontWeight="SemiBold"
+                                                           Foreground="#4CAF7D" Margin="0,0,0,4"/>
+                                                <TextBlock Text="Enter the public IP address and port number your friends will use to connect. Format: ip:port (e.g. 123.456.78.90:25565)"
+                                                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                           Foreground="{DynamicResource BrushTextSecondary}"
+                                                           TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox Grid.Column="0"
+                                                             Text="{Binding ManualAddressInput, UpdateSourceTrigger=PropertyChanged}"
+                                                             FontFamily="Consolas, Courier New, monospace"
+                                                             FontSize="12" Padding="8,6">
+                                                        <TextBox.Resources>
+                                                            <VisualBrush x:Key="HintBrush" AlignmentX="Left" AlignmentY="Center" Stretch="None">
+                                                                <VisualBrush.Visual>
+                                                                    <TextBlock Text="e.g. 123.456.78.90:25565"
+                                                                               Foreground="#666" FontSize="12"
+                                                                               FontFamily="Consolas, Courier New, monospace"
+                                                                               Margin="8,0,0,0"/>
+                                                                </VisualBrush.Visual>
+                                                            </VisualBrush>
+                                                        </TextBox.Resources>
+                                                        <TextBox.Style>
+                                                            <Style TargetType="TextBox">
+                                                                <Style.Triggers>
+                                                                    <Trigger Property="Text" Value="">
+                                                                        <Setter Property="Background" Value="{StaticResource HintBrush}"/>
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBox.Style>
+                                                    </TextBox>
+                                                    <Button Grid.Column="1"
+                                                            Content="Use This Address"
+                                                            Command="{Binding SubmitManualAddressCommand}"
+                                                            Style="{StaticResource PrimaryButtonStyle}"
+                                                            Padding="14,7" FontSize="12"
+                                                            Margin="10,0,0,0"
+                                                            VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Error row -->
+                                        <Border Background="{DynamicResource BrushWarningBg}"
+                                                CornerRadius="6" Padding="12,8"
+                                                Margin="0,0,0,6"
+                                                Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="⚠  " FontSize="12"
+                                                           Foreground="{DynamicResource BrushWarningText}"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding ErrorMessage}"
+                                                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                           Foreground="{DynamicResource BrushWarningText}"
+                                                           TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Log expander — with copy log button even when no address yet -->
+                                        <Expander Header="Show log"
+                                                  FontFamily="{StaticResource FontBody}" FontSize="11"
+                                                  Foreground="{DynamicResource BrushTextMuted}"
+                                                  Margin="0,4,0,0">
+                                            <StackPanel>
+                                                <!-- Copy log (shown here too when no address row is visible) -->
+                                                <Button Content="Copy log"
+                                                        Tag="{Binding LogText}"
+                                                        Click="CopyLog_Click"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Padding="10,4" FontSize="11"
+                                                        HorizontalAlignment="Right"
+                                                        Margin="0,6,0,4"
+                                                        Visibility="{Binding HasAddress, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                                <Border Background="{DynamicResource BrushAppBackground}"
+                                                        CornerRadius="5" Padding="10,8"
+                                                        Margin="0,0,0,0"
+                                                        MaxHeight="200">
+                                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                                  x:Name="LogScroll">
+                                                        <TextBlock Text="{Binding LogText}"
+                                                                   FontFamily="Consolas, Courier New, monospace"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                                                   TextWrapping="Wrap"/>
+                                                    </ScrollViewer>
+                                                </Border>
+                                            </StackPanel>
+                                        </Expander>
+
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

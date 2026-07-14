@@ -1,0 +1,1088 @@
+﻿<Window x:Class="MinecraftControlHub.UI.Windows.ServerPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        Title="Server Preview"
+        Width="1100"
+        Height="720"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BrushAppBackground}">
+    <Window.Resources>
+        <x:Array x:Key="GamemodeOptions" Type="sys:String">
+            <sys:String>survival</sys:String>
+            <sys:String>creative</sys:String>
+            <sys:String>adventure</sys:String>
+            <sys:String>spectator</sys:String>
+        </x:Array>
+        <x:Array x:Key="DifficultyOptions" Type="sys:String">
+            <sys:String>peaceful</sys:String>
+            <sys:String>easy</sys:String>
+            <sys:String>normal</sys:String>
+            <sys:String>hard</sys:String>
+        </x:Array>
+        <x:Array x:Key="OpPermissionLevelOptions" Type="sys:Int32">
+            <sys:Int32>1</sys:Int32>
+            <sys:Int32>2</sys:Int32>
+            <sys:Int32>3</sys:Int32>
+            <sys:Int32>4</sys:Int32>
+        </x:Array>
+        <Style x:Key="FriendCheckboxStyle" TargetType="CheckBox">
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="FontFamily" Value="{StaticResource FontBody}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="{StaticResource BrushPanelElevated}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="12"
+                                Padding="{TemplateBinding Padding}">
+                            <DockPanel>
+                                <Border x:Name="CheckBoxMarker"
+                                        Width="20"
+                                        Height="20"
+                                        CornerRadius="5"
+                                        Background="Transparent"
+                                        BorderBrush="{StaticResource BrushTextSecondary}"
+                                        BorderThickness="1"
+                                        VerticalAlignment="Center"
+                                        Margin="0,0,12,0"
+                                        DockPanel.Dock="Left">
+                                <Path x:Name="FriendCheckMark"
+                                      Data="M 4 10 L 8 14 L 16 6"
+                                      Stroke="White"
+                                      StrokeThickness="2"
+                                      StrokeEndLineCap="Round"
+                                      StrokeStartLineCap="Round"
+                                      StrokeLineJoin="Round"
+                                      Opacity="0"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Width="12"
+                                      Height="12"/>
+                            </Border>
+                                <StackPanel>
+                                    <ContentPresenter/>
+                                    <TextBlock x:Name="DescriptionText"
+                                               Text="Can join your server when invited."
+                                               FontSize="12"
+                                               Foreground="{StaticResource BrushTextSecondary}"
+                                               Margin="0,4,0,0"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckBoxMarker" Property="Background" Value="{StaticResource BrushAccent}"/>
+                                <Setter TargetName="CheckBoxMarker" Property="BorderBrush" Value="{StaticResource BrushAccent}"/>
+                                <Setter TargetName="FriendCheckMark" Property="Opacity" Value="1"/>
+                            </Trigger>                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource BrushPanelBackground}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0"
+                Background="{StaticResource BrushPanelBackground}"
+                BorderBrush="{StaticResource BrushBorder}"
+                BorderThickness="0,0,1,0">
+            <StackPanel Margin="20,24,20,24">
+                <TextBlock Text="{Binding Name}"
+                           FontFamily="{StaticResource FontDisplay}"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource BrushTextPrimary}"
+                           Margin="0,0,0,12"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding Type, StringFormat=Type: {0}}"
+                           FontFamily="{StaticResource FontBody}"
+                           FontSize="13"
+                           Foreground="{StaticResource BrushTextSecondary}"
+                           Margin="0,0,0,8"/>
+                <TextBlock Text="{Binding MinecraftVersion, StringFormat=Version: {0}}"
+                           FontFamily="{StaticResource FontBody}"
+                           FontSize="13"
+                           Foreground="{StaticResource BrushTextSecondary}"
+                           Margin="0,0,0,16"/>
+
+                <Button x:Name="TerminalButton"                        Content="Terminal"
+                        Tag="Terminal"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,0,0,8"
+                        Click="SectionButton_Click"/>
+                <Button x:Name="FriendsButton"
+                        Content="Friends"
+                        Tag="Friends"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,0,0,8"
+                        Click="SectionButton_Click"/>
+                <Button x:Name="SettingsButton"
+                        Content="Settings"
+                        Tag="Settings"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,0,0,8"
+                        Click="SectionButton_Click"/>
+                <Button x:Name="PluginsButton"
+                        Content="Plugins/Mods"
+                        Tag="Plugins"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,0,0,8"
+                        Click="SectionButton_Click"/>
+                <Button x:Name="AdvancedButton"
+                        Content="Advanced"
+                        Tag="Advanced"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Click="SectionButton_Click"/>
+                <Button x:Name="HealthButton"
+                        Content="Health"
+                        Tag="Health"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,8,0,0"
+                        Click="SectionButton_Click"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" Margin="24">
+            <Border x:Name="TerminalSection"
+                    Background="{StaticResource BrushPanelBackground}"
+                    BorderBrush="{StaticResource BrushBorder}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="24"
+                    Visibility="Visible">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Terminal"
+                                   FontFamily="{StaticResource FontDisplay}"
+                                   FontSize="20"
+                                   Foreground="{StaticResource BrushTextPrimary}"
+                                   VerticalAlignment="Center"
+                                   Grid.Column="0"/>
+                        <Button Content="Clear"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Width="110"
+                                Margin="0,0,12,0"
+                                Grid.Column="1"
+                                Click="ClearTerminal_Click"/>
+                        <Button x:Name="TerminalStartStopButton"
+                                Content="Start"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Width="110"
+                                Grid.Column="2"
+                                Click="TerminalStartStop_Click"/>
+                    </Grid>
+                    <Border Grid.Row="1"
+                            Background="#FF101217"
+                            BorderBrush="#FF2D2D30"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12"
+                            Margin="0,0,0,12"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch">
+                        <TextBox x:Name="TerminalOutputTextBox"
+                                 IsReadOnly="True"
+                                 AcceptsReturn="True"
+                                 TextWrapping="NoWrap"
+                                 VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Auto"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Foreground="{DynamicResource BrushTextPrimary}"
+                                 FontFamily="Consolas">
+                        </TextBox>
+                    </Border>
+
+                    <Grid Grid.Row="2" Margin="0,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="130"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="TerminalInputTextBox"
+                                 Grid.Column="0"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,12,0"
+                                 Padding="12"
+                                 FontSize="14"
+                                 Background="{StaticResource BrushAppBackground}"
+                                 BorderBrush="{StaticResource BrushBorder}"
+                                 BorderThickness="1"
+                                 Foreground="{StaticResource BrushTextPrimary}"
+                                 KeyDown="TerminalInputTextBox_KeyDown"
+                                 Text=""/>
+                        <Button Grid.Column="1"
+                                Content="Send"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Width="120"
+                                Margin="0,0,12,0"
+                                Click="SendTerminalCommand_Click"/>
+                    </Grid>
+                </Grid>
+            </Border>
+
+                    <!-- Health Section -->
+                    <Border x:Name="HealthSection"
+                            Background="{StaticResource BrushPanelBackground}"
+                            BorderBrush="{StaticResource BrushBorder}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="16"
+                            Visibility="Collapsed"
+                            Grid.Column="1"
+                            Grid.Row="0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12" VerticalAlignment="Center">
+                                <TextBlock Text="Server Health" FontFamily="{StaticResource FontDisplay}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource BrushTextPrimary}"/>
+                                <Button x:Name="RefreshServerHealthBtn" Content="⟳ Refresh" Style="{StaticResource SecondaryButtonStyle}" Padding="12,8" Margin="12,0,0,0" Click="RefreshServerHealth_Click"/>
+                            </StackPanel>
+
+                            <Border Background="{DynamicResource BrushPanelBackground}" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="Overall Score" FontSize="12" Foreground="{DynamicResource BrushTextMuted}"/>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock x:Name="ServerOverallScoreText" Text="0" FontSize="28" FontWeight="SemiBold" Margin="0,0,12,0" Foreground="{DynamicResource BrushTextPrimary}"/>
+                                        <StackPanel>
+                                            <TextBlock x:Name="ServerOverallStatusText" Text="Unknown" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}"/>
+                                            <TextBlock x:Name="ServerOverallAdviceText" Text="No data" FontSize="11" Foreground="{DynamicResource BrushTextMuted}" TextWrapping="Wrap" MaxWidth="420"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="200" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="RAM Usage" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}"/>
+                                    <ProgressBar x:Name="ServerRamProgress" Height="8" Margin="0,6,0,6" Value="0" Maximum="100"/>
+                                    <TextBlock x:Name="ServerRamText" Text="0% of 2048MB" FontSize="11" Foreground="{DynamicResource BrushTextMuted}"/>
+
+                                    <!-- RAM sparkline -->
+                                    <Border Background="{DynamicResource BrushPanelElevated}" CornerRadius="6" Padding="6" Margin="0,6,0,0">
+                                        <Canvas x:Name="ServerRamSparklineCanvas" Width="360" Height="48" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                            <Polyline x:Name="ServerRamSparkline" Stroke="{DynamicResource BrushAccent}" StrokeThickness="2" Fill="Transparent"/>
+                                        </Canvas>
+                                    </Border>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Java" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}"/>
+                                    <TextBlock x:Name="ServerJavaText" Text="Unknown" FontSize="11" Foreground="{DynamicResource BrushTextMuted}"/>
+                                    <TextBlock Text="Mods" FontSize="13" FontWeight="SemiBold" Margin="0,8,0,0" Foreground="{DynamicResource BrushTextPrimary}"/>
+                                    <TextBlock x:Name="ServerModsText" Text="Not scanned" FontSize="11" Foreground="{DynamicResource BrushTextMuted}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Stability" FontSize="13" FontWeight="SemiBold" Margin="0,6,0,4" Foreground="{DynamicResource BrushTextPrimary}"/>
+                            <TextBlock x:Name="ServerStabilityText" Text="No recent crashes" FontSize="11" Foreground="{DynamicResource BrushTextMuted}"/>
+
+                        </StackPanel>
+                    </Border>
+
+            <Border x:Name="FriendsSection"
+                    Background="{StaticResource BrushPanelBackground}"
+                    BorderBrush="{StaticResource BrushBorder}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="24"
+                    Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock Text="Friends"
+                               FontFamily="{StaticResource FontDisplay}"
+                               FontSize="20"
+                               Foreground="{StaticResource BrushTextPrimary}"
+                               Margin="0,0,0,12"/>
+                    <TextBlock Text="Choose who can join your server and manage your trusted friends."
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="13"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               Margin="0,0,0,20"
+                               TextWrapping="Wrap"/>
+ 
+                    <Border Background="{StaticResource BrushPanelElevated}"
+                            BorderBrush="{StaticResource BrushBorder}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="18"
+                            Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Invite Access"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="14"
+                                       Foreground="{StaticResource BrushTextPrimary}"
+                                       Margin="0,0,0,12"/>
+                            <Slider x:Name="FriendAccessSlider"
+                                    Minimum="0"
+                                    Maximum="2"
+                                    SmallChange="1"
+                                    LargeChange="1"
+                                    TickFrequency="1"
+                                    IsSnapToTickEnabled="True"
+                                    TickPlacement="BottomRight"
+                                    Margin="0,0,0,18"
+                                    Value="1"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Invite Only"
+                                           FontFamily="{StaticResource FontBody}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource BrushTextSecondary}"
+                                           Grid.Column="0"
+                                           TextAlignment="Center"/>
+                                <TextBlock Text="Friends"
+                                           FontFamily="{StaticResource FontBody}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource BrushTextSecondary}"
+                                           Grid.Column="1"
+                                           TextAlignment="Center"/>
+                                <TextBlock Text="Allow All"
+                                           FontFamily="{StaticResource FontBody}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource BrushTextSecondary}"
+                                           Grid.Column="2"
+                                           TextAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+ 
+                    <Border Background="{StaticResource BrushPanelElevated}"
+                            BorderBrush="{StaticResource BrushBorder}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="18">
+                        <StackPanel>
+                            <TextBlock Text="Trusted Friends"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="14"
+                                       Foreground="{StaticResource BrushTextPrimary}"
+                                       Margin="0,0,0,14"/>
+                            <CheckBox Style="{StaticResource FriendCheckboxStyle}" IsChecked="True">
+                                <TextBlock Text="Alex"
+                                           FontWeight="SemiBold"/>
+                            </CheckBox>
+                            <CheckBox Style="{StaticResource FriendCheckboxStyle}" IsChecked="True">
+                                <TextBlock Text="Mia"
+                                           FontWeight="SemiBold"/>
+                            </CheckBox>
+                            <CheckBox Style="{StaticResource FriendCheckboxStyle}" IsChecked="False">
+                                <TextBlock Text="Jordan"
+                                           FontWeight="SemiBold"/>
+                            </CheckBox>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="SettingsSection"
+                    Background="{StaticResource BrushPanelBackground}"
+                    BorderBrush="{StaticResource BrushBorder}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="24"
+                    Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock Text="Settings"
+                               FontFamily="{StaticResource FontDisplay}"
+                               FontSize="20"
+                               Foreground="{StaticResource BrushTextPrimary}"
+                               Margin="0,0,0,12"/>
+                    <TextBlock Text="Edit this server's runtime settings and save them back to server.properties."
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="13"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               TextWrapping="Wrap"/>
+
+                    <Grid Margin="0,20,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="Server port"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding Port, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     Background="{StaticResource BrushAppBackground}"
+                                     BorderBrush="{StaticResource BrushBorder}"
+                                     BorderThickness="1"
+                                     Foreground="{StaticResource BrushTextPrimary}"
+                                     FontSize="13"/>
+
+                            <TextBlock Text="Max players"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,16,0,4"/>
+                            <TextBox Text="{Binding MaxPlayers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     Background="{StaticResource BrushAppBackground}"
+                                     BorderBrush="{StaticResource BrushBorder}"
+                                     BorderThickness="1"
+                                     Foreground="{StaticResource BrushTextPrimary}"
+                                     FontSize="13"/>
+ 
+                            <TextBlock Text="Min JVM memory (MB)"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,16,0,4"/>
+                            <TextBox Text="{Binding MinMemoryMB, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     Background="{StaticResource BrushAppBackground}"
+                                     BorderBrush="{StaticResource BrushBorder}"
+                                     BorderThickness="1"
+                                     Foreground="{StaticResource BrushTextPrimary}"
+                                     FontSize="13"/>
+ 
+                            <TextBlock Text="Max JVM memory (MB)"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,16,0,4"/>
+                            <TextBox Text="{Binding MaxMemoryMB, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     Background="{StaticResource BrushAppBackground}"
+                                     BorderBrush="{StaticResource BrushBorder}"
+                                     BorderThickness="1"
+                                     Foreground="{StaticResource BrushTextPrimary}"
+                                     FontSize="13"/>
+ 
+                            <TextBlock Text="MOTD"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,16,0,4"/>
+                            <TextBox Text="{Binding Motd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     Background="{StaticResource BrushAppBackground}"
+                                     BorderBrush="{StaticResource BrushBorder}"
+                                     BorderThickness="1"
+                                     Foreground="{StaticResource BrushTextPrimary}"
+                                     FontSize="13"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Game mode"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,0,0,4"/>
+                            <ComboBox SelectedItem="{Binding Gamemode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      ItemsSource="{StaticResource GamemodeOptions}"
+                                      Padding="10"
+                                      Background="{StaticResource BrushAppBackground}"
+                                      BorderBrush="{StaticResource BrushBorder}"
+                                      BorderThickness="1"
+                                      Foreground="{StaticResource BrushTextPrimary}"
+                                      FontSize="13"/>
+
+                            <TextBlock Text="Difficulty"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,16,0,4"/>
+                            <ComboBox SelectedItem="{Binding Difficulty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      ItemsSource="{StaticResource DifficultyOptions}"
+                                      Padding="10"
+                                      Background="{StaticResource BrushAppBackground}"
+                                      BorderBrush="{StaticResource BrushBorder}"
+                                      BorderThickness="1"
+                                      Foreground="{StaticResource BrushTextPrimary}"
+                                      FontSize="13"/>
+ 
+                            <CheckBox Content="Online mode"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding AllowOnlineMode, Mode=TwoWay}"
+                                      Margin="0,16,0,0"/>
+                            <CheckBox Content="Allow cheats"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding AllowCheats, Mode=TwoWay}"
+                                      Margin="0,10,0,0"/>
+                            <CheckBox Content="Enable whitelist"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding WhiteListEnabled, Mode=TwoWay}"
+                                      Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,20,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="View distance"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,0,0,4"/>
+                            <Slider Value="{Binding ViewDistance, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Minimum="2"
+                                    Maximum="32"
+                                    TickFrequency="1"
+                                    IsSnapToTickEnabled="True"
+                                    TickPlacement="BottomRight"
+                                    SmallChange="1"
+                                    LargeChange="5"/>
+                            <TextBlock Text="Chunks loaded around each player (2-32)."
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource BrushTextMuted}"
+                                       Margin="0,4,0,0"/>
+
+                            <TextBlock Text="Simulation distance"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,16,0,4"/>
+                            <Slider Value="{Binding SimulationDistance, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Minimum="2"
+                                    Maximum="16"
+                                    TickFrequency="1"
+                                    IsSnapToTickEnabled="True"
+                                    TickPlacement="BottomRight"
+                                    SmallChange="1"
+                                    LargeChange="3"/>
+                            <TextBlock Text="Distance for entity/tick updates (2-16)."
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource BrushTextMuted}"
+                                       Margin="0,4,0,0"/>
+
+                            <TextBlock Text="Spawn protection radius"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,16,0,4"/>
+                            <TextBox Text="{Binding SpawnProtection, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     Background="{StaticResource BrushAppBackground}"
+                                     BorderBrush="{StaticResource BrushBorder}"
+                                     BorderThickness="1"
+                                     Foreground="{StaticResource BrushTextPrimary}"
+                                     FontSize="13"/>
+                            <TextBlock Text="Blocks around spawn protected from non-ops (0-100, 0 = disabled)."
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource BrushTextMuted}"
+                                       Margin="0,4,0,0"/>
+
+                            <TextBlock Text="Network compression threshold"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,16,0,4"/>
+                            <TextBox Text="{Binding NetworkCompressionThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     Background="{StaticResource BrushAppBackground}"
+                                     BorderBrush="{StaticResource BrushBorder}"
+                                     BorderThickness="1"
+                                     Foreground="{StaticResource BrushTextPrimary}"
+                                     FontSize="13"/>
+                            <TextBlock Text="Packet size threshold for compression (-1 to 256, -1 = disabled)."
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource BrushTextMuted}"
+                                       Margin="0,4,0,0"/>
+
+                            <TextBlock Text="Player idle timeout (minutes)"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,16,0,4"/>
+                            <TextBox Text="{Binding PlayerIdleTimeout, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     Background="{StaticResource BrushAppBackground}"
+                                     BorderBrush="{StaticResource BrushBorder}"
+                                     BorderThickness="1"
+                                     Foreground="{StaticResource BrushTextPrimary}"
+                                     FontSize="13"/>
+                            <TextBlock Text="Auto-kick idle players after this many minutes (0 = disabled)."
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource BrushTextMuted}"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Op permission level"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource BrushTextSecondary}"
+                                       Margin="0,0,0,4"/>
+                            <ComboBox SelectedItem="{Binding OpPermissionLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      ItemsSource="{StaticResource OpPermissionLevelOptions}"
+                                      Padding="10"
+                                      Background="{StaticResource BrushAppBackground}"
+                                      BorderBrush="{StaticResource BrushBorder}"
+                                      BorderThickness="1"
+                                      Foreground="{StaticResource BrushTextPrimary}"
+                                      FontSize="13"/>
+                            <TextBlock Text="Permission level for opped players (1-4)."
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource BrushTextMuted}"
+                                       Margin="0,4,0,0"/>
+
+                            <CheckBox Content="PvP enabled"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding PvpEnabled, Mode=TwoWay}"
+                                      Margin="0,16,0,0"/>
+                            <CheckBox Content="Allow Nether"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding AllowNether, Mode=TwoWay}"
+                                      Margin="0,10,0,0"/>
+                            <CheckBox Content="Allow flight"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding AllowFlight, Mode=TwoWay}"
+                                      Margin="0,10,0,0"/>
+                            <CheckBox Content="Hardcore mode"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding HardcoreMode, Mode=TwoWay}"
+                                      Margin="0,10,0,0"/>
+                            <CheckBox Content="Force gamemode"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding ForceGamemode, Mode=TwoWay}"
+                                      Margin="0,10,0,0"/>
+                            <CheckBox Content="Enable command blocks"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding EnableCommandBlocks, Mode=TwoWay}"
+                                      Margin="0,10,0,0"/>
+                            <CheckBox Content="Spawn animals"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding SpawnAnimals, Mode=TwoWay}"
+                                      Margin="0,10,0,0"/>
+                            <CheckBox Content="Spawn monsters"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding SpawnMonsters, Mode=TwoWay}"
+                                      Margin="0,10,0,0"/>
+                            <CheckBox Content="Spawn NPCs"
+                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      IsChecked="{Binding SpawnNpcs, Mode=TwoWay}"
+                                      Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Margin="0,20,0,0">
+                        <TextBlock Text="Operator players"
+                                   FontFamily="{StaticResource FontBody}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding OpPlayers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="10"
+                                 Background="{StaticResource BrushAppBackground}"
+                                 BorderBrush="{StaticResource BrushBorder}"
+                                 BorderThickness="1"
+                                 Foreground="{StaticResource BrushTextPrimary}"
+                                 FontSize="13"
+                                 AcceptsReturn="True"
+                                 Height="72"
+                                 TextWrapping="Wrap"/>
+                        <TextBlock Text="Comma-separated list of players who should be ops." 
+                                   FontFamily="{StaticResource FontBody}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   Margin="0,8,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="0,20,0,0">
+                        <TextBlock Text="Whitelisted players"
+                                   FontFamily="{StaticResource FontBody}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding WhitelistedPlayers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="10"
+                                 Background="{StaticResource BrushAppBackground}"
+                                 BorderBrush="{StaticResource BrushBorder}"
+                                 BorderThickness="1"
+                                 Foreground="{StaticResource BrushTextPrimary}"
+                                 FontSize="13"
+                                 AcceptsReturn="True"
+                                 Height="72"
+                                 TextWrapping="Wrap"/>
+                        <TextBlock Text="Comma-separated list of friends who can join while whitelist is enabled."
+                                   FontFamily="{StaticResource FontBody}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   Margin="0,8,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                Margin="0,24,0,0">
+                        <Button Content="Save settings"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Padding="16,8"
+                                Margin="0,0,12,0"
+                                Click="SaveServerSettings_Click"/>
+                        <Button Content="Open server folder"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="16,8"
+                                Click="OpenServerFolder_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="PluginsSection"
+                    Background="{StaticResource BrushPanelBackground}"
+                    BorderBrush="{StaticResource BrushBorder}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="24"
+                    Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock Text="Plugins / Mods"
+                               FontFamily="{StaticResource FontDisplay}"
+                               FontSize="20"
+                               Foreground="{StaticResource BrushTextPrimary}"
+                               Margin="0,0,0,12"/>
+                    <TextBlock Text="Drop plugin or mod .jar files here or install them from local files. This will copy them into the server and validate compatibility for modded server types."
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="13"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               TextWrapping="Wrap"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,20,0,16">
+                        <Button Content="Install local files..."
+                                ToolTip="Select plugin or mod jars from your computer and install them into this server."
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Padding="14,8"
+                                Margin="0,0,10,0"
+                                Click="BrowsePlugins_Click"/>
+                        <Button Content="Browse Plugins &amp; Mods..."
+                                ToolTip="Search and install plugins, mods, and datapacks from Modrinth directly into this server."
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Padding="14,8"
+                                Margin="0,0,10,0"
+                                Click="BrowseServerPlugins_Click"/>
+                        <Button Content="Check compatibility"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="14,8"
+                                Margin="0,0,10,0"
+                                Click="CheckPluginCompatibility_Click"/>
+                        <Button Content="Open folder"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="14,8"
+                                Click="OpenPluginFolder_Click"/>
+                    </StackPanel>
+
+                    <TextBlock x:Name="PluginFolderInfoTextBlock"
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="12"
+                               Foreground="{StaticResource BrushTextMuted}"
+                               Margin="0,0,0,12"/>
+
+                    <TextBlock x:Name="PluginStatusTextBlock"
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="12"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,12"/>
+
+                    <ItemsControl x:Name="PluginIssuesItemsControl"
+                                  Margin="0,0,0,12"
+                                  Visibility="Collapsed">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource BrushPanelElevated}"
+                                        BorderBrush="{StaticResource BrushBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="10,8"
+                                        Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding TypeLabel}"
+                                                       FontFamily="{StaticResource FontBody}"
+                                                       FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource BrushTextPrimary}"/>
+                                            <TextBlock Text="{Binding Description}"
+                                                       FontFamily="{StaticResource FontBody}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource BrushTextSecondary}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,6,0,0"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Content="Fix"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Padding="10,5"
+                                                Margin="10,0,0,0"
+                                                Click="FixPluginDependencyIssue_Click"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button x:Name="PluginFixAllButton"
+                            Content="Fix all"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Padding="12,6"
+                            Width="120"
+                            HorizontalAlignment="Left"
+                            Margin="0,0,0,12"
+                            Visibility="Collapsed"
+                            Click="FixAllPluginDependencyIssues_Click"/>
+
+                    <Border x:Name="PluginDropZone"
+                            AllowDrop="True"
+                            DragOver="PluginDropZone_DragOver"
+                            Drop="PluginDropZone_Drop"
+                            BorderBrush="{StaticResource BrushBorder}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12"
+                            Background="{StaticResource BrushPanelBackground}"
+                            MinHeight="140">
+                        <StackPanel>
+                            <Border Background="{StaticResource BrushPanelBackground}"
+                                    BorderBrush="{StaticResource BrushBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="0,8"
+                                    Margin="0,0,0,8"
+                                    x:Name="PluginEmptyHintBorder">
+                                <TextBlock FontFamily="{StaticResource FontBody}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource BrushTextMuted}"
+                                           HorizontalAlignment="Center"
+                                           Text="⬇ Drop plugin or mod .jar files here to install them"/>
+                            </Border>
+                            <TextBlock x:Name="PluginHintTextBlock"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource BrushTextMuted}"
+                                       HorizontalAlignment="Right"
+                                       Margin="0,0,4,6"
+                                       Text="⬇ Drop another .jar to add more plugins or mods"
+                                       Visibility="Collapsed"/>
+                            <ItemsControl x:Name="PluginFilesItemsControl">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource BrushPanelElevated}"
+                                                BorderBrush="{StaticResource BrushBorder}"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                Padding="10,8"
+                                                Margin="0,0,0,4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding FileName}"
+                                                           FontFamily="{StaticResource FontBody}"
+                                                           FontSize="13"
+                                                           Foreground="{StaticResource BrushTextPrimary}"
+                                                           VerticalAlignment="Center"/>
+                                                <Button Grid.Column="1"
+                                                        Content="Remove"
+                                                        Style="{StaticResource DangerButtonStyle}"
+                                                        Padding="10,4"
+                                                        Margin="8,0,0,0"
+                                                        Click="RemovePluginFile_Click"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="AdvancedSection"
+                    Background="{StaticResource BrushPanelBackground}"
+                    BorderBrush="{StaticResource BrushBorder}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="24"
+                    Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock Text="Advanced"
+                               FontFamily="{StaticResource FontDisplay}"
+                               FontSize="20"
+                               Foreground="{StaticResource BrushTextPrimary}"
+                               Margin="0,0,0,12"/>
+                    <WrapPanel Margin="0,0,0,16">
+                        <Button Content="Open Server Folder"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Margin="0,0,8,8"
+                                Click="OpenServerFolder_Click"/>
+                        <Button Content="Terminal"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,0,8"
+                                Click="AdvancedTerminal_Click"/>
+                        <Button Content="Logs"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,0,8"
+                                Click="AdvancedLogs_Click"/>
+                    </WrapPanel>
+                    <TextBlock Text="Advanced server settings let you pin a specific Java runtime, choose the preferred jar to launch, and refresh the server start scripts without recreating the whole directory."
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="13"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               TextWrapping="Wrap"/>
+                    <StackPanel Margin="0,20,0,0">
+                        <TextBlock Text="Custom Java executable"
+                                   FontFamily="{StaticResource FontBody}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource BrushTextPrimary}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <TextBox Text="{Binding JavaPath, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     MinWidth="260"
+                                     HorizontalAlignment="Stretch"
+                                     Background="{StaticResource BrushPanelElevated}"
+                                     BorderBrush="{StaticResource BrushBorder}"
+                                     BorderThickness="1"
+                                     Foreground="{StaticResource BrushTextPrimary}"
+                                     FontSize="13"/>
+                            <Button Content="Browse"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="10,0,0,0"
+                                    Padding="16,8"
+                                    Click="BrowseJavaPath_Click"/>
+                        </StackPanel>
+
+                        <TextBlock Text="Preferred server jar"
+                                   FontFamily="{StaticResource FontBody}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource BrushTextPrimary}"
+                                   Margin="0,12,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <TextBox Text="{Binding JarFileName, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     MinWidth="260"
+                                     HorizontalAlignment="Stretch"
+                                     Background="{StaticResource BrushPanelElevated}"
+                                     BorderBrush="{StaticResource BrushBorder}"
+                                     BorderThickness="1"
+                                     Foreground="{StaticResource BrushTextPrimary}"
+                                     FontSize="13"/>
+                            <Button Content="Detect"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="10,0,0,0"
+                                    Padding="16,8"
+                                    Click="DetectJarFile_Click"/>
+                        </StackPanel>
+ 
+                        <TextBlock Text="Custom JVM arguments"
+                                   FontFamily="{StaticResource FontBody}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource BrushTextPrimary}"
+                                   Margin="0,16,0,0"/>
+                        <TextBox Text="{Binding CustomJvmArgs, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="10"
+                                 MinWidth="260"
+                                 HorizontalAlignment="Stretch"
+                                 Background="{StaticResource BrushPanelElevated}"
+                                 BorderBrush="{StaticResource BrushBorder}"
+                                 BorderThickness="1"
+                                 Foreground="{StaticResource BrushTextPrimary}"
+                                 FontSize="13"
+                                 AcceptsReturn="True"
+                                 Height="80"
+                                 TextWrapping="Wrap"/>
+                        <TextBlock Text="Optional extra Java flags such as -XX:+UseG1GC or -XX:MaxGCPauseMillis=50."
+                                   FontFamily="{StaticResource FontBody}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}"
+                                   Margin="0,8,0,0"
+                                   TextWrapping="Wrap"/>
+ 
+                        <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                            <Button Content="Save advanced settings"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Padding="16,8"
+                                    Margin="0,0,12,0"
+                                    Click="SaveAdvancedSettings_Click"/>                            <Button Content="Regenerate start scripts"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Padding="16,8"
+                                    Click="RegenerateStartScripts_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="LogsSection"
+                    Background="{StaticResource BrushPanelBackground}"
+                    BorderBrush="{StaticResource BrushBorder}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="24"
+                    Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock Text="Logs"
+                               FontFamily="{StaticResource FontDisplay}"
+                               FontSize="20"
+                               Foreground="{StaticResource BrushTextPrimary}"
+                               Margin="0,0,0,12"/>
+                    <TextBox x:Name="LogsTextBox"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"
+                             Height="360"
+                             Padding="12"
+                             Background="{StaticResource BrushAppBackground}"
+                             BorderBrush="{StaticResource BrushBorder}"
+                             BorderThickness="1"
+                             Foreground="{StaticResource BrushTextPrimary}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

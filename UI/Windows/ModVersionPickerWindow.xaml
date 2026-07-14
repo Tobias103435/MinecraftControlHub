@@ -1,0 +1,134 @@
+<Window x:Class="MinecraftControlHub.UI.Windows.ModVersionPickerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Select Version"
+        Width="580" Height="560"
+        MinWidth="420" MinHeight="360"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{StaticResource BrushAppBackground}">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="{StaticResource BrushSidebarBackground}"
+                BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,0,0,1"
+                Padding="24,18">
+            <StackPanel>
+                <TextBlock x:Name="ModNameLabel"
+                           FontFamily="{StaticResource FontDisplay}" FontSize="16"
+                           Foreground="{StaticResource BrushTextPrimary}"/>
+                <TextBlock x:Name="CurrentVersionLabel"
+                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                           Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Filter bar -->
+        <Border Grid.Row="1"
+                Background="{StaticResource BrushPanelBackground}"
+                BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,0,0,1"
+                Padding="16,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <CheckBox x:Name="StableOnlyCheckBox"
+                          Grid.Column="0"
+                          Content="Stable releases only"
+                          IsChecked="True"
+                          Foreground="{StaticResource BrushTextSecondary}"
+                          FontFamily="{StaticResource FontBody}" FontSize="12"
+                          VerticalAlignment="Center"
+                          Checked="FilterChanged" Unchecked="FilterChanged"/>
+                <TextBlock Grid.Column="1"
+                           x:Name="CountLabel"
+                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                           Foreground="{StaticResource BrushTextMuted}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Version list -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="16,10">
+            <StackPanel>
+                <TextBlock x:Name="LoadingText"
+                           Text="Loading versions..."
+                           FontFamily="{StaticResource FontBody}" FontSize="13"
+                           Foreground="{StaticResource BrushTextMuted}"
+                           HorizontalAlignment="Center" Margin="0,24,0,0"
+                           Visibility="Collapsed"/>
+                <ItemsControl x:Name="VersionList">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{StaticResource BrushPanelBackground}"
+                                    BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                    CornerRadius="8" Padding="16,12" Margin="0,0,0,6"
+                                    Cursor="Hand"
+                                    MouseLeftButtonUp="VersionRow_Click"
+                                    Tag="{Binding}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding VersionNumber}"
+                                                       FontFamily="{StaticResource FontDisplay}" FontSize="13"
+                                                       Foreground="{StaticResource BrushTextPrimary}"
+                                                       VerticalAlignment="Center"/>
+                                            <Border Margin="8,0,0,0" Padding="6,2" CornerRadius="4"
+                                                    Background="{StaticResource BrushPanelElevated}"
+                                                    Visibility="{Binding IsPrerelease, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <TextBlock Text="{Binding VersionType}"
+                                                           FontFamily="{StaticResource FontBody}" FontSize="10"
+                                                           Foreground="{StaticResource BrushTextSecondary}"/>
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock FontFamily="{StaticResource FontBody}" FontSize="11"
+                                                   Foreground="{StaticResource BrushTextMuted}" Margin="0,3,0,0">
+                                            <Run Text="Minecraft "/>
+                                            <Run Text="{Binding MinecraftVersion, Mode=OneWay}"/>
+                                            <Run Text=" · "/>
+                                            <Run Text="{Binding DatePublished, StringFormat={}{0:dd MMM yyyy}, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="3"
+                Background="{StaticResource BrushSidebarBackground}"
+                BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,1,0,0"
+                Padding="16,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock x:Name="StatusLabel"
+                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                           Foreground="{StaticResource BrushTextSecondary}"
+                           VerticalAlignment="Center" Margin="0,0,16,0"/>
+                <Button Content="Cancel"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="18,8"
+                        Click="Cancel_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

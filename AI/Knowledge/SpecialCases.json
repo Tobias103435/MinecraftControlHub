@@ -1,0 +1,52 @@
+{
+  "specialCases": [
+    {
+      "term": "Hypixel",
+      "type": "server",
+      "description": "Hypixel is one of the largest Minecraft server networks. It is NOT a modpack or a mod. Players connect to it via the server address play.hypixel.net using a Vanilla Minecraft installation.",
+      "action": "Do not create a modpack or install mods. Guide the user to create a Vanilla installation and connect to play.hypixel.net from the in-game server list."
+    },
+    {
+      "term": "Skyblock",
+      "type": "ambiguous",
+      "description": "Skyblock can mean multiple things: (1) Hypixel Skyblock — a game mode on the Hypixel server network, (2) a classic singleplayer Skyblock map (spawn on a floating island), (3) mods that add Skyblock-style gameplay to a regular world.",
+      "action": "Ask the user to clarify: Are they trying to play Hypixel Skyblock (requires Vanilla + connecting to Hypixel), create a local singleplayer Skyblock world, or install modded Skyblock content?"
+    },
+    {
+      "term": "OptiFine",
+      "type": "mod",
+      "description": "OptiFine is a popular graphics/shader mod but it is NOT available on Modrinth. It must be downloaded manually from optifine.net. For Fabric users, Sodium + Iris Shaders is the recommended modern alternative.",
+      "action": "If the user wants OptiFine on Fabric, recommend Sodium + Iris Shaders instead and explain they provide better performance. If they specifically want OptiFine, inform them it must be downloaded from optifine.net and installed manually."
+    },
+    {
+      "term": "Bedrock",
+      "type": "edition",
+      "description": "Minecraft Bedrock Edition (available on Windows Store, console, mobile) is a completely different product from Java Edition. This launcher only supports Java Edition.",
+      "action": "Inform the user that Minecraft Control Hub only supports Java Edition. If they want Bedrock, they need to use the official Minecraft Launcher."
+    },
+    {
+      "term": "Lunar Client",
+      "type": "client",
+      "description": "Lunar Client is a third-party Minecraft client primarily used for PvP on older versions (1.8.9). It is not a modloader and cannot be installed through this launcher.",
+      "action": "Inform the user that Lunar Client is a separate launcher and cannot be managed here."
+    },
+    {
+      "term": "join a server",
+      "type": "context",
+      "description": "When a user wants to JOIN an existing multiplayer server (not host one themselves), they need a Vanilla or appropriate client installation and they add the server address in the in-game multiplayer screen.",
+      "action": "Create a Vanilla installation (or the appropriate modded one if the server requires it) and instruct the user to add the server IP in Multiplayer from the main menu."
+    },
+    {
+      "term": "CurseForge",
+      "type": "platform",
+      "description": "CurseForge is a mod hosting platform. This launcher uses Modrinth for mod discovery and installation, not CurseForge. Mods that are only on CurseForge must be downloaded manually.",
+      "action": "Inform the user that this launcher searches Modrinth. If a specific mod is only on CurseForge, guide them to download it manually and add it to the mods folder."
+    },
+    {
+      "term": "Forge vs NeoForge",
+      "type": "loader",
+      "description": "Forge and NeoForge are two separate mod loaders and are treated as separate filters on Modrinth. A mod listed only under 'forge' on Modrinth will NOT be found when searching with loader=neoforge, and vice versa. They are NOT interchangeable for mod searches. NeoForge is the modern fork for 1.20.1+ but many gun mods and older mods are specifically published as 'forge' only.",
+      "action": "Always use the exact loader the user specified. If a mod is not found for loader X, do NOT silently switch to the other loader — instead report that the mod was not found for that loader and ask the user if they want to try the other one."
+    }
+  ]
+}

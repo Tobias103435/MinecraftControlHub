@@ -1,0 +1,89 @@
+<!--
+    Nexora account section for SettingsPage.xaml
+    Plak dit DIRECT NA de opening <StackPanel Margin="32,24,32,32"...>
+    en VOOR de "Status banner" Border, zodat het bovenaan staat.
+-->
+
+<!-- ============ Nexora account ============ -->
+<Border Background="{StaticResource BrushPanelBackground}"
+        BorderBrush="{StaticResource BrushBorder}"
+        BorderThickness="1"
+        CornerRadius="12"
+        Padding="24"
+        Margin="0,0,0,20">
+    <StackPanel>
+        <TextBlock Text="Nexora account"
+                   FontFamily="{StaticResource FontDisplay}"
+                   FontSize="16"
+                   Foreground="{StaticResource BrushTextPrimary}"
+                   Margin="0,0,0,8"/>
+        <TextBlock Text="Your Nexora account gives you access to social features: friends, Minecraft account linking, and more."
+                   FontFamily="{StaticResource FontBody}"
+                   FontSize="13"
+                   Foreground="{StaticResource BrushTextSecondary}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,16"/>
+
+        <!-- ── NOT logged in ── -->
+        <StackPanel Visibility="{Binding IsNexoraLoggedOut, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Button Content="Log in to Nexora"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Padding="20,10"
+                    HorizontalAlignment="Left"
+                    Click="NexoraLogin_Click"/>
+        </StackPanel>
+
+        <!-- ── Logged in ── -->
+        <StackPanel Visibility="{Binding IsNexoraLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <!-- Profile row -->
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0"
+                        Width="40" Height="40" CornerRadius="20"
+                        Background="{StaticResource BrushAccent}"
+                        Margin="0,0,14,0">
+                    <TextBlock Text="{Binding NexoraUsername[0]}"
+                               FontFamily="{StaticResource FontDisplay}"
+                               FontSize="17" Foreground="White"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding NexoraUsername}"
+                               FontFamily="{StaticResource FontBody}"
+                               FontSize="14" FontWeight="SemiBold"
+                               Foreground="{StaticResource BrushTextPrimary}"/>
+                    <!-- Minecraft link status -->
+                    <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
+                               Foreground="{StaticResource BrushTextSecondary}"
+                               Visibility="{Binding IsMinecraftLinked, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Run Text="🎮  "/><Run Text="{Binding MinecraftUsername, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock Text="No Minecraft account linked"
+                               FontFamily="{StaticResource FontBody}" FontSize="12"
+                               Foreground="{StaticResource BrushTextMuted}"
+                               Visibility="{Binding IsMinecraftLinked, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Action buttons -->
+            <StackPanel Orientation="Horizontal">
+                <!-- Unlink Minecraft (only when linked) -->
+                <Button Content="Unlink Minecraft"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="16,8" Margin="0,0,10,0"
+                        Visibility="{Binding IsMinecraftLinked, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Click="NexoraUnlink_Click"/>
+
+                <!-- Logout -->
+                <Button Content="Log out of Nexora"
+                        Style="{StaticResource DangerButtonStyle}"
+                        Padding="16,8"
+                        Click="NexoraLogout_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </StackPanel>
+</Border>

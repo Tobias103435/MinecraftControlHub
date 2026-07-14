@@ -1,0 +1,299 @@
+﻿<UserControl x:Class="MinecraftControlHub.UI.Pages.FriendsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+             d:DataContext="{d:DesignInstance viewmodels:FriendsPageViewModel}">
+
+    <!-- Root Grid: content + optional overlay -->
+    <Grid>
+
+        <!-- ══ Actual page content (always rendered) ══════════════════════ -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="28,24,28,24">
+
+                <!-- Header -->
+                <TextBlock Text="Social"
+                           FontFamily="{DynamicResource FontDisplay}" FontSize="22"
+                           Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
+                <TextBlock Text="Connect with your Nexora friends and link your Minecraft account."
+                           FontFamily="{DynamicResource FontBody}" FontSize="13"
+                           Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,24"/>
+
+                <!-- Profile card (only when logged in) -->
+                <Border Background="{DynamicResource BrushPanelBackground}"
+                        BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                        CornerRadius="10" Padding="20" Margin="0,0,0,16"
+                        Visibility="{Binding IsNotLoggedIn, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Avatar circle -->
+                        <Border Grid.Column="0" Width="56" Height="56" CornerRadius="28"
+                                Background="{DynamicResource BrushAccent}" Margin="0,0,16,0">
+                            <TextBlock Text="{Binding ProfileInitial}"
+                                       FontFamily="{DynamicResource FontDisplay}"
+                                       FontSize="24" FontWeight="SemiBold" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <!-- User info -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding CurrentProfile.WebsiteUsername}"
+                                       FontFamily="{DynamicResource FontDisplay}"
+                                       FontSize="16" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource BrushTextPrimary}"/>
+                            <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="12"
+                                       Foreground="{DynamicResource BrushTextSecondary}" Margin="0,3,0,0"
+                                       Visibility="{Binding IsMinecraftLinked, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Run Text="🎮  "/><Run Text="{Binding CurrentProfile.MinecraftUsername, Mode=OneWay}"/>
+                            </TextBlock>
+                            <TextBlock Text="No Minecraft account linked"
+                                       FontFamily="{DynamicResource FontBody}" FontSize="12"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,3,0,0"
+                                       Visibility="{Binding IsMinecraftLinked, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                        </StackPanel>
+
+                        <!-- Link / Linked badge -->
+                        <Button Grid.Column="2"
+                                Content="Link Minecraft Account"
+                                Command="{Binding LinkMinecraftCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="14,8" VerticalAlignment="Center"
+                                Visibility="{Binding IsMinecraftLinked, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                            <Button.ToolTip>
+                                <ToolTip>
+                                    <TextBlock TextWrapping="Wrap" MaxWidth="260"
+                                               Text="{Binding LinkButtonTooltip}"/>
+                                </ToolTip>
+                            </Button.ToolTip>
+                        </Button>
+                        <Button Grid.Column="2"
+                                Content="Unlink Minecraft"
+                                Command="{Binding UnlinkMinecraftCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="14,8" VerticalAlignment="Center"
+                                Visibility="{Binding IsMinecraftLinked, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    </Grid>
+                </Border>
+
+                <!-- No Microsoft account tip (shown when Nexora logged in but no MS account) -->
+                <Border Background="{DynamicResource BrushPanelBackground}"
+                        BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                        CornerRadius="8" Padding="12,10" Margin="0,0,0,12"
+                        Visibility="{Binding IsNoMicrosoftAccount, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="12"
+                               Foreground="{DynamicResource BrushTextSecondary}"
+                               TextWrapping="Wrap">
+                        <Run Text="&#x2139;  "/><Run Text="Clicking 'Link Minecraft Account' will open the Microsoft sign-in flow automatically."/>
+                    </TextBlock>
+                </Border>
+
+                <!-- Status message -->
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontFamily="{DynamicResource FontBody}" FontSize="12"
+                           Foreground="{DynamicResource BrushTextSecondary}"
+                           TextWrapping="Wrap" Margin="0,0,0,12"
+                           Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <!-- Loading -->
+                <TextBlock Text="Loading…"
+                           FontFamily="{DynamicResource FontBody}" FontSize="13"
+                           Foreground="{DynamicResource BrushTextMuted}"
+                           HorizontalAlignment="Center" Margin="0,8,0,8"
+                           Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <!-- Two-column layout -->
+                <Grid Visibility="{Binding IsNotLoggedIn, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="300"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: friends -->
+                    <Border Grid.Column="0"
+                            Background="{DynamicResource BrushPanelBackground}"
+                            BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                            CornerRadius="10" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="Friends"
+                                       FontFamily="{DynamicResource FontDisplay}" FontSize="15"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,14"/>
+
+                            <Grid Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding NewFriendUsername, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}"/>
+                                <Button Grid.Column="1" Content="+ Add"
+                                        Command="{Binding AddFriendCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Padding="16,8" Margin="8,0,0,0"/>
+                            </Grid>
+
+                            <TextBlock Text="No friends yet. Add someone by their username!"
+                                       FontFamily="{DynamicResource FontBody}" FontSize="12"
+                                       Foreground="{DynamicResource BrushTextMuted}"
+                                       HorizontalAlignment="Center" Margin="0,12,0,12"
+                                       Visibility="{Binding HasNoFriends, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                            <ItemsControl ItemsSource="{Binding Friends}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource BrushPanelElevated}"
+                                                BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                                                CornerRadius="8" Padding="12,10" Margin="0,0,0,6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Grid.Column="0" Width="38" Height="38" CornerRadius="19"
+                                                        Background="{DynamicResource BrushAccent}" Margin="0,0,12,0">
+                                                    <TextBlock Text="{Binding Initial}"
+                                                               FontFamily="{DynamicResource FontDisplay}"
+                                                               FontSize="16" Foreground="White"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding WebsiteUsername}"
+                                                               FontFamily="{DynamicResource FontBody}" FontSize="13"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource BrushTextPrimary}"/>
+                                                    <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="11"
+                                                               Foreground="{DynamicResource BrushTextSecondary}"
+                                                               Margin="0,2,0,0"
+                                                               Visibility="{Binding MinecraftUsername, Converter={StaticResource NullToVisibilityConverter}}">
+                                                        <Run Text="🎮  "/><Run Text="{Binding MinecraftUsername, Mode=OneWay}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Right: incoming requests -->
+                    <Border Grid.Column="2"
+                            Background="{DynamicResource BrushPanelBackground}"
+                            BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                            CornerRadius="10" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="Incoming Requests"
+                                       FontFamily="{DynamicResource FontDisplay}" FontSize="15"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,14"/>
+
+                            <TextBlock Text="No pending requests."
+                                       FontFamily="{DynamicResource FontBody}" FontSize="12"
+                                       Foreground="{DynamicResource BrushTextMuted}"
+                                       HorizontalAlignment="Center" Margin="0,12,0,0"
+                                       Visibility="{Binding HasFriendRequests, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+
+                            <ItemsControl ItemsSource="{Binding FriendRequests}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource BrushPanelElevated}"
+                                                BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                                                CornerRadius="8" Padding="12,10" Margin="0,0,0,6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Grid.Column="0" Width="34" Height="34" CornerRadius="17"
+                                                        Background="{DynamicResource BrushAccent}" Margin="0,0,10,0">
+                                                    <TextBlock Text="{Binding Initial}"
+                                                               FontFamily="{DynamicResource FontDisplay}"
+                                                               FontSize="14" Foreground="White"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <TextBlock Grid.Column="1" Text="{Binding Username}"
+                                                           FontFamily="{DynamicResource FontBody}" FontSize="13"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource BrushTextPrimary}"
+                                                           VerticalAlignment="Center"/>
+                                                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                                    <Button Content="✓"
+                                                            Command="{Binding DataContext.AcceptFriendCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding Id}"
+                                                            Style="{StaticResource PrimaryButtonStyle}"
+                                                            Padding="10,5" Margin="0,0,6,0" ToolTip="Accept"/>
+                                                    <Button Content="✕"
+                                                            Command="{Binding DataContext.DeclineFriendCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding Id}"
+                                                            Style="{StaticResource DangerButtonStyle}"
+                                                            Padding="10,5" ToolTip="Decline"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <Button Content="↻ Refresh"
+                                    Command="{Binding RefreshCommand}"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Padding="14,7" Margin="0,16,0,0"
+                                    HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ══ Overlay: niet ingelogd ══════════════════════════════════════ -->
+        <Grid Visibility="{Binding IsNotLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}">
+            <!-- Frosted / blurred feel via semi-transparent layer -->
+            <Rectangle Fill="{DynamicResource BrushAppBackground}" Opacity="0.82"/>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border Background="{DynamicResource BrushPanelBackground}"
+                        BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                        CornerRadius="14" Padding="40,32">
+                    <StackPanel HorizontalAlignment="Center">
+                        <!-- Icon -->
+                        <Border Width="52" Height="52" CornerRadius="26"
+                                Background="{DynamicResource BrushAccent}"
+                                HorizontalAlignment="Center" Margin="0,0,0,18">
+                            <Canvas Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Ellipse Canvas.Left="1" Canvas.Top="4" Width="12" Height="12" Opacity="0.6"
+                                         Fill="White"/>
+                                <Ellipse Canvas.Left="9" Canvas.Top="4" Width="12" Height="12"
+                                         Fill="White"/>
+                            </Canvas>
+                        </Border>
+                        <TextBlock Text="Log in to use this feature"
+                                   FontFamily="{DynamicResource FontDisplay}" FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource BrushTextPrimary}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                        <TextBlock Text="Sign in to your Nexora account to see friends&#x0a;and connect your Minecraft account."
+                                   FontFamily="{DynamicResource FontBody}" FontSize="13"
+                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                   HorizontalAlignment="Center" TextAlignment="Center"
+                                   Margin="0,0,0,24"/>
+                        <Button Content="Log in"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Padding="32,10"
+                                HorizontalAlignment="Center"
+                                Click="OverlayLogin_Click"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+    </Grid>
+</UserControl>

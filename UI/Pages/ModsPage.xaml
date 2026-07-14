@@ -1,0 +1,1065 @@
+﻿<UserControl x:Class="MinecraftControlHub.UI.Pages.ModsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
+             xmlns:models="clr-namespace:MinecraftControlHub.Core.Models"
+             xmlns:helpers="clr-namespace:MinecraftControlHub.UI.Helpers"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+             d:DataContext="{d:DesignInstance viewmodels:ModsPageViewModel}">
+
+    <UserControl.Resources>
+        <!-- Install button that flips to a disabled "Installed" state once the
+             mod is present in the selected installation (install-once). -->
+        <Style x:Key="InstallButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Content" Value="Install"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsInstalled}" Value="True">
+                    <Setter Property="Content" Value="Installed"/>
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- ===================== MAIN (list) LAYER ===================== -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
+                      Visibility="{Binding IsDetailVisible, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+            <StackPanel Margin="32,24,32,32">
+                <TextBlock Text="Mods"
+                           FontFamily="{DynamicResource FontDisplay}"
+                           FontSize="24"
+                           Foreground="{DynamicResource BrushTextPrimary}"
+                           Margin="0,0,0,24"/>
+
+                <!-- Installation Selector -->
+                <Border x:Name="InstallationSelectorPanel"
+                        Background="{DynamicResource BrushPanelBackground}"
+                        BorderBrush="{DynamicResource BrushBorder}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="24"
+                        Margin="0,0,0,24">
+                    <StackPanel>
+                        <TextBlock Text="Select Installation"
+                                   FontFamily="{DynamicResource FontBody}"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                   Margin="0,0,0,8"/>
+                        <ComboBox ItemsSource="{Binding Installations}"
+                                  SelectedItem="{Binding SelectedInstallation}"
+                                  Padding="12"
+                                  Background="{DynamicResource BrushAppBackground}"
+                                  BorderBrush="{DynamicResource BrushBorder}"
+                                  BorderThickness="1"
+                                  Foreground="{DynamicResource BrushTextPrimary}"
+                                  FontSize="14">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:Installation}">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <!-- Installation Info (shown when selected) -->
+                        <Border Background="{DynamicResource BrushAppBackground}"
+                                BorderBrush="{DynamicResource BrushBorder}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16"
+                                Margin="0,16,0,0"
+                                Visibility="{Binding HasInstallationSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel>
+                                <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="13" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,6">
+                                    Showing mods compatible with this installation:
+                                </TextBlock>
+                                <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="13" Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,6">
+                                    <Run Text="Version: " Foreground="{DynamicResource BrushTextSecondary}"/>
+                                    <Run Text="{Binding SelectedInstallation.MinecraftVersion}"/>
+                                </TextBlock>
+                                <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="13" Foreground="{DynamicResource BrushTextPrimary}">
+                                    <Run Text="Loader: " Foreground="{DynamicResource BrushTextSecondary}"/>
+                                    <Run Text="{Binding SelectedInstallation.Loader}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Tab Buttons -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,16"
+                            IsEnabled="{Binding HasInstallationSelected}">
+                    <Button x:Name="SearchTabButton"
+                            Content="Browse Mods"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Margin="0,0,8,0"
+                            Padding="24,12"
+                            Click="SearchTabButton_Click"/>
+                    <Button x:Name="ModpacksTabButton"
+                            Content="Modpacks"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,0,8,0"
+                            Padding="24,12"
+                            Click="ModpacksTabButton_Click"/>
+                    <Button x:Name="InstalledTabButton"
+                            Content="Installed"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Padding="24,12"
+                            Click="InstalledTabButton_Click"/>
+                </StackPanel>
+
+                <!-- Search Tab Content -->
+                <StackPanel x:Name="SearchTabContent">
+                    <!-- Search + Sort Panel -->
+                    <Border Background="{DynamicResource BrushPanelBackground}"
+                            BorderBrush="{DynamicResource BrushBorder}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="24"
+                            Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBox Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                     Grid.Row="0" Grid.Column="0"
+                                     Padding="12"
+                                     VerticalContentAlignment="Center"
+                                     Background="{DynamicResource BrushAppBackground}"
+                                     BorderBrush="{DynamicResource BrushBorder}"
+                                     BorderThickness="1"
+                                     Foreground="{DynamicResource BrushTextPrimary}"
+                                     FontSize="14"
+                                     KeyDown="SearchBox_KeyDown"/>
+                            <Button Content="Search"
+                                    Grid.Row="0" Grid.Column="1"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="8,0,0,0"
+                                    Padding="24,12"
+                                    Click="Search_Click"/>
+
+                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                                        Orientation="Horizontal" Margin="0,12,0,0"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="Source"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0"
+                                           FontFamily="{DynamicResource FontBody}"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource BrushTextSecondary}"/>
+                                <ComboBox ItemsSource="{Binding SourceOptions}"
+                                          SelectedItem="{Binding SelectedSourceOption}"
+                                          Width="140"
+                                          Padding="10,6"
+                                          Background="{DynamicResource BrushAppBackground}"
+                                          BorderBrush="{DynamicResource BrushBorder}"
+                                          BorderThickness="1"
+                                          Foreground="{DynamicResource BrushTextPrimary}"
+                                          FontSize="13"/>
+                                <TextBlock Text="Sort by"
+                                           VerticalAlignment="Center"
+                                           Margin="16,0,8,0"
+                                           FontFamily="{DynamicResource FontBody}"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource BrushTextSecondary}"/>
+                                <ComboBox ItemsSource="{Binding SortOptions}"
+                                          SelectedItem="{Binding SelectedSort}"
+                                          Width="200"
+                                          Padding="10,6"
+                                          Background="{DynamicResource BrushAppBackground}"
+                                          BorderBrush="{DynamicResource BrushBorder}"
+                                          BorderThickness="1"
+                                          Foreground="{DynamicResource BrushTextPrimary}"
+                                          FontSize="13"/>
+                                <TextBlock Text="{Binding TotalHits, StringFormat='{}{0:N0} results'}"
+                                           VerticalAlignment="Center"
+                                           Margin="16,0,0,0"
+                                           FontFamily="{DynamicResource FontBody}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource BrushTextMuted}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Empty state -->
+                    <TextBlock Text="No compatible mods found. Try a different search or sort option."
+                               Foreground="{DynamicResource BrushTextMuted}"
+                               FontFamily="{DynamicResource FontBody}"
+                               FontSize="13"
+                               Margin="4,8,0,8"
+                               Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <!-- Search Results (Modrinth-style horizontal cards) -->
+                    <ItemsControl ItemsSource="{Binding SearchResults}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:ModSearchResult}">
+                                <Border Background="{DynamicResource BrushPanelBackground}"
+                                        BorderBrush="{DynamicResource BrushBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="16"
+                                        Margin="0,0,0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Icon (left) -->
+                                        <Border Grid.Column="0"
+                                                Width="72" Height="72"
+                                                CornerRadius="10"
+                                                Background="{DynamicResource BrushAppBackground}"
+                                                VerticalAlignment="Top">
+                                            <Image helpers:AsyncImageLoader.SourceUrl="{Binding IconUrl}"
+                                                   Stretch="UniformToFill"/>
+                                        </Border>
+
+                                        <!-- Text (middle) -->
+                                        <StackPanel Grid.Column="1" Margin="16,0,16,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontFamily="{DynamicResource FontDisplay}"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Author, StringFormat='by {0}'}"
+                                                       FontFamily="{DynamicResource FontBody}"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource BrushTextMuted}"
+                                                       Margin="0,2,0,6"/>
+                                            <Border HorizontalAlignment="Left" CornerRadius="4" Padding="6,2" Margin="0,0,0,4">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#331DB368"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Source}" Value="{x:Static models:ModSource.CurseForge}">
+                                                                <Setter Property="Background" Value="#33F16436"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="10" FontWeight="SemiBold">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="Modrinth"/>
+                                                            <Setter Property="Foreground" Value="#1DB368"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Source}" Value="{x:Static models:ModSource.CurseForge}">
+                                                                    <Setter Property="Text" Value="CurseForge"/>
+                                                                    <Setter Property="Foreground" Value="#F16436"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+                                            <TextBlock Text="{Binding Description}"
+                                                       FontFamily="{DynamicResource FontBody}"
+                                                       FontSize="13"
+                                                       Foreground="{DynamicResource BrushTextSecondary}"
+                                                       TextWrapping="Wrap"
+                                                       MaxHeight="40"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Downloads, StringFormat='{}{0:N0} downloads'}"
+                                                       FontFamily="{DynamicResource FontBody}"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource BrushTextMuted}"
+                                                       Margin="0,6,0,0"/>
+                                        </StackPanel>
+
+                                        <!-- Actions (right) -->
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center" MinWidth="110">
+                                            <Button Content="View"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Padding="20,10"
+                                                    HorizontalAlignment="Stretch"
+                                                    Margin="0,0,0,8"
+                                                    Click="View_Click"/>
+                                            <Button Style="{StaticResource InstallButtonStyle}"
+                                                    Padding="20,10"
+                                                    HorizontalAlignment="Stretch"
+                                                    Click="Install_Click"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Pagination -->
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="0,8,0,0"
+                                Visibility="{Binding HasPagination, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button Content="Previous"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="16,8"
+                                Margin="0,0,8,0"
+                                IsEnabled="{Binding CanGoPrevious}"
+                                Click="PrevPage_Click"/>
+                        <ItemsControl ItemsSource="{Binding PageNumbers}" VerticalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Padding="14,8"
+                                            Margin="2,0"
+                                            Click="PageNumber_Click"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="Next"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="16,8"
+                                Margin="8,0,0,0"
+                                IsEnabled="{Binding CanGoNext}"
+                                Click="NextPage_Click"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Installed Tab Content -->
+                <StackPanel x:Name="InstalledTabContent" Visibility="Collapsed">
+
+                    <!-- Check for updates / Check for dependencies -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                        <Button Content="Check for updates"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                IsEnabled="{Binding IsCheckingModUpdates, Converter={StaticResource InverseBoolConverter}}"
+                                Margin="0,0,10,0"
+                                Click="CheckModUpdates_Click"/>
+                        <Button Content="Check for dependencies"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                IsEnabled="{Binding IsCheckingDependencies, Converter={StaticResource InverseBoolConverter}}"
+                                Click="CheckDependencies_Click"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding UpdateStatus}"
+                               Visibility="{Binding HasUpdateStatus, Converter={StaticResource BoolToVisibilityConverter}}"
+                               FontFamily="{DynamicResource FontBody}"
+                               FontSize="12"
+                               Foreground="{DynamicResource BrushTextSecondary}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,10"/>
+
+                    <TextBlock Text="{Binding DependencyStatus}"
+                               Visibility="{Binding HasDependencyStatus, Converter={StaticResource BoolToVisibilityConverter}}"
+                               FontFamily="{DynamicResource FontBody}"
+                               FontSize="12"
+                               Foreground="{DynamicResource BrushTextSecondary}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,10"/>
+
+                    <!-- Dependency issues found by "Check for dependencies" -->
+                    <ItemsControl ItemsSource="{Binding DependencyIssues}"
+                                  Visibility="{Binding HasDependencyIssues, Converter={StaticResource BoolToVisibilityConverter}}"
+                                  Margin="0,0,0,18">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:DependencyIssue}">
+                                <Border Background="{DynamicResource BrushPanelBackground}"
+                                        BorderBrush="{DynamicResource BrushBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="12"
+                                        Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock FontFamily="{DynamicResource FontBody}"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource BrushDanger}"
+                                                       Text="{Binding TypeLabel}"/>
+                                            <TextBlock Text="{Binding Description}"
+                                                       FontFamily="{DynamicResource FontBody}"
+                                                       FontSize="12.5"
+                                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,3,0,0"/>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1"
+                                                Content="Fix"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Padding="14,5"
+                                                VerticalAlignment="Center"
+                                                Click="FixDependencyIssue_Click"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <ItemsControl ItemsSource="{Binding InstalledMods}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:Mod}">
+                                <Border Style="{StaticResource ModCardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontFamily="{DynamicResource FontDisplay}"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource BrushTextPrimary}"
+                                                   Margin="0,0,0,8"
+                                                   TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding Version, StringFormat='Version: {0}'}"
+                                                   FontFamily="{DynamicResource FontBody}"
+                                                   FontSize="13"
+                                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                                   Margin="0,0,0,4"/>
+                                        <TextBlock Text="{Binding Loader, StringFormat='Loader: {0}'}"
+                                                   FontFamily="{DynamicResource FontBody}"
+                                                   FontSize="13"
+                                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                                   Margin="0,0,0,4"/>
+                                        <TextBlock Text="{Binding InstalledAt, StringFormat='Installed: {0:d}'}"
+                                                   FontFamily="{DynamicResource FontBody}"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource BrushTextMuted}"
+                                                   Margin="0,0,0,4"/>
+                                        <Border HorizontalAlignment="Left" CornerRadius="4" Padding="6,2" Margin="0,0,0,8">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#331DB368"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Source}" Value="{x:Static models:ModSource.CurseForge}">
+                                                            <Setter Property="Background" Value="#33F16436"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="10" FontWeight="SemiBold">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="Modrinth"/>
+                                                        <Setter Property="Foreground" Value="#1DB368"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Source}" Value="{x:Static models:ModSource.CurseForge}">
+                                                                <Setter Property="Text" Value="CurseForge"/>
+                                                                <Setter Property="Foreground" Value="#F16436"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                        <TextBlock Text="Auto-installed dependency"
+                                                   FontFamily="{DynamicResource FontBody}"
+                                                   FontSize="11"
+                                                   FontStyle="Italic"
+                                                   Foreground="{DynamicResource BrushTextMuted}"
+                                                   Margin="0,0,0,12"
+                                                   Visibility="{Binding IsDependency, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="{Binding UpdateLabel}"
+                                                    Style="{StaticResource PrimaryButtonStyle}"
+                                                    Padding="20,10"
+                                                    Margin="0,0,8,0"
+                                                    FontWeight="SemiBold"
+                                                    Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                    Click="Update_Click"/>
+                                            <Button Content="Uninstall"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Click="Uninstall_Click"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Modpacks Tab Content — inline browser, same layout as Mods tab -->
+                <StackPanel x:Name="ModpacksTabContent" Visibility="Collapsed">
+
+                    <!-- Search + Sort Panel -->
+                    <Border Background="{DynamicResource BrushPanelBackground}"
+                            BorderBrush="{DynamicResource BrushBorder}"
+                            BorderThickness="1" CornerRadius="12"
+                            Padding="24" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBox x:Name="ModpackSearchBox"
+                                     Grid.Row="0" Grid.Column="0"
+                                     Text="{Binding ModpackSearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="12" VerticalContentAlignment="Center"
+                                     Background="{DynamicResource BrushAppBackground}"
+                                     BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                                     Foreground="{DynamicResource BrushTextPrimary}" FontSize="14"
+                                     KeyDown="ModpackSearchBox_KeyDown"/>
+                            <Button Content="Search"
+                                    Grid.Row="0" Grid.Column="1"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="8,0,0,0" Padding="24,12"
+                                    Click="ModpackSearch_Click"/>
+
+                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                        Orientation="Horizontal" Margin="0,12,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Sort by"
+                                           VerticalAlignment="Center" Margin="0,0,8,0"
+                                           FontFamily="{DynamicResource FontBody}" FontSize="13"
+                                           Foreground="{DynamicResource BrushTextSecondary}"/>
+                                <ComboBox ItemsSource="{Binding ModpackSortOptions}"
+                                          SelectedItem="{Binding SelectedModpackSort}"
+                                          Width="200" Padding="10,6"
+                                          Background="{DynamicResource BrushAppBackground}"
+                                          BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                                          Foreground="{DynamicResource BrushTextPrimary}" FontSize="13"/>
+                                <TextBlock Text="{Binding ModpackTotalHits, StringFormat='{}{0:N0} results'}"
+                                           VerticalAlignment="Center" Margin="16,0,0,0"
+                                           FontFamily="{DynamicResource FontBody}" FontSize="12"
+                                           Foreground="{DynamicResource BrushTextMuted}"
+                                           Visibility="{Binding HasModpackResults, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Prompt (before first search) -->
+                    <TextBlock Text="Search for modpacks above, or leave it empty and press Search to browse all modpacks compatible with the selected installation."
+                               Foreground="{DynamicResource BrushTextMuted}"
+                               FontFamily="{DynamicResource FontBody}" FontSize="13"
+                               Margin="4,0,0,8" TextWrapping="Wrap"
+                               Visibility="{Binding ShowModpackPrompt, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <!-- Searching indicator -->
+                    <TextBlock Text="Searching…"
+                               Foreground="{DynamicResource BrushTextMuted}"
+                               FontFamily="{DynamicResource FontBody}" FontSize="13"
+                               Margin="4,8,0,8"
+                               Visibility="{Binding IsModpackSearching, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <!-- Empty state -->
+                    <TextBlock Text="No modpacks found. Try a different search or sort option."
+                               Foreground="{DynamicResource BrushTextMuted}"
+                               FontFamily="{DynamicResource FontBody}" FontSize="13"
+                               Margin="4,8,0,8"
+                               Visibility="{Binding ShowModpackEmptyState, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <!-- Results — expandable modpack cards (ModpackCardViewModel) -->
+                    <ItemsControl ItemsSource="{Binding ModpackCards}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource BrushPanelBackground}"
+                                        BorderBrush="{DynamicResource BrushBorder}"
+                                        BorderThickness="1" CornerRadius="12"
+                                        Margin="0,0,0,12">
+                                    <StackPanel>
+
+                                        <!-- ── Header row (always visible) ── -->
+                                        <Border Padding="16,14,16,14">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Icon -->
+                                            <Border Grid.Column="0"
+                                                    Width="72" Height="72" CornerRadius="10"
+                                                    Background="{DynamicResource BrushAppBackground}"
+                                                    VerticalAlignment="Top">
+                                                <Image helpers:AsyncImageLoader.SourceUrl="{Binding IconUrl}"
+                                                       Stretch="UniformToFill"/>
+                                            </Border>
+
+                                            <!-- Name / author / description / downloads -->
+                                            <StackPanel Grid.Column="1" Margin="16,0,16,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontFamily="{DynamicResource FontDisplay}" FontSize="16"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource BrushTextPrimary}"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Author, StringFormat='by {0}'}"
+                                                           FontFamily="{DynamicResource FontBody}" FontSize="12"
+                                                           Foreground="{DynamicResource BrushTextMuted}"
+                                                           Margin="0,2,0,6"/>
+                                                <TextBlock Text="{Binding Description}"
+                                                           FontFamily="{DynamicResource FontBody}" FontSize="13"
+                                                           Foreground="{DynamicResource BrushTextSecondary}"
+                                                           TextWrapping="Wrap" MaxHeight="40"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Downloads, StringFormat='{}{0:N0} downloads'}"
+                                                           FontFamily="{DynamicResource FontBody}" FontSize="12"
+                                                           Foreground="{DynamicResource BrushTextMuted}"
+                                                           Margin="0,6,0,0"/>
+                                            </StackPanel>
+
+                                            <!-- Install button -->
+                                            <Button Grid.Column="2"
+                                                    x:Name="ModpackInstallBtn"
+                                                    VerticalAlignment="Center"
+                                                    Padding="20,8"
+                                                    Style="{StaticResource PrimaryButtonStyle}"
+                                                    Content="Install"
+                                                    Tag="{Binding Modpack}"
+                                                    Click="InstallModpack_Click"/>
+
+                                            <!-- Expand chevron (always visible) -->
+                                            <Button Grid.Column="3"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Padding="10,0,4,0"
+                                                    Cursor="Hand"
+                                                    VerticalAlignment="Center"
+                                                    Click="ExpandModpack_Click">
+                                                <TextBlock FontFamily="{DynamicResource FontBody}"
+                                                           FontSize="12"
+                                                           Foreground="{DynamicResource BrushTextMuted}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="▶"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                                                                    <Setter Property="Text" Value="▼"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Button>
+                                        </Grid>
+                                        </Border>
+
+                                        <!-- ── Expanded mod list (only when installed + expanded) ── -->
+                                        <Border Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                Margin="16,0,16,14">
+                                            <StackPanel>
+                                                <!-- Divider -->
+                                                <Border Height="1"
+                                                        Background="{DynamicResource BrushBorder}"
+                                                        Margin="0,0,0,10"/>
+
+                                                <!-- Loading indicator -->
+                                                <TextBlock Text="Mods laden…"
+                                                           FontFamily="{DynamicResource FontBody}" FontSize="12"
+                                                           Foreground="{DynamicResource BrushTextMuted}"
+                                                           Margin="0,0,0,8"
+                                                           Visibility="{Binding IsLoadingMods, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                                <!-- No mods state -->
+                                                <TextBlock Text="Geen mods gevonden"
+                                                           FontFamily="{DynamicResource FontBody}" FontSize="12"
+                                                           Foreground="{DynamicResource BrushTextMuted}"
+                                                           Margin="0,0,0,8"
+                                                           Visibility="{Binding HasMods, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+
+                                                <!-- Preview: mod names for non-installed modpacks (read-only) -->
+                                                <ItemsControl ItemsSource="{Binding PreviewModNames}"
+                                                              Visibility="{Binding HasPreviewNames, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Background="{DynamicResource BrushPanelElevated}"
+                                                                    CornerRadius="6"
+                                                                    Padding="10,6"
+                                                                    Margin="0,0,0,3">
+                                                                <TextBlock Text="{Binding}"
+                                                                           FontFamily="{DynamicResource FontBody}"
+                                                                           FontSize="12"
+                                                                           Foreground="{DynamicResource BrushTextSecondary}"
+                                                                           TextTrimming="CharacterEllipsis"/>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+
+                                                <!-- Scrollable mod rows (max 240 px) -->
+                                                <ScrollViewer MaxHeight="240"
+                                                              VerticalScrollBarVisibility="Auto"
+                                                              Margin="0,0,0,4">
+                                                    <ItemsControl ItemsSource="{Binding ModRows}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Background="{DynamicResource BrushPanelElevated}"
+                                                                        CornerRadius="7"
+                                                                        Padding="10,7"
+                                                                        Margin="0,0,0,4">
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="28"/>
+                                                                            <ColumnDefinition Width="*"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
+
+                                                                        <!-- Initial avatar -->
+                                                                        <Border Grid.Column="0"
+                                                                                Width="22" Height="22"
+                                                                                CornerRadius="4"
+                                                                                Background="{DynamicResource BrushBorder}"
+                                                                                VerticalAlignment="Center">
+                                                                            <TextBlock Text="{Binding Initial}"
+                                                                                       FontSize="10"
+                                                                                       FontWeight="Bold"
+                                                                                       FontFamily="{DynamicResource FontBody}"
+                                                                                       Foreground="{DynamicResource BrushTextSecondary}"
+                                                                                       HorizontalAlignment="Center"
+                                                                                       VerticalAlignment="Center"/>
+                                                                        </Border>
+
+                                                                        <!-- Name + version -->
+                                                                        <StackPanel Grid.Column="1"
+                                                                                    Margin="8,0,6,0"
+                                                                                    VerticalAlignment="Center">
+                                                                            <TextBlock Text="{Binding Name}"
+                                                                                       FontFamily="{DynamicResource FontBody}"
+                                                                                       FontSize="12"
+                                                                                       FontWeight="SemiBold"
+                                                                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                                                                       TextTrimming="CharacterEllipsis"/>
+                                                                            <TextBlock Text="{Binding Version}"
+                                                                                       FontFamily="{DynamicResource FontBody}"
+                                                                                       FontSize="10"
+                                                                                       Foreground="{DynamicResource BrushTextMuted}"
+                                                                                       TextTrimming="CharacterEllipsis"/>
+                                                                        </StackPanel>
+
+                                                                        <!-- Enable / disable toggle -->
+                                                                        <ToggleButton Grid.Column="2"
+                                                                                      IsChecked="{Binding IsEnabled}"
+                                                                                      VerticalAlignment="Center"
+                                                                                      Cursor="Hand"
+                                                                                      Click="ModpackModToggle_Click"
+                                                                                      Style="{StaticResource ModToggleStyle}"
+                                                                                      ToolTip="{Binding IsEnabled, Converter={StaticResource BoolToEnableTooltipConverter}}"/>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </StackPanel>
+                                        </Border>
+
+                                    </StackPanel>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsInstalled}" Value="True">
+                                        <Setter TargetName="ModpackInstallBtn" Property="Content"  Value="Installed"/>
+                                        <Setter TargetName="ModpackInstallBtn" Property="IsEnabled" Value="False"/>
+                                        <Setter TargetName="ModpackInstallBtn" Property="Style"    Value="{StaticResource SecondaryButtonStyle}"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Modpack pagination -->
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="0,16,0,4"
+                                Visibility="{Binding ModpackHasPagination, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button Content="&#x2190;"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="12,6" Margin="0,0,4,0"
+                                IsEnabled="{Binding ModpackCanGoPrevious}"
+                                Click="ModpackPrevPage_Click"/>
+                        <ItemsControl ItemsSource="{Binding ModpackPageNumbers}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding}"
+                                            Padding="10,6" Margin="2,0"
+                                            Tag="{Binding}"
+                                            Click="ModpackPageNumber_Click">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Value="True">
+                                                        <DataTrigger.Binding>
+                                                            <MultiBinding Converter="{StaticResource EqualityConverter}">
+                                                                <Binding Path="DataContext.ModpackCurrentPage" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                                <Binding/>
+                                                            </MultiBinding>
+                                                        </DataTrigger.Binding>
+                                                        <Setter Property="Background" Value="{DynamicResource BrushAccent}"/>
+                                                        <Setter Property="Foreground" Value="White"/>
+                                                        <Setter Property="BorderThickness" Value="0"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="&#x2192;"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="12,6" Margin="4,0,0,0"
+                                IsEnabled="{Binding ModpackCanGoNext}"
+                                Click="ModpackNextPage_Click"/>
+                    </StackPanel>
+
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ===================== DETAIL LAYER ===================== -->
+        <Border Background="{DynamicResource BrushAppBackground}"
+                Visibility="{Binding IsDetailVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                <StackPanel Margin="32,24,32,32">
+                    <Button Content="&#x2190;  Back to list"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Padding="16,8"
+                            HorizontalAlignment="Left"
+                            Margin="0,0,0,20"
+                            Click="BackToList_Click"/>
+
+                    <!-- Header -->
+                    <Grid Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0"
+                                Width="96" Height="96"
+                                CornerRadius="12"
+                                Background="{DynamicResource BrushPanelBackground}"
+                                VerticalAlignment="Top">
+                            <Image helpers:AsyncImageLoader.SourceUrl="{Binding SelectedMod.IconUrl}"
+                                   Stretch="UniformToFill"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" Margin="20,0,20,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding SelectedMod.Name}"
+                                       FontFamily="{DynamicResource FontDisplay}"
+                                       FontSize="24"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding SelectedMod.Author, StringFormat='by {0}'}"
+                                       FontFamily="{DynamicResource FontBody}"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource BrushTextMuted}"
+                                       Margin="0,4,0,8"/>
+                            <TextBlock Text="{Binding SelectedMod.Description}"
+                                       FontFamily="{DynamicResource FontBody}"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource BrushTextSecondary}"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding SelectedModCategories, StringFormat='Categories: {0}'}"
+                                       FontFamily="{DynamicResource FontBody}"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource BrushTextMuted}"
+                                       Margin="0,8,0,0"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="2"
+                                Content="Install"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Padding="28,12"
+                                VerticalAlignment="Top"
+                                IsEnabled="{Binding SelectedMod.IsInstalled, Converter={StaticResource InverseBoolConverter}}"
+                                Click="DetailInstall_Click"/>
+                    </Grid>
+
+                    <!-- Loading -->
+                    <TextBlock Text="Loading details..."
+                               Foreground="{DynamicResource BrushTextMuted}"
+                               FontFamily="{DynamicResource FontBody}"
+                               FontSize="13"
+                               Margin="0,4,0,12"
+                               Visibility="{Binding IsDetailLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <!-- Screenshots (large gallery with prev/next arrows) -->
+                    <StackPanel Visibility="{Binding HasScreenshots, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Margin="0,0,0,20">
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Screenshots"
+                                       Grid.Column="0"
+                                       FontFamily="{DynamicResource FontDisplay}"
+                                       FontSize="16"
+                                       Foreground="{DynamicResource BrushTextPrimary}"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding GalleryCounter}"
+                                       Grid.Column="1"
+                                       FontFamily="{DynamicResource FontBody}"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource BrushTextMuted}"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <Border CornerRadius="12"
+                                Background="{DynamicResource BrushPanelBackground}"
+                                BorderBrush="{DynamicResource BrushBorder}"
+                                BorderThickness="1"
+                                Height="460"
+                                ClipToBounds="True">
+                            <Grid>
+                                <!-- Large screenshot fills the available space -->
+                                <Image helpers:AsyncImageLoader.SourceUrl="{Binding CurrentGalleryImage.Url}"
+                                       Stretch="Uniform"
+                                       Margin="8"/>
+
+                                <!-- Previous arrow -->
+                                <Button Content="&#x2039;"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Margin="12,0,0,0"
+                                        Width="48" Height="48"
+                                        FontSize="28"
+                                        FontWeight="Bold"
+                                        Foreground="{DynamicResource BrushTextPrimary}"
+                                        Background="#99000000"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Visibility="{Binding HasMultipleScreenshots, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        IsEnabled="{Binding CanGoPreviousImage}"
+                                        Click="PrevImage_Click"/>
+
+                                <!-- Next arrow -->
+                                <Button Content="&#x203A;"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Margin="0,0,12,0"
+                                        Width="48" Height="48"
+                                        FontSize="28"
+                                        FontWeight="Bold"
+                                        Foreground="{DynamicResource BrushTextPrimary}"
+                                        Background="#99000000"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Visibility="{Binding HasMultipleScreenshots, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        IsEnabled="{Binding CanGoNextImage}"
+                                        Click="NextImage_Click"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Description / Body -->
+                    <TextBlock Text="Description"
+                               FontFamily="{DynamicResource FontDisplay}"
+                               FontSize="16"
+                               Foreground="{DynamicResource BrushTextPrimary}"
+                               Margin="0,0,0,12"/>
+                    <Border Background="{DynamicResource BrushPanelBackground}"
+                            BorderBrush="{DynamicResource BrushBorder}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="20">
+                        <TextBlock Text="{Binding SelectedModDetail.Body, Converter={StaticResource MarkdownToPlainTextConverter}}"
+                                   FontFamily="{DynamicResource FontBody}"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                   TextWrapping="Wrap"/>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- ===================== INSTALL PROGRESS OVERLAY ===================== -->
+        <Grid Background="#B3000000"
+              Visibility="{Binding IsInstallOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="{DynamicResource BrushPanelBackground}"
+                    BorderBrush="{DynamicResource BrushBorder}"
+                    BorderThickness="1"
+                    CornerRadius="14"
+                    Padding="32"
+                    Width="440"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="{Binding InstallOverlayTitle}"
+                               FontFamily="{DynamicResource FontDisplay}"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrushTextPrimary}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,16"/>
+
+                    <!-- Indeterminate progress bar while installing -->
+                    <ProgressBar IsIndeterminate="True"
+                                 Height="8"
+                                 Foreground="{DynamicResource BrushAccent}"
+                                 Background="{DynamicResource BrushAppBackground}"
+                                 BorderThickness="0"
+                                 Margin="0,0,0,16"
+                                 Visibility="{Binding IsInstallInProgress, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <!-- BUGFIX: install/update logs (which can include a long installer
+                         failure log) were dumped into a plain, unscrollable, uncopyable
+                         TextBlock - same issue as the launch overlay on Home. -->
+                    <Border Background="{DynamicResource BrushAppBackground}"
+                            BorderBrush="{DynamicResource BrushBorder}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            MaxHeight="240"
+                            Margin="0,0,0,8">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
+                            <TextBox Text="{Binding InstallOverlayMessage, Mode=OneWay}"
+                                     FontFamily="{DynamicResource FontBody}"
+                                     FontSize="13"
+                                     Foreground="{DynamicResource BrushTextSecondary}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     TextWrapping="Wrap"
+                                     IsReadOnly="True"
+                                     IsReadOnlyCaretVisible="True"/>
+                        </ScrollViewer>
+                    </Border>
+
+                    <Button Content="Copy log"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Padding="16,6"
+                            HorizontalAlignment="Right"
+                            Margin="0,0,0,20"
+                            Click="CopyInstallLog_Click"/>
+
+                    <!-- Finish appears once the install completes -->
+                    <Button Content="Finish"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Padding="28,12"
+                            HorizontalAlignment="Right"
+                            Visibility="{Binding InstallComplete, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Click="Finish_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

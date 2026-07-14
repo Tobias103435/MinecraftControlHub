@@ -1,0 +1,27 @@
+<Application x:Class="MinecraftControlHub.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:MinecraftControlHub.UI.Converters">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/Theme.xaml"/>
+                <ResourceDictionary Source="Styles/Controls.xaml"/>
+                <ResourceDictionary Source="Styles/CheckBox.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <converters:MarkdownToPlainTextConverter x:Key="MarkdownToPlainTextConverter"/>
+            <converters:LoaderNotVanillaToVisibilityConverter x:Key="LoaderNotVanillaToVisibilityConverter"/>
+            <converters:BoolToOpacityConverter x:Key="BoolToOpacityConverter"/>
+            <converters:BoolToEnableTooltipConverter x:Key="BoolToEnableTooltipConverter"/>
+            <converters:BoolToEnabledLabelConverter x:Key="BoolToEnabledLabelConverter"/>
+            <converters:EqualityConverter x:Key="EqualityConverter"/>
+            <converters:TierToBadgeBrushConverter x:Key="TierToBadgeBrushConverter"/>
+            <converters:TierToTextBrushConverter x:Key="TierToTextBrushConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

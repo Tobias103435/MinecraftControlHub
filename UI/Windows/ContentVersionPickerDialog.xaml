@@ -1,0 +1,61 @@
+<Window x:Class="MinecraftControlHub.UI.Windows.ContentVersionPickerDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pick a version"
+        Width="420" Height="480"
+        MinWidth="320" MinHeight="280"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{StaticResource BrushAppBackground}">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Select a version to install"
+                   FontFamily="{StaticResource FontDisplay}"
+                   FontSize="14"
+                   Foreground="{StaticResource BrushTextPrimary}"
+                   Margin="0,0,0,12"/>
+
+        <ListBox Grid.Row="1"
+                 x:Name="VersionList"
+                 Background="{StaticResource BrushPanelBackground}"
+                 BorderBrush="{StaticResource BrushBorder}"
+                 BorderThickness="1"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 MouseDoubleClick="VersionList_DoubleClick">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="4,6">
+                        <TextBlock Text="{Binding VersionNumber}"
+                                   FontFamily="{StaticResource FontBody}"
+                                   FontSize="13"
+                                   Foreground="{StaticResource BrushTextPrimary}"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding GameVersions}"
+                                   FontFamily="{StaticResource FontBody}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource BrushTextMuted}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="Cancel"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Padding="16,8" Margin="0,0,8,0"
+                    Click="Cancel_Click"/>
+            <Button Content="Install"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Padding="16,8"
+                    Click="Install_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
