@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2025 Nexora Launcher
+Copyright (c) 2026 Tobias
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,5 +28,6 @@ This project integrates with the CurseForge API through a server-side proxy
 hosted by Nexora. The proxy is not part of this open source distribution and
 is not available for public use. Forks of this repository may not reuse,
 replicate, or redistribute the Nexora CurseForge proxy or its API credentials.
+
 CurseForge API usage is subject to the CurseForge API Terms of Service:
 https://support.curseforge.com/en/support/solutions/articles/9000207405
