@@ -98,6 +98,12 @@ public partial class AiPage : UserControl
             _viewModel?.CancelAction(msg);
     }
 
+    private void ToggleExpand_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: TerminalMessage msg })
+            msg.IsExpanded = !msg.IsExpanded;
+    }
+
     /// <summary>
     /// "Fix with AI" button click — sends the failed execution result back to the AI
     /// so it can analyse the errors and propose alternative actions (e.g. different mod).
@@ -154,7 +160,8 @@ public partial class AiPage : UserControl
         var settingsService = (Application.Current as App)?.ServiceProvider?.GetService<MinecraftControlHub.Core.Services.ISettingsService>();
         if (settingsService == null) return;
 
-        // Save the API key
+        // Save the API key — always force Gemini provider + correct model
+        settingsService.Settings.AiProvider = "Gemini";
         settingsService.Settings.AiApiKey = apiKey;
         settingsService.Settings.AiModel = "gemini-3.1-flash-lite";
         await settingsService.SaveAsync();

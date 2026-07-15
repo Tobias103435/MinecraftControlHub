@@ -329,6 +329,29 @@ public class ModService : IModService
         foreach (var m in installed.Where(m => m.CurseForgeId.HasValue))
             known.Add($"cf:{m.CurseForgeId.GetValueOrDefault()}");
 
+        // ── Duplicate check: skip the download entirely if the primary mod is
+        //    already installed (matched by Modrinth project ID or CurseForge mod ID).
+        //    This prevents re-downloading and re-registering mods the user already
+        //    has — the most common cause of wasted bandwidth and confusing
+        //    duplicate entries in the installed-mods list.
+        var primaryKey = searchResult.Source == ModSource.CurseForge && searchResult.CurseForgeId.HasValue
+            ? $"cf:{searchResult.CurseForgeId.Value}"
+            : searchResult.ModrinthId;
+        if (!string.IsNullOrEmpty(primaryKey) && known.Contains(primaryKey))
+        {
+            result.Success = true;
+            result.WasAlreadyInstalled = true;
+            result.PrimaryMod = installed.FirstOrDefault(m =>
+                (searchResult.Source == ModSource.CurseForge && searchResult.CurseForgeId.HasValue
+                    && m.CurseForgeId == searchResult.CurseForgeId)
+                || (!string.IsNullOrEmpty(searchResult.ModrinthId)
+                    && string.Equals(m.ModrinthId, searchResult.ModrinthId, StringComparison.OrdinalIgnoreCase)));
+            result.SkippedAlreadyInstalled.Add(primaryKey);
+            result.Summary = $"'{searchResult.Name}' is already installed in '{installation.Name}'.";
+            _log.Log("Mods", $"  -> \"{searchResult.Name}\" is already installed in '{installation.Name}', skipping download.");
+            return result;
+        }
+
         var modsDir = GetModsDirectory(installation);
 
         // Install the primary mod itself.

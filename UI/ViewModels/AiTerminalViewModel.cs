@@ -205,14 +205,15 @@ public class AiTerminalViewModel : ViewModelBase
                     if (!string.IsNullOrWhiteSpace(textWithoutJson))
                         aiMessage.Text = textWithoutJson;
                     else
-                        System.Windows.Application.Current.Dispatcher.Invoke(
+                        _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(
                             () => Messages.Remove(aiMessage));
 
                     var planMsg = new TerminalMessage
                     {
                         Type         = TerminalMessageType.ActionPlan,
                         Text         = FormatPlan(parsed),
-                        CommandBatch = parsed
+                        CommandBatch = parsed,
+                        PlanSummary  = GeneratePlanSummary(parsed) ?? string.Empty
                     };
                     AddMessage(planMsg);
                     await ExecuteActionAsync(planMsg, setBusy: false);
@@ -225,6 +226,7 @@ public class AiTerminalViewModel : ViewModelBase
                         Type                   = TerminalMessageType.ActionPlan,
                         Text                   = FormatPlan(parsed),
                         CommandBatch           = parsed,
+                        PlanSummary            = GeneratePlanSummary(parsed) ?? string.Empty,
                         IsAwaitingConfirmation = true
                     });
                 }
@@ -258,7 +260,9 @@ public class AiTerminalViewModel : ViewModelBase
     
         try
         {
-            var result = await _terminalService.ExecuteAsync(planMessage.CommandBatch);
+            // Run execution on a background thread so the UI stays responsive
+            // during long-running operations (mod downloads, API calls, etc.)
+            var result = await Task.Run(() => _terminalService.ExecuteAsync(planMessage.CommandBatch));
     
             var summary = new StringBuilder();
             foreach (var r in result.Results)
@@ -355,7 +359,10 @@ public class AiTerminalViewModel : ViewModelBase
     // ─────────────────────────────────────────────────────────────────────────
 
     private void AddMessage(TerminalMessage msg)
-        => System.Windows.Application.Current.Dispatcher.Invoke(() => Messages.Add(msg));
+        => System.Windows.Application.Current.Dispatcher.InvokeAsync(() => Messages.Add(msg));
+
+    /// <summary>Minimum number of commands before the compact summary view is used.</summary>
+    private const int CompactViewThreshold = 4;
 
     private static string FormatPlan(AICommandBatch batch)
     {
@@ -378,5 +385,55 @@ public class AiTerminalViewModel : ViewModelBase
         }
 
         return sb.ToString().Trim();
+    }
+
+    /// <summary>
+    /// Generates a compact summary string when a batch has many commands.
+    /// Groups commands by action type and produces a short human-readable line.
+    /// Returns null if the batch is too small for a compact view.
+    /// </summary>
+    private static string? GeneratePlanSummary(AICommandBatch batch)
+    {
+        if (batch.Commands.Count < CompactViewThreshold)
+            return null;
+
+        var groups = batch.Commands
+            .GroupBy(c => c.Action, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var parts = new List<string>();
+        foreach (var group in groups)
+        {
+            var count = group.Count();
+            var label = group.Key.ToLowerInvariant() switch
+            {
+                "installmod"           => $"Install {count} mod(s)",
+                "createinstallation"   => $"Create {count} installation(s)",
+                "deleteinstallation"   => $"Delete {count} installation(s)",
+                "createserver"         => $"Create {count} server(s)",
+                "deleteserver"         => $"Delete {count} server(s)",
+                "startserver"          => $"Start {count} server(s)",
+                "stopserver"           => $"Stop {count} server(s)",
+                "sendcommand"          => $"Send {count} command(s)",
+                "readserveroutput"     => $"Read {count} output(s)",
+                _                      => $"{group.Key} \u00d7{count}"
+            };
+            parts.Add(label);
+        }
+
+        // Add target info if all commands share the same target
+        var targets = batch.Commands
+            .Select(c => c.Parameters.GetValueOrDefault("targetName")
+                      ?? c.Parameters.GetValueOrDefault("installationName")
+                      ?? c.Parameters.GetValueOrDefault("serverName"))
+            .Where(t => !string.IsNullOrEmpty(t))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var summary = string.Join(" \u00b7 ", parts);
+        if (targets.Count == 1)
+            summary += $" \u2192 {targets[0]}";
+
+        return summary;
     }
 }

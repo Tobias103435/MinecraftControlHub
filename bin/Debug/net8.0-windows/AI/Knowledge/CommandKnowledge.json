@@ -28,7 +28,7 @@
     },
     {
       "action": "InstallMod",
-      "description": "Searches Modrinth for a mod by name and installs it into the specified installation or server. Automatically resolves dependencies.",
+      "description": "Searches Modrinth for a mod by name and installs it into the specified installation or server. Automatically resolves dependencies. If the mod is already installed, the download is skipped automatically.",
       "parameters": {
         "targetName": "string — name of the target installation OR server (use the exact name as it appears in the app)",
         "modName": "string — mod name or search term to look up on Modrinth"

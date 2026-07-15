@@ -15,6 +15,8 @@ public enum TerminalMessageType
 public class TerminalMessage : INotifyPropertyChanged
 {
     private string _text = string.Empty;
+    private string _planSummary = string.Empty;
+    private bool _isExpanded;
     private bool _isAwaitingConfirmation;
     private bool _isExecuting;
     private bool _isDone;
@@ -28,6 +30,34 @@ public class TerminalMessage : INotifyPropertyChanged
         {
             if (_text == value) return;
             _text = value;
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>Compact summary shown when there are many commands (e.g. "Install 7 mod(s)").</summary>
+    public string PlanSummary
+    {
+        get => _planSummary;
+        set
+        {
+            if (_planSummary == value) return;
+            _planSummary = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasPlanSummary));
+        }
+    }
+
+    /// <summary>True when a compact summary is available (used to toggle collapsed view).</summary>
+    public bool HasPlanSummary => !string.IsNullOrEmpty(_planSummary);
+
+    /// <summary>Whether the detailed command list is expanded (visible).</summary>
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set
+        {
+            if (_isExpanded == value) return;
+            _isExpanded = value;
             OnPropertyChanged();
         }
     }

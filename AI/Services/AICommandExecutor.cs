@@ -210,7 +210,7 @@ public class AICommandExecutor
                 "diagnoseperformance"  => await DiagnosePerformanceAsync(cmd),
                 "switchloader"         => await SwitchLoaderAsync(cmd),
                 "enabletunnel"         => await EnableTunnelAsync(cmd),
-                "disabletunnel"      => DisableTunnel(cmd),
+                "disabletunnel"      => await DisableTunnelAsync(cmd),
                 _ => new AICommandResult
                 {
                     Success = false,
@@ -294,6 +294,20 @@ public class AICommandExecutor
     private async Task<AICommandResult> InstallModIntoInstallationAsync(
         Installation installation, string modName)
     {
+        // ── Pre-check: skip the search entirely if a mod with this name is
+        //    already installed. The authoritative ID-based check still runs
+        //    inside ModService.InstallModFromSearchAsync as a safety net.
+        var installedMods = await _mods.GetInstalledModsAsync(installation.Id);
+        var existingMod = FindAlreadyInstalledByName(modName, installedMods);
+        if (existingMod != null)
+        {
+            return new AICommandResult
+            {
+                Success = true,
+                Message = $"'{existingMod.Name}' is already installed in '{installation.Name}'. Skipping download."
+            };
+        }
+
         // Step 1: Try Modrinth first
         var modrinthPage = await _mods.SearchModsAsync(modName,
             installation.MinecraftVersion,
@@ -309,10 +323,12 @@ public class AICommandExecutor
                 return new AICommandResult
                 {
                     Success = true,
-                    Message = $"Installed '{result.PrimaryMod?.Name ?? modName}' (Modrinth) into '{installation.Name}'." +
-                              (result.InstalledDependencies.Count > 0
-                                  ? $" Also installed {result.InstalledDependencies.Count} dependency(ies)."
-                                  : string.Empty),
+                    Message = result.WasAlreadyInstalled
+                        ? $"'{result.PrimaryMod?.Name ?? modName}' is already installed in '{installation.Name}'. Skipping download."
+                        : $"Installed '{result.PrimaryMod?.Name ?? modName}' (Modrinth) into '{installation.Name}'." +
+                          (result.InstalledDependencies.Count > 0
+                              ? $" Also installed {result.InstalledDependencies.Count} dependency(ies)."
+                              : string.Empty),
                     Data = result
                 };
             }
@@ -337,10 +353,12 @@ public class AICommandExecutor
                     return new AICommandResult
                     {
                         Success = true,
-                        Message = $"Installed '{cfResult.PrimaryMod?.Name ?? modName}' (CurseForge) into '{installation.Name}'." +
-                                  (cfResult.InstalledDependencies.Count > 0
-                                      ? $" Also installed {cfResult.InstalledDependencies.Count} dependency(ies)."
-                                      : string.Empty),
+                        Message = cfResult.WasAlreadyInstalled
+                            ? $"'{cfResult.PrimaryMod?.Name ?? modName}' is already installed in '{installation.Name}'. Skipping download."
+                            : $"Installed '{cfResult.PrimaryMod?.Name ?? modName}' (CurseForge) into '{installation.Name}'." +
+                              (cfResult.InstalledDependencies.Count > 0
+                                  ? $" Also installed {cfResult.InstalledDependencies.Count} dependency(ies)."
+                                  : string.Empty),
                         Data = cfResult
                     };
                 }
@@ -388,6 +406,19 @@ public class AICommandExecutor
             GameDirectory    = server.ServerDirectory
         };
 
+        // ── Pre-check: skip the search entirely if a mod with this name is
+        //    already installed on this server.
+        var serverMods = await _mods.GetInstalledModsAsync(proxy.Id);
+        var existingServerMod = FindAlreadyInstalledByName(modName, serverMods);
+        if (existingServerMod != null)
+        {
+            return new AICommandResult
+            {
+                Success = true,
+                Message = $"'{existingServerMod.Name}' is already installed on server '{server.Name}'. Skipping download."
+            };
+        }
+
         // Step 1: Try Modrinth first
         var modrinthPage = await _mods.SearchModsAsync(modName,
             server.MinecraftVersion,
@@ -403,10 +434,12 @@ public class AICommandExecutor
                 return new AICommandResult
                 {
                     Success = true,
-                    Message = $"Installed '{result.PrimaryMod?.Name ?? modName}' (Modrinth) into server '{server.Name}'." +
-                              (result.InstalledDependencies.Count > 0
-                                  ? $" Also installed {result.InstalledDependencies.Count} dependency(ies)."
-                                  : string.Empty),
+                    Message = result.WasAlreadyInstalled
+                        ? $"'{result.PrimaryMod?.Name ?? modName}' is already installed on server '{server.Name}'. Skipping download."
+                        : $"Installed '{result.PrimaryMod?.Name ?? modName}' (Modrinth) into server '{server.Name}'." +
+                          (result.InstalledDependencies.Count > 0
+                              ? $" Also installed {result.InstalledDependencies.Count} dependency(ies)."
+                              : string.Empty),
                     Data = result
                 };
             }
@@ -431,10 +464,12 @@ public class AICommandExecutor
                     return new AICommandResult
                     {
                         Success = true,
-                        Message = $"Installed '{cfResult.PrimaryMod?.Name ?? modName}' (CurseForge) into server '{server.Name}'." +
-                                  (cfResult.InstalledDependencies.Count > 0
-                                      ? $" Also installed {cfResult.InstalledDependencies.Count} dependency(ies)."
-                                      : string.Empty),
+                        Message = cfResult.WasAlreadyInstalled
+                            ? $"'{cfResult.PrimaryMod?.Name ?? modName}' is already installed on server '{server.Name}'. Skipping download."
+                            : $"Installed '{cfResult.PrimaryMod?.Name ?? modName}' (CurseForge) into server '{server.Name}'." +
+                              (cfResult.InstalledDependencies.Count > 0
+                                  ? $" Also installed {cfResult.InstalledDependencies.Count} dependency(ies)."
+                                  : string.Empty),
                         Data = cfResult
                     };
                 }
@@ -448,6 +483,49 @@ public class AICommandExecutor
             Success = false,
             Message = $"No compatible version of \"{modName}\" found for Minecraft {server.MinecraftVersion} ({server.Type}) on Modrinth or CurseForge."
         };
+    }
+
+    /// <summary>
+    /// Quick name-based pre-check: returns the already-installed mod if the
+    /// requested name matches an installed mod. Matching is case-insensitive
+    /// and ignores spaces, so "EntityCulling" matches "Entity Culling".
+    /// Also catches common patterns like "Odin" matching "Odin - Hypixel Skyblock"
+    /// (installed name starts with requested name followed by a separator).
+    /// This is an optimization — the authoritative duplicate check by Modrinth/
+    /// CurseForge ID happens in ModService.InstallModFromSearchAsync.
+    /// </summary>
+    private static Mod? FindAlreadyInstalledByName(string modName, IEnumerable<Mod> installedMods)
+    {
+        var normalized = modName.Replace(" ", "").Trim();
+        if (string.IsNullOrEmpty(normalized) || normalized.Length < 3)
+            return null;
+
+        foreach (var m in installedMods)
+        {
+            if (string.IsNullOrWhiteSpace(m.Name))
+                continue;
+            var instNorm = m.Name.Replace(" ", "").Trim();
+            if (instNorm.Length < 3)
+                continue;
+
+            // Exact match after space-normalization (e.g. "EntityCulling" == "Entity Culling")
+            if (string.Equals(instNorm, normalized, StringComparison.OrdinalIgnoreCase))
+                return m;
+
+            // Installed name starts with requested name + separator
+            // (e.g. "Odin" matches "Odin-HypixelSkyblock" but NOT "SodiumExtra")
+            if (instNorm.Length > normalized.Length &&
+                instNorm.StartsWith(normalized, StringComparison.OrdinalIgnoreCase) &&
+                !char.IsLetterOrDigit(instNorm[normalized.Length]))
+                return m;
+
+            // Requested name starts with installed name + separator
+            if (normalized.Length > instNorm.Length &&
+                normalized.StartsWith(instNorm, StringComparison.OrdinalIgnoreCase) &&
+                !char.IsLetterOrDigit(normalized[instNorm.Length]))
+                return m;
+        }
+        return null;
     }
 
     private async Task<AICommandResult> RemoveModAsync(AICommand cmd)
@@ -1951,7 +2029,8 @@ public class AICommandExecutor
                 if (hit == null) hit = search.Hits.FirstOrDefault();
                 if (hit == null) { report.AppendLine($"  ✗ {mod.Name} — not found on Modrinth for this server."); continue; }
                 var result = await _mods.InstallModFromSearchAsync(serverProxy, hit);
-                if (result.Success) { report.AppendLine($"  ✓ Installed {mod.Name}"); installed++; }
+                if (result.Success && !result.WasAlreadyInstalled) { report.AppendLine($"  ✓ Installed {mod.Name}"); installed++; }
+                else if (result.WasAlreadyInstalled) { report.AppendLine($"  ⊘ {mod.Name} — already installed on server, skipped"); }
                 else report.AppendLine($"  ✗ {mod.Name} — {result.Error}");
             }
             report.AppendLine($"\nInstalled {installed}/{missingOnServer.Count} mods.");
@@ -2294,13 +2373,14 @@ public class AICommandExecutor
         };
     }
 
-    private AICommandResult DisableTunnel(AICommand cmd)
+    private async Task<AICommandResult> DisableTunnelAsync(AICommand cmd)
     {
         var serverName = cmd.Parameters.GetValueOrDefault("serverName")
                       ?? cmd.Parameters.GetValueOrDefault("name", "your server");
 
         // Find the running session by looking for any session — we stop by port
-        var server = _servers.GetAllServersAsync().GetAwaiter().GetResult()
+        var allServers = await _servers.GetAllServersAsync();
+        var server = allServers
                              .FirstOrDefault(s => s.Name.Equals(serverName, StringComparison.OrdinalIgnoreCase));
 
         if (server == null)

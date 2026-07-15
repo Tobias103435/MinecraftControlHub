@@ -99,8 +99,12 @@ public class NexoraAccountService : INexoraAccountService
         
         if (response.Success && response.Data != null)
         {
+            // Preserve MinecraftLink from the previously loaded account because
+            // validate.php only returns userId + username (no link info).
+            var existingLink = Current.MinecraftLink;
             Current = response.Data;
             Current.Token = response.Data.Token;
+            Current.MinecraftLink = existingLink;
             Persist();
             return Current;
         }

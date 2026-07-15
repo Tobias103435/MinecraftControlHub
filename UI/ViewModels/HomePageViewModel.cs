@@ -1470,19 +1470,24 @@ public class HomePageViewModel : ViewModelBase
     {
         if (DetailInstallation == null || IsDetailBusy)
             return;
-
+    
         if (string.IsNullOrWhiteSpace(DetailName) || string.IsNullOrWhiteSpace(DetailMinecraftVersion))
         {
             DetailStatus = "Please enter a name and a Minecraft version.";
             return;
         }
-
+    
+        // Detect whether the Minecraft version is being changed
+        var oldVersion = DetailInstallation.MinecraftVersion;
+        var newVersion = DetailMinecraftVersion.Trim();
+        var versionChanged = !string.Equals(oldVersion, newVersion, StringComparison.OrdinalIgnoreCase);
+    
         IsDetailBusy = true;
-        DetailStatus = "Saving…";
+        DetailStatus = "Saving\u2026";
         try
         {
             DetailInstallation.Name = DetailName.Trim();
-            DetailInstallation.MinecraftVersion = DetailMinecraftVersion.Trim();
+            DetailInstallation.MinecraftVersion = newVersion;
             DetailInstallation.Loader = DetailLoader;
             DetailInstallation.LoaderVersion = string.IsNullOrWhiteSpace(DetailLoaderVersion) ? null : DetailLoaderVersion.Trim();
             DetailInstallation.MaxMemoryMB = int.TryParse(DetailMaxMemoryMB, out var maxMb) ? maxMb : null;
@@ -1490,20 +1495,25 @@ public class HomePageViewModel : ViewModelBase
             DetailInstallation.CustomJvmArgs       = string.IsNullOrWhiteSpace(DetailCustomJvmArgs) ? null : DetailCustomJvmArgs.Trim();
             DetailInstallation.JavaPath            = string.IsNullOrWhiteSpace(DetailJavaPath) ? null : DetailJavaPath.Trim();
             DetailInstallation.PinMinecraftVersion = DetailPinMinecraftVersion;
-
+    
             await _installationService.UpdateInstallationAsync(DetailInstallation);
             await LoadInstallationsAsync();
-
+    
             DetailStatus = "Saved.";
         }
         catch (Exception ex)
         {
             DetailStatus = $"Could not save: {ex.Message}";
+            return;
         }
         finally
         {
             IsDetailBusy = false;
         }
+    
+        // If the Minecraft version changed, offer to check mod compatibility
+        if (versionChanged)
+            await PromptModCompatibilityCheckAsync(oldVersion, newVersion);
     }
 
     /// <summary>Uninstalls a mod from the installation currently shown in the detail overlay.</summary>
@@ -1604,6 +1614,96 @@ public class HomePageViewModel : ViewModelBase
         finally
         {
             IsLoadingHealth = false;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Mod compatibility check after Minecraft version change
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// After the Minecraft version changes, asks the user whether to check mod
+    /// compatibility. Opens a dedicated window that scans all mods at once.
+    /// </summary>
+    private async Task PromptModCompatibilityCheckAsync(string oldVersion, string newVersion)
+    {
+        if (DetailInstallation == null) return;
+
+        var mods = await _modService.GetInstalledModsAsync(DetailInstallation.Id);
+        if (mods.Count == 0) return;
+
+        var answer = System.Windows.MessageBox.Show(
+            $"Minecraft version changed from {oldVersion} to {newVersion}.\n\n" +
+            $"Would you like to check if your {mods.Count} mod(s) are compatible?\n" +
+            "Compatible mods will be auto-updated. For incompatible mods you can choose to disable or uninstall them.",
+            "Mod Compatibility Check",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+
+        if (answer != System.Windows.MessageBoxResult.Yes)
+            return;
+
+        // Open the compatibility window
+        var window = new UI.Windows.ModCompatibilityWindow(
+            DetailInstallation, _modService, oldVersion, newVersion)
+        {
+            Owner = System.Windows.Application.Current.MainWindow
+        };
+
+        var dialogResult = window.ShowDialog();
+
+        if (dialogResult == true && window.Result.Applied)
+        {
+            // Apply the user's choices for incompatible mods
+            IsDetailBusy = true;
+            DetailStatus = "Applying mod changes\u2026";
+
+            var disabled = 0;
+            var uninstalled = 0;
+
+            try
+            {
+                foreach (var row in window.Result.Rows.Where(r => !r.IsCompatible))
+                {
+                    switch (row.SelectedActionIndex)
+                    {
+                        case 1: // Disable
+                            if (row.Mod.IsEnabled)
+                                await _modService.ToggleModEnabledAsync(DetailInstallation, row.Mod.Id);
+                            disabled++;
+                            break;
+                        case 2: // Uninstall
+                            await _modService.UninstallModAsync(DetailInstallation.Id, row.Mod.Id);
+                            uninstalled++;
+                            break;
+                        // 0 = Skip, do nothing
+                    }
+                }
+
+                var parts = new List<string>();
+                var updatedCount = window.Result.Rows.Count(r => r.WasAutoUpdated);
+                if (updatedCount > 0)  parts.Add($"{updatedCount} updated");
+                if (disabled > 0)      parts.Add($"{disabled} disabled");
+                if (uninstalled > 0)   parts.Add($"{uninstalled} uninstalled");
+
+                DetailStatus = parts.Count > 0
+                    ? $"Compatibility check done: {string.Join(", ", parts)}."
+                    : "Compatibility check done.";
+            }
+            catch (Exception ex)
+            {
+                DetailStatus = $"Error applying changes: {ex.Message}";
+            }
+            finally
+            {
+                IsDetailBusy = false;
+                await LoadDetailModsAsync();
+            }
+        }
+        else
+        {
+            // User cancelled — still refresh since auto-updates may have been applied
+            await LoadDetailModsAsync();
         }
     }
 }

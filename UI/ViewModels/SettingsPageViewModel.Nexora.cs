@@ -40,6 +40,21 @@ public partial class SettingsPageViewModel
         OnPropertyChanged(nameof(MinecraftUsername));
     }
 
+    /// <summary>
+    /// Fetches the latest profile from the server to ensure MinecraftLink is up to date.
+    /// Called when the settings page loads.
+    /// </summary>
+    public async Task RefreshNexoraProfileAsync()
+    {
+        if (_nexoraAccountService?.Current == null) return;
+        try
+        {
+            await _nexoraAccountService.GetProfileAsync();
+            NotifyNexoraStateChanged();
+        }
+        catch { /* silent — best effort */ }
+    }
+
     public async Task NexoraUnlinkMinecraftAsync()
     {
         if (_nexoraAccountService?.Current == null) return;

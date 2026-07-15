@@ -29,10 +29,13 @@ public partial class ServerPreviewWindow : Window
     private readonly List<double> _ramHistory = new();
     private const int RamHistoryMax = 40;
 
+    private string _previousMinecraftVersion;
+
     public ServerPreviewWindow(Server server)
     {
         InitializeComponent();
         _server = server;
+        _previousMinecraftVersion = server.MinecraftVersion;
         DataContext = server;
         var serviceProvider = (Application.Current as App)?.ServiceProvider;
         _serverService = serviceProvider?.GetService<IServerService>();
@@ -508,15 +511,28 @@ public partial class ServerPreviewWindow : Window
         if (_serverService == null)
             return;
 
+        var oldVersion = _previousMinecraftVersion;
+        var newVersion = _server.MinecraftVersion;
+
         try
         {
             await _serverService.UpdateServerAsync(_server);
             await _serverService.UpdateServerPropertiesAsync(_server);
+            _previousMinecraftVersion = newVersion;
             MessageBox.Show("Server settings have been saved.", "Settings saved", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch
         {
             MessageBox.Show("Could not save server settings. Please try again.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // If version changed, prompt mod/plugin compatibility check
+        if (!string.Equals(oldVersion, newVersion, StringComparison.OrdinalIgnoreCase)
+            && _modService != null
+            && !string.IsNullOrWhiteSpace(_server.ServerDirectory))
+        {
+            await PromptPluginCompatibilityCheckAsync(oldVersion, newVersion);
         }
     }
 
@@ -1123,6 +1139,74 @@ public partial class ServerPreviewWindow : Window
             Initial           = initial;
             _isSelected       = isSelected;
         }
+    }
+
+    /// <summary>
+    /// Prompts the user to run a mod/plugin compatibility check after the Minecraft version changed.
+    /// Uses the ModCompatibilityWindow to show all results at once.
+    /// </summary>
+    private async Task PromptPluginCompatibilityCheckAsync(string oldVersion, string newVersion)
+    {
+        if (_modService == null || string.IsNullOrWhiteSpace(_server.ServerDirectory)) return;
+
+        // Build a fake Installation to use with modService
+        var loader = _server.Type switch
+        {
+            ServerType.Fabric   => Core.Models.LoaderType.Fabric,
+            ServerType.Quilt    => Core.Models.LoaderType.Quilt,
+            ServerType.Forge    => Core.Models.LoaderType.Forge,
+            ServerType.NeoForge => Core.Models.LoaderType.NeoForge,
+            _                   => Core.Models.LoaderType.Vanilla
+        };
+
+        var installation = new Core.Models.Installation
+        {
+            Id               = _server.Id,
+            Name             = _server.Name,
+            MinecraftVersion = newVersion,
+            Loader           = loader,
+            GameDirectory    = _server.ServerDirectory
+        };
+
+        var mods = await _modService.GetInstalledModsAsync(installation.Id);
+        if (mods.Count == 0) return;
+
+        var answer = MessageBox.Show(
+            $"Minecraft version changed from {oldVersion} to {newVersion}.\n\n" +
+            $"Would you like to check if your {mods.Count} plugin(s)/mod(s) are compatible?\n" +
+            "Compatible ones will be auto-updated. For incompatible ones you can choose to disable or uninstall.",
+            "Plugin/Mod Compatibility Check",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (answer != MessageBoxResult.Yes) return;
+
+        var window = new ModCompatibilityWindow(installation, _modService, oldVersion, newVersion)
+        {
+            Owner = this
+        };
+
+        var result = window.ShowDialog();
+
+        if (result == true && window.Result.Applied)
+        {
+            foreach (var row in window.Result.Rows.Where(r => !r.IsCompatible))
+            {
+                switch (row.SelectedActionIndex)
+                {
+                    case 1: // Disable
+                        if (row.Mod.IsEnabled)
+                            await _modService.ToggleModEnabledAsync(installation, row.Mod.Id);
+                        break;
+                    case 2: // Uninstall
+                        await _modService.UninstallModAsync(installation.Id, row.Mod.Id);
+                        break;
+                }
+            }
+        }
+
+        // Refresh the plugins section
+        await RefreshPluginSectionAsync(runCompatibilityCheck: false);
     }
 
 }

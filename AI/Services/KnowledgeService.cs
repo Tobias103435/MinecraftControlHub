@@ -77,6 +77,12 @@ public class KnowledgeService : IKnowledgeService
             "- If an action you proposed just failed, do NOT propose the exact same action again.\n" +
             "- Instead, try a genuinely different approach: different search term, different platform, different version, or explain to the user what went wrong.\n" +
             "- If two consecutive attempts to solve the same problem fail, STOP proposing actions and give the user a clear manual solution.\n\n" +
+            "## AVOID RE-INSTALLING EXISTING MODS\n" +
+            "- Before proposing InstallMod commands, CHECK the user's installations listed below — each installation shows its currently installed mods.\n" +
+            "- Do NOT include InstallMod commands for mods that are already installed in the target installation or server.\n" +
+            "- If a user asks to install a set of mods and some are already present, only propose InstallMod for the mods that are NOT yet installed.\n" +
+            "- Mention which mods were skipped because they are already installed.\n" +
+            "- The system also automatically skips already-installed mods at execution time, so even if you miss one, it will not be re-downloaded.\n\n" +
             "## RESPONSE FORMAT\n" +
             "When you need to perform an action, embed a JSON block in your response like this:\n\n" +
             "```json\n" +

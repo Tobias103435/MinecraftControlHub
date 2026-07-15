@@ -260,6 +260,14 @@ public class DependencyCheckResult
 public class ModInstallResult
 {
     public bool Success { get; set; }
+
+    /// <summary>
+    /// True when the primary mod was already installed and the download was
+    /// skipped entirely. Lets the caller (AI executor, UI) show "already
+    /// installed" instead of "installed".
+    /// </summary>
+    public bool WasAlreadyInstalled { get; set; }
+
     public Mod? PrimaryMod { get; set; }
     public List<Mod> InstalledDependencies { get; set; } = new();
     public List<string> SkippedAlreadyInstalled { get; set; } = new();

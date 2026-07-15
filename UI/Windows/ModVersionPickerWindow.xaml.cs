@@ -61,6 +61,10 @@ public partial class ModVersionPickerWindow : Window
 
     private void ApplyFilter()
     {
+        // Guard: FilterChanged may fire during InitializeComponent() before
+        // elements further down the XAML tree are created.
+        if (VersionList == null || CountLabel == null) return;
+
         var stableOnly = StableOnlyCheckBox.IsChecked == true;
         var filtered   = stableOnly
             ? _allVersions.Where(v => !v.IsPrerelease).ToList()

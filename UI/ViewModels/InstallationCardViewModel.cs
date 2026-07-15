@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
@@ -66,6 +67,12 @@ public class InstallationCardViewModel : ViewModelBase
 {
     private readonly IModService  _modService;
     private readonly IJavaService _javaService;
+
+    /// <summary>
+    /// Global throttle: limits concurrent health check network calls across all cards
+    /// so the app doesn't flood with HTTP requests on startup.
+    /// </summary>
+    private static readonly SemaphoreSlim HealthCheckThrottle = new(3, 3);
 
     private bool _isExpanded;
     private bool _isLoadingMods;
@@ -135,25 +142,26 @@ public class InstallationCardViewModel : ViewModelBase
         _modService  = modService;
         _javaService = javaService;
 
-        // Fire-and-forget background health check so the card shows indicators without blocking UI
-        _ = CheckHealthAsync();
+        // Fire-and-forget background health check — throttled so only a few run concurrently
+        _ = Task.Run(() => CheckHealthAsync());
     }
 
     public void ToggleExpand() => IsExpanded = !IsExpanded;
 
     public async Task CheckHealthAsync()
     {
+        await HealthCheckThrottle.WaitAsync().ConfigureAwait(false);
         try
         {
             // Java check
-            var rec = await _javaService.GetRecommendationAsync(Installation.MinecraftVersion);
+            var rec = await _javaService.GetRecommendationAsync(Installation.MinecraftVersion).ConfigureAwait(false);
             JavaOk     = rec.IsSatisfied;
             JavaHealth = rec.IsSatisfied
-                ? $"Java {rec.RecommendedMajor} ✓"
-                : $"Java {rec.RecommendedMajor} missing ⚠";
-
+                ? $"Java {rec.RecommendedMajor} \u2713"
+                : $"Java {rec.RecommendedMajor} missing \u26a0";
+    
             // Mod updates check
-            var mods = await _modService.GetInstalledModsAsync(Installation.Id);
+            var mods = await _modService.GetInstalledModsAsync(Installation.Id).ConfigureAwait(false);
             if (mods.Count == 0)
             {
                 ModsUpToDate = true;
@@ -162,14 +170,14 @@ public class InstallationCardViewModel : ViewModelBase
             else
             {
                 var result = await _modService.CheckForUpdatesAsync(
-                    new[] { Installation }, applyUpdates: false);
+                    new[] { Installation }, applyUpdates: false).ConfigureAwait(false);
                 _updatesAvailable = result.UpdatesAvailable.Count;
                 ModsUpToDate = _updatesAvailable == 0;
                 ModsHealth   = _updatesAvailable == 0
-                    ? "Mods up to date ✓"
-                    : $"{_updatesAvailable} mod update{(_updatesAvailable == 1 ? "" : "s")} ⚠";
+                    ? "Mods up to date \u2713"
+                    : $"{_updatesAvailable} mod update{(_updatesAvailable == 1 ? "" : "s")} \u26a0";
             }
-
+    
             OnPropertyChanged(nameof(HasHealthWarning));
         }
         catch
@@ -179,6 +187,7 @@ public class InstallationCardViewModel : ViewModelBase
         finally
         {
             HealthChecked = true;
+            HealthCheckThrottle.Release();
         }
     }
 

@@ -56,7 +56,7 @@ public class AppSettings
     /// <summary>
     /// AI provider: "OpenAI", "Gemini", or "Custom".
     /// </summary>
-    public string AiProvider { get; set; } = "OpenAI";
+    public string AiProvider { get; set; } = "Gemini";
 
     /// <summary>
     /// API key for the selected AI provider.
@@ -72,5 +72,48 @@ public class AppSettings
     /// <summary>
     /// Model identifier to use for AI Terminal queries.
     /// </summary>
-    public string AiModel { get; set; } = "gpt-4o-mini";
+    public string AiModel { get; set; } = "gemini-3.1-flash-lite";
+
+    // -----------------------------------------------------------------------
+    // Java & Performance
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Maximum RAM allocated to Minecraft in MB. Default 4096 (4 GB).
+    /// </summary>
+    public int MaxRamMb { get; set; } = 4096;
+
+    /// <summary>
+    /// Minimum RAM allocated to Minecraft in MB. Default 512.
+    /// </summary>
+    public int MinRamMb { get; set; } = 512;
+
+    /// <summary>
+    /// Additional JVM arguments appended to the launch command.
+    /// </summary>
+    public string CustomJvmArguments { get; set; } = string.Empty;
+
+    // -----------------------------------------------------------------------
+    // Launch options
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// When true, the launcher window is hidden/closed after starting the game.
+    /// </summary>
+    public bool CloseLauncherOnGameStart { get; set; }
+
+    /// <summary>
+    /// Custom game window width (0 = use default).
+    /// </summary>
+    public int GameWindowWidth { get; set; }
+
+    /// <summary>
+    /// Custom game window height (0 = use default).
+    /// </summary>
+    public int GameWindowHeight { get; set; }
+
+    /// <summary>
+    /// When true, show a desktop notification when mod updates are available.
+    /// </summary>
+    public bool NotifyOnModUpdates { get; set; } = true;
 }

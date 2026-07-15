@@ -282,7 +282,7 @@ public partial class ModsPage : UserControl
         }
     }
 
-    private void BrowseModpacks_Click(object sender, RoutedEventArgs e)
+    private async void BrowseModpacks_Click(object sender, RoutedEventArgs e)
     {
         if (_viewModel?.SelectedInstallation == null) return;
         var sp = (System.Windows.Application.Current as App)?.ServiceProvider;
@@ -290,7 +290,7 @@ public partial class ModsPage : UserControl
 
         var contentSvc = sp.GetRequiredService<MinecraftControlHub.Core.Services.IContentService>();
         var installation = _viewModel.SelectedInstallation;
-        var installed = contentSvc.GetInstalledContentAsync(installation.Id, MinecraftControlHub.Core.Models.ContentType.Modpack).GetAwaiter().GetResult();
+        var installed = await contentSvc.GetInstalledContentAsync(installation.Id, MinecraftControlHub.Core.Models.ContentType.Modpack);
         var modSvc = sp.GetService(typeof(MinecraftControlHub.Core.Services.IModService)) as MinecraftControlHub.Core.Services.IModService;
         var vm = new MinecraftControlHub.UI.ViewModels.ContentBrowserViewModel(
             contentSvc, installation.Id, installation.MinecraftVersion, installation.Loader,

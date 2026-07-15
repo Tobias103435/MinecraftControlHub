@@ -4,843 +4,513 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
              d:DataContext="{d:DesignInstance viewmodels:SettingsPageViewModel}">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="32,24,32,32" MaxWidth="720" HorizontalAlignment="Left">
-            <!-- ============ Nexora account ============ -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24"
-                    Margin="0,0,0,20">
-                <StackPanel>
-                    <TextBlock Text="Nexora account"
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ═══════════════ SIDEBAR ═══════════════ -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource BrushSidebarBackground}"
+                BorderBrush="{DynamicResource BrushBorder}"
+                BorderThickness="0,0,1,0">
+            <DockPanel>
+                <!-- Header + Search -->
+                <StackPanel DockPanel.Dock="Top" Margin="16,20,16,0">
+                    <TextBlock Text="Settings"
                                FontFamily="{StaticResource FontDisplay}"
-                               FontSize="16"
+                               FontSize="22" FontWeight="Bold"
                                Foreground="{DynamicResource BrushTextPrimary}"
-                               Margin="0,0,0,8"/>
-                    <TextBlock Text="Your Nexora account gives you access to social features: friends, Minecraft account linking, and more."
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="13"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,16"/>
+                               Margin="4,0,0,16"/>
 
-                    <!-- NOT logged in -->
-                    <StackPanel Visibility="{Binding IsNexoraLoggedOut, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <Button Content="Log in to Nexora"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Padding="20,10"
-                                HorizontalAlignment="Left"
-                                Click="NexoraLogin_Click"/>
-                    </StackPanel>
-
-                    <!-- Logged in -->
-                    <StackPanel Visibility="{Binding IsNexoraLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}">
-
-                        <!-- Profile row -->
-                        <Grid Margin="0,0,0,16">
+                    <!-- Search bar -->
+                    <Border Background="{DynamicResource BrushPanelBackground}"
+                            BorderBrush="{DynamicResource BrushBorder}"
+                            BorderThickness="1" CornerRadius="8"
+                            Padding="12,8" Margin="0,0,0,20">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0"
-                                    Width="40" Height="40" CornerRadius="20"
-                                    Background="{DynamicResource BrushAccent}"
-                                    Margin="0,0,14,0">
-                                <TextBlock Text="{Binding NexoraUsernameInitial}"
-                                           FontFamily="{StaticResource FontDisplay}"
-                                           FontSize="17" Foreground="White"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding NexoraUsername}"
-                                           FontFamily="{StaticResource FontBody}"
-                                           FontSize="14" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource BrushTextPrimary}"/>
-                                <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
-                                           Foreground="{DynamicResource BrushTextSecondary}"
-                                           Visibility="{Binding IsMinecraftLinked, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <Run Text="&#x1F3AE;  "/><Run Text="{Binding MinecraftUsername, Mode=OneWay}"/>
-                                </TextBlock>
-                                <TextBlock Text="No Minecraft account linked"
-                                           FontFamily="{StaticResource FontBody}" FontSize="12"
-                                           Foreground="{DynamicResource BrushTextMuted}"
-                                           Visibility="{Binding IsMinecraftLinked, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
-                            </StackPanel>
+                            <TextBlock Grid.Column="0" Text="&#x1F50D;" FontSize="13"
+                                       Foreground="{DynamicResource BrushTextMuted}"
+                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBox x:Name="SearchBox" Grid.Column="1"
+                                     Background="Transparent" BorderThickness="0"
+                                     Foreground="{DynamicResource BrushTextPrimary}"
+                                     FontFamily="{StaticResource FontBody}" FontSize="13"
+                                     VerticalAlignment="Center" CaretBrush="{DynamicResource BrushTextPrimary}"
+                                     TextChanged="SearchBox_TextChanged"/>
+                            <TextBlock Grid.Column="1" Text="Search settings..."
+                                       FontFamily="{StaticResource FontBody}" FontSize="13"
+                                       Foreground="{DynamicResource BrushTextMuted}"
+                                       VerticalAlignment="Center" IsHitTestVisible="False"
+                                       x:Name="SearchPlaceholder"/>
                         </Grid>
-
-                        <!-- Action buttons -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
-                            <!-- Unlink Minecraft (only when linked) -->
-                            <Button Content="Unlink Minecraft"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Padding="16,8" Margin="0,0,10,0"
-                                    Visibility="{Binding IsMinecraftLinked, Converter={StaticResource BoolToVisibilityConverter}}"
-                                    Click="NexoraUnlink_Click"/>
-
-                            <!-- Settings (opens website) -->
-                            <Button Content="Settings"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Padding="16,8" Margin="0,0,10,0"
-                                    Click="NexoraSettings_Click"/>
-
-                            <!-- Logout -->
-                            <Button Content="Log out"
-                                    Style="{StaticResource DangerButtonStyle}"
-                                    Padding="16,8"
-                                    Click="NexoraLogout_Click"/>
-                        </StackPanel>
-                    </StackPanel>
+                    </Border>
                 </StackPanel>
-            </Border>
 
-            <TextBlock Text="Settings"
-                       FontFamily="{StaticResource FontDisplay}"
-                       FontSize="24"
-                       Foreground="{DynamicResource BrushTextPrimary}"
-                       Margin="0,0,0,24"/>
+                <!-- Navigation items -->
+                <StackPanel x:Name="NavPanel" Margin="8,0,8,0">
+                    <RadioButton x:Name="NavAccount" GroupName="SettingsNav" Content="Account"
+                                 Tag="PageAccount" IsChecked="True"
+                                 Checked="NavRadio_Checked" Style="{StaticResource NavItemStyle}"/>
+                    <RadioButton x:Name="NavJava" GroupName="SettingsNav" Content="Java &amp; Performance"
+                                 Tag="PageJava"
+                                 Checked="NavRadio_Checked" Style="{StaticResource NavItemStyle}"/>
+                    <RadioButton x:Name="NavLaunch" GroupName="SettingsNav" Content="Launch Options"
+                                 Tag="PageLaunch"
+                                 Checked="NavRadio_Checked" Style="{StaticResource NavItemStyle}"/>
+                    <RadioButton x:Name="NavMods" GroupName="SettingsNav" Content="Mod Updates"
+                                 Tag="PageMods"
+                                 Checked="NavRadio_Checked" Style="{StaticResource NavItemStyle}"/>
+                    <RadioButton x:Name="NavTunnel" GroupName="SettingsNav" Content="Network &amp; Tunnels"
+                                 Tag="PageTunnel"
+                                 Checked="NavRadio_Checked" Style="{StaticResource NavItemStyle}"/>
+                    <RadioButton x:Name="NavAi" GroupName="SettingsNav" Content="AI Terminal"
+                                 Tag="PageAi"
+                                 Checked="NavRadio_Checked" Style="{StaticResource NavItemStyle}"/>
+                    <RadioButton x:Name="NavAppearance" GroupName="SettingsNav" Content="Appearance"
+                                 Tag="PageAppearance"
+                                 Checked="NavRadio_Checked" Style="{StaticResource NavItemStyle}"/>
+                    <RadioButton x:Name="NavStorage" GroupName="SettingsNav" Content="Storage &amp; Data"
+                                 Tag="PageStorage"
+                                 Checked="NavRadio_Checked" Style="{StaticResource NavItemStyle}"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
 
-            <!-- Status banner -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="10"
-                    Padding="16,12"
-                    Margin="0,0,0,20"
+        <!-- ═══════════════ CONTENT PAGES ═══════════════ -->
+        <Grid Grid.Column="1" Background="{DynamicResource BrushAppBackground}">
+
+            <!-- Status banner (floats at top of every page) -->
+            <Border Background="{DynamicResource BrushInfoBg}"
+                    BorderBrush="{DynamicResource BrushInfoText}"
+                    BorderThickness="0,0,0,1"
+                    Padding="24,12"
+                    VerticalAlignment="Top" Panel.ZIndex="10"
                     Visibility="{Binding HasStatus, Converter={StaticResource BoolToVisibilityConverter}}">
                 <TextBlock Text="{Binding StatusMessage}"
-                           FontFamily="{StaticResource FontBody}"
-                           FontSize="13"
-                           TextWrapping="Wrap"
-                           Foreground="{DynamicResource BrushTextPrimary}"/>
+                           FontFamily="{StaticResource FontBody}" FontSize="13"
+                           Foreground="{DynamicResource BrushInfoText}" TextWrapping="Wrap"/>
             </Border>
 
-            <!-- ============ Microsoft account ============ -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24"
-                    Margin="0,0,0,20">
-                <StackPanel>
-                    <TextBlock Text="Microsoft account"
-                               FontFamily="{StaticResource FontDisplay}"
-                               FontSize="16"
-                               Foreground="{DynamicResource BrushTextPrimary}"
-                               Margin="0,0,0,8"/>
-                    <TextBlock Text="Sign in with your Microsoft account to play online (premium) servers like Hypixel. When signed in, the game launches with your real account instead of offline mode."
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="13"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,16"/>
+            <!-- ═══ PAGE: Account ═══ -->
+            <ScrollViewer x:Name="PageAccount" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="40,32,40,40" MaxWidth="640">
+                    <TextBlock Text="Account" FontFamily="{StaticResource FontDisplay}" FontSize="24"
+                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Manage your Nexora and Microsoft accounts."
+                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                               Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,28"/>
 
-                    <!-- Signed-in state -->
-                    <StackPanel Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <TextBlock Margin="0,0,0,12" TextWrapping="Wrap">
-                            <Run Text="Signed in as "
-                                 Foreground="{DynamicResource BrushTextSecondary}"
-                                 FontFamily="{StaticResource FontBody}"/>
-                            <Run Text="{Binding AccountName, Mode=OneWay}"
-                                 Foreground="{DynamicResource BrushTextPrimary}"
-                                 FontFamily="{StaticResource FontBody}"
-                                 FontWeight="Bold"/>
-                        </TextBlock>
-                        <Button Content="Sign out"
-                                Click="SignOut_Click"
-                                Padding="20,8"
-                                HorizontalAlignment="Left"/>
-                    </StackPanel>
+                    <!-- Nexora -->
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="Nexora" FontFamily="{StaticResource FontDisplay}" FontSize="15"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Social features, friends, instance sharing."
+                                       FontFamily="{StaticResource FontBody}" FontSize="12"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,16"/>
 
-                    <!-- Signed-out state -->
-                    <StackPanel Visibility="{Binding IsSignedOut, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <Button Content="Sign in with Microsoft"
-                                Click="SignIn_Click"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Padding="20,10"
-                                HorizontalAlignment="Left"
-                                IsEnabled="{Binding IsSigningIn, Converter={StaticResource InverseBoolConverter}}">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border x:Name="Bd" Background="{DynamicResource BrushAccent}" CornerRadius="8">
-                                        <StackPanel Orientation="Horizontal"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center">
-                                            <Grid Width="20" Height="20" Margin="0,0,12,0">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition/><RowDefinition/>
-                                                </Grid.RowDefinitions>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition/><ColumnDefinition/>
-                                                </Grid.ColumnDefinitions>
-                                                <Rectangle Grid.Row="0" Grid.Column="0" Fill="#F25022" Margin="0,0,1,1"/>
-                                                <Rectangle Grid.Row="0" Grid.Column="1" Fill="#7FBA00" Margin="1,0,0,1"/>
-                                                <Rectangle Grid.Row="1" Grid.Column="0" Fill="#00A4EF" Margin="0,1,1,0"/>
-                                                <Rectangle Grid.Row="1" Grid.Column="1" Fill="#FFB900" Margin="1,1,0,0"/>
-                                            </Grid>
-                                            <TextBlock Text="Sign in with Microsoft"
-                                                       Foreground="White"
-                                                       FontFamily="{StaticResource FontBody}"
-                                                       FontSize="15"
-                                                       FontWeight="SemiBold"
-                                                       VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="#8B5CF6"/>
-                                        </Trigger>
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-
-                        <!-- Device-code instructions -->
-                        <Border Background="{DynamicResource BrushAppBackground}"
-                                BorderBrush="{DynamicResource BrushBorder}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="16"
-                                Margin="0,14,0,0"
-                                Visibility="{Binding HasDeviceCode, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <StackPanel>
-                                <TextBlock Text="Enter this code on the Microsoft sign-in page:"
-                                           FontFamily="{StaticResource FontBody}"
-                                           FontSize="12"
-                                           Foreground="{DynamicResource BrushTextSecondary}"
-                                           Margin="0,0,0,8"/>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding DeviceCode}"
-                                               FontFamily="{StaticResource FontDisplay}"
-                                               FontSize="22"
-                                               Foreground="{DynamicResource BrushTextPrimary}"
-                                               VerticalAlignment="Center"/>
-                                    <Button Content="Copy"
-                                            Click="CopyCode_Click"
-                                            Padding="14,6"
-                                            Margin="16,0,0,0"
-                                            VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,10,0,0">
-                                    <Run Text="Go to "/>
-                                    <Hyperlink NavigateUri="{Binding DeviceVerificationUri}" RequestNavigate="OpenLink_Click">
-                                        <Run Text="microsoft.com/link"/>
-                                    </Hyperlink>
-                                    <Run Text=" and enter the code above."/>
-                                </TextBlock>
+                            <StackPanel Visibility="{Binding IsNexoraLoggedOut, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Button Content="Log in to Nexora" Style="{StaticResource PrimaryButtonStyle}"
+                                        Padding="20,10" HorizontalAlignment="Left" Click="NexoraLogin_Click"/>
                             </StackPanel>
-                        </Border>
-                    </StackPanel>
 
-                    <!-- Status message -->
-                    <TextBlock Text="{Binding AccountStatus}"
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="12"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,14,0,0"
-                               Visibility="{Binding HasAccountStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                </StackPanel>
-            </Border>
-
-            <!-- ============ Player profile ============ -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24"
-                    Margin="0,0,0,20">
-                <StackPanel>
-                    <TextBlock Text="Player profile"
-                               FontFamily="{StaticResource FontDisplay}"
-                               FontSize="16"
-                               Foreground="{DynamicResource BrushTextPrimary}"
-                               Margin="0,0,0,8"/>
-                    <TextBlock Text="Used only when you are NOT signed in with Microsoft above: the game then launches in offline mode with this player name (fine for singleplayer and LAN, but online/premium servers require a Microsoft sign-in)."
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="13"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,16"/>
- 
-                    <TextBlock Text="Player name"
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="12"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding OfflineUsername, UpdateSourceTrigger=PropertyChanged}"
-                             Padding="10"
-                             Background="{DynamicResource BrushAppBackground}"
-                             BorderBrush="{DynamicResource BrushBorder}"
-                             BorderThickness="1"
-                             Foreground="{DynamicResource BrushTextPrimary}"
-                             FontSize="13"
-                             HorizontalAlignment="Left"
-                             MinWidth="240"/>
-                </StackPanel>
-            </Border>
- 
- 
-            <!-- ============ Create installation ============ -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24"
-                    Margin="0,0,0,20">
-                <StackPanel>
-                    <TextBlock Text="Create installation"
-                               FontFamily="{StaticResource FontDisplay}"
-                               FontSize="16"
-                               Foreground="{DynamicResource BrushTextPrimary}"
-                               Margin="0,0,0,8"/>
-                    <TextBlock Text="Make a new installation. The app automatically recommends the correct Java version for the chosen Minecraft version, and uses a matching Java runtime if one is already installed."
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="13"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,16"/>
-
-                    <TextBlock Text="Name"
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="12"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding NewInstallationName, UpdateSourceTrigger=PropertyChanged}"
-                             Padding="10"
-                             Background="{DynamicResource BrushAppBackground}"
-                             BorderBrush="{DynamicResource BrushBorder}"
-                             BorderThickness="1"
-                             Foreground="{DynamicResource BrushTextPrimary}"
-                             FontSize="13"
-                             Margin="0,0,0,12"/>
-
-                    <TextBlock Text="Minecraft version (e.g. 1.21.2)"
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="12"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding NewMinecraftVersion, UpdateSourceTrigger=PropertyChanged}"
-                             Padding="10"
-                             Background="{DynamicResource BrushAppBackground}"
-                             BorderBrush="{DynamicResource BrushBorder}"
-                             BorderThickness="1"
-                             Foreground="{DynamicResource BrushTextPrimary}"
-                             FontSize="13"
-                             Margin="0,0,0,12"/>
-
-                    <TextBlock Text="Loader"
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="12"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               Margin="0,0,0,4"/>
-                    <ComboBox ItemsSource="{Binding Loaders}"
-                              SelectedItem="{Binding NewLoader}"
-                              HorizontalAlignment="Left"
-                              MinWidth="200"
-                              Margin="0,0,0,12"/>
-
-                    <!-- Java recommendation -->
-                    <Border Background="{DynamicResource BrushAppBackground}"
-                            BorderBrush="{DynamicResource BrushBorder}"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="12,10"
-                            Margin="0,0,0,16"
-                            Visibility="{Binding HasJavaAdvice, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <StackPanel>
-                            <TextBlock Text="{Binding JavaAdvice}"
-                                       FontFamily="{StaticResource FontBody}"
-                                       FontSize="12"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource BrushTextPrimary}"/>
-                            <Button Content="Download Java"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Padding="14,6"
-                                    HorizontalAlignment="Left"
-                                    Margin="0,10,0,0"
-                                    Click="DownloadJava_Click"/>
+                            <StackPanel Visibility="{Binding IsNexoraLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="44" Height="44" CornerRadius="22"
+                                            Background="{DynamicResource BrushAccent}" Margin="0,0,14,0">
+                                        <TextBlock Text="{Binding NexoraUsernameInitial}"
+                                                   FontFamily="{StaticResource FontDisplay}" FontSize="18"
+                                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding NexoraUsername}"
+                                                   FontFamily="{StaticResource FontBody}" FontSize="14" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource BrushTextPrimary}"/>
+                                        <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                   Foreground="{DynamicResource BrushTextSecondary}"
+                                                   Visibility="{Binding IsMinecraftLinked, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <Run Text="Minecraft: "/><Run Text="{Binding MinecraftUsername, Mode=OneWay}" FontWeight="SemiBold"/>
+                                        </TextBlock>
+                                        <TextBlock Text="No Minecraft account linked"
+                                                   FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                   Foreground="{DynamicResource BrushTextMuted}"
+                                                   Visibility="{Binding IsMinecraftLinked, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Unlink Minecraft" Style="{StaticResource SecondaryButtonStyle}"
+                                            Padding="14,8" Margin="0,0,8,0"
+                                            Visibility="{Binding IsMinecraftLinked, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Click="NexoraUnlink_Click"/>
+                                    <Button Content="Account Settings" Style="{StaticResource SecondaryButtonStyle}"
+                                            Padding="14,8" Margin="0,0,8,0" Click="NexoraSettings_Click"/>
+                                    <Button Content="Log out" Style="{StaticResource DangerButtonStyle}"
+                                            Padding="14,8" Click="NexoraLogout_Click"/>
+                                </StackPanel>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
-                    <Button Content="Create installation"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Padding="20,10"
-                            HorizontalAlignment="Left"
-                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
-                            Click="CreateInstallation_Click"/>
-                </StackPanel>
-            </Border>
-
-            <!-- ============ Installations ============ -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24"
-                    Margin="0,0,0,20">
-                <StackPanel>
-                    <TextBlock Text="Installations"
-                               FontFamily="{StaticResource FontDisplay}"
-                               FontSize="16"
-                               Foreground="{DynamicResource BrushTextPrimary}"
-                               Margin="0,0,0,8"/>
-                    <TextBlock Text="Import your existing installations from the official Minecraft launcher. Mods you install are placed into each installation's real mods folder."
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="13"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,16"/>
-                    <Button Content="Import from Minecraft launcher"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Padding="20,10"
-                            HorizontalAlignment="Left"
-                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
-                            Click="Import_Click"/>
-                </StackPanel>
-            </Border>
-
-            <!-- ============ Mod updates ============ -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24">
-                <StackPanel>
-                    <TextBlock Text="Mod updates"
-                               FontFamily="{StaticResource FontDisplay}"
-                               FontSize="16"
-                               Foreground="{DynamicResource BrushTextPrimary}"
-                               Margin="0,0,0,16"/>
-
-                    <CheckBox Content="Automatically update mods when checking for updates"
-                              IsChecked="{Binding AutoUpdateMods}"
-                              Foreground="{DynamicResource BrushTextPrimary}"
-                              FontFamily="{StaticResource FontBody}"
-                              FontSize="13"
-                              Margin="0,0,0,10"/>
-                    <CheckBox Content="Check for mod updates on startup"
-                              IsChecked="{Binding CheckForUpdatesOnStartup}"
-                              Foreground="{DynamicResource BrushTextPrimary}"
-                              FontFamily="{StaticResource FontBody}"
-                              FontSize="13"
-                              Margin="0,0,0,10"/>
-                    <CheckBox Content="Keep a backup of replaced mod files"
-                              IsChecked="{Binding KeepModsBackup}"
-                              Foreground="{DynamicResource BrushTextPrimary}"
-                              FontFamily="{StaticResource FontBody}"
-                              FontSize="13"
-                              Margin="0,0,0,16"/>
-
-                    <Button Content="Check for updates now"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Padding="20,10"
-                            HorizontalAlignment="Left"
-                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
-                            Click="CheckUpdates_Click"/>
-                </StackPanel>
-            </Border>
-
-            <!-- ============ Files ============ -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24"
-                    Margin="0,0,0,20">
-                <StackPanel>
-                    <TextBlock Text="Files"
-                               FontFamily="{StaticResource FontDisplay}"
-                               FontSize="16"
-                               Foreground="{DynamicResource BrushTextPrimary}"
-                               Margin="0,0,0,8"/>
-                    <TextBlock Text="Open the folder where every installation lives (each one has its own mods, resourcepacks, saves and config). Handy for dragging mod files in by hand instead of using the Mods tab's search."
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="13"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,16"/>
-                    <Button Content="Open data folder"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Padding="20,10"
-                            HorizontalAlignment="Left"
-                            Margin="0,0,0,12"
-                            Click="OpenDataFolder_Click"/>
-
-                    <TextBlock Text="Open the diagnostics log — every install/update/dependency-check decision (which build was picked and why, what a &quot;Fix&quot; button actually did) gets written here, useful when something still doesn't behave as expected."
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="13"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,16"/>
-                    <Button Content="Open diagnostics log"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Padding="20,10"
-                            HorizontalAlignment="Left"
-                            Click="OpenDiagnosticsLog_Click"/>
-                </StackPanel>
-            </Border>
-
-
-            <!-- ============ Tunnel provider settings ============ -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24"
-                    Margin="0,20,0,0">
-                <StackPanel>
-                    <TextBlock Text="Tunnel providers"
-                               FontFamily="{StaticResource FontDisplay}"
-                               FontSize="16"
-                               Foreground="{DynamicResource BrushTextPrimary}"
-                               Margin="0,0,0,4"/>
-
-                    <!-- Prominent API key notice -->
-                    <Border Background="{DynamicResource BrushPanelElevated}" BorderBrush="{DynamicResource BrushAccent}" BorderThickness="1"
-                            CornerRadius="7" Padding="14,10" Margin="0,0,0,14">
+                    <!-- Microsoft -->
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24" Margin="0,0,0,16">
                         <StackPanel>
-                            <TextBlock Text="🔑  API keys are required for ngrok and frp"
-                                       FontFamily="{StaticResource FontDisplay}"
-                                       FontSize="13" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource BrushAccent}" Margin="0,0,0,4"/>
-                            <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
-                                       Foreground="{DynamicResource BrushTextSecondary}"
-                                       TextWrapping="Wrap">
-                                <Run Text="Enter your keys below, then click "/>
-                                <Run Text="Save tunnel settings" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}"/>
-                                <Run Text=". playit.gg and bore.pub are free and need no key — just download the exe and set the path."/>
+                            <TextBlock Text="Microsoft" FontFamily="{StaticResource FontDisplay}" FontSize="15"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Required for premium/online servers. Without this you play in offline mode."
+                                       FontFamily="{StaticResource FontBody}" FontSize="12"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,16"/>
+
+                            <StackPanel Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Margin="0,0,0,12">
+                                    <Run Text="Signed in as " Foreground="{DynamicResource BrushTextSecondary}" FontFamily="{StaticResource FontBody}" FontSize="13"/>
+                                    <Run Text="{Binding AccountName, Mode=OneWay}" Foreground="{DynamicResource BrushTextPrimary}" FontFamily="{StaticResource FontBody}" FontSize="13" FontWeight="Bold"/>
+                                </TextBlock>
+                                <Button Content="Sign out" Click="SignOut_Click" Padding="14,8" HorizontalAlignment="Left"/>
+                            </StackPanel>
+
+                            <StackPanel Visibility="{Binding IsSignedOut, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Button Content="Sign in with Microsoft" Click="SignIn_Click"
+                                        Style="{StaticResource PrimaryButtonStyle}" Padding="20,10" HorizontalAlignment="Left"
+                                        IsEnabled="{Binding IsSigningIn, Converter={StaticResource InverseBoolConverter}}"/>
+                                <Border Background="{DynamicResource BrushAppBackground}" CornerRadius="8" Padding="16" Margin="0,14,0,0"
+                                        Visibility="{Binding HasDeviceCode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <StackPanel>
+                                        <TextBlock Text="Enter this code:" FontFamily="{StaticResource FontBody}" FontSize="12"
+                                                   Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,8"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding DeviceCode}" FontFamily="{StaticResource FontDisplay}" FontSize="22"
+                                                       Foreground="{DynamicResource BrushTextPrimary}" VerticalAlignment="Center"/>
+                                            <Button Content="Copy" Click="CopyCode_Click" Padding="12,6" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,10,0,0">
+                                            <Run Text="Visit "/><Hyperlink NavigateUri="{Binding DeviceVerificationUri}" RequestNavigate="OpenLink_Click"><Run Text="microsoft.com/link"/></Hyperlink><Run Text=" and enter the code."/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <TextBlock Text="{Binding AccountStatus}" FontFamily="{StaticResource FontBody}" FontSize="12"
+                                       Foreground="{DynamicResource BrushTextSecondary}" TextWrapping="Wrap" Margin="0,12,0,0"
+                                       Visibility="{Binding HasAccountStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Player profile -->
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24">
+                        <StackPanel>
+                            <TextBlock Text="Offline Player Name" FontFamily="{StaticResource FontDisplay}" FontSize="15"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Used when not signed in with Microsoft (singleplayer / LAN)."
+                                       FontFamily="{StaticResource FontBody}" FontSize="12"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,14"/>
+                            <TextBox Text="{Binding OfflineUsername, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource InputTextBoxStyle}" MaxWidth="280" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ═══ PAGE: Java & Performance ═══ -->
+            <ScrollViewer x:Name="PageJava" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                <StackPanel Margin="40,32,40,40" MaxWidth="640">
+                    <TextBlock Text="Java &amp; Performance" FontFamily="{StaticResource FontDisplay}" FontSize="24"
+                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Memory allocation and JVM tuning for Minecraft."
+                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                               Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,28"/>
+
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24">
+                        <StackPanel>
+                            <!-- Max RAM -->
+                            <TextBlock FontFamily="{StaticResource FontBody}" FontSize="13" Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,6">
+                                <Run Text="Maximum RAM: "/><Run Text="{Binding MaxRamDisplay, Mode=OneWay}" FontWeight="SemiBold" Foreground="{DynamicResource BrushAccent}"/>
                             </TextBlock>
+                            <Slider Minimum="1024" Maximum="16384" TickFrequency="512"
+                                    IsSnapToTickEnabled="True" Value="{Binding MaxRamMb, Mode=TwoWay}" Margin="0,0,0,24"/>
+
+                            <!-- Min RAM -->
+                            <TextBlock FontFamily="{StaticResource FontBody}" FontSize="13" Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,6">
+                                <Run Text="Minimum RAM: "/><Run Text="{Binding MinRamDisplay, Mode=OneWay}" FontWeight="SemiBold" Foreground="{DynamicResource BrushAccent}"/>
+                            </TextBlock>
+                            <Slider Minimum="256" Maximum="4096" TickFrequency="256"
+                                    IsSnapToTickEnabled="True" Value="{Binding MinRamMb, Mode=TwoWay}" Margin="0,0,0,24"/>
+
+                            <!-- JVM args -->
+                            <TextBlock Text="Custom JVM Arguments" FontFamily="{StaticResource FontBody}" FontSize="13"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding CustomJvmArguments, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource InputTextBoxStyle}" FontFamily="Consolas"/>
+                            <TextBlock Text="Example: -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -Dfml.ignoreInvalidMinecraftCertificates=true"
+                                       FontFamily="{StaticResource FontBody}" FontSize="11"
+                                       Foreground="{DynamicResource BrushTextMuted}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ═══ PAGE: Launch Options ═══ -->
+            <ScrollViewer x:Name="PageLaunch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                <StackPanel Margin="40,32,40,40" MaxWidth="640">
+                    <TextBlock Text="Launch Options" FontFamily="{StaticResource FontDisplay}" FontSize="24"
+                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Control launcher behavior and game window settings."
+                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                               Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,28"/>
+
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24">
+                        <StackPanel>
+                            <CheckBox Content="Close launcher when game starts"
+                                      IsChecked="{Binding CloseLauncherOnGameStart}"
+                                      Foreground="{DynamicResource BrushTextPrimary}"
+                                      FontFamily="{StaticResource FontBody}" FontSize="13" Margin="0,0,0,20"/>
+
+                            <TextBlock Text="Game Window Resolution" FontFamily="{StaticResource FontBody}" FontSize="13"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Set to 0 for default system resolution."
+                                       FontFamily="{StaticResource FontBody}" FontSize="11"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,10"/>
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel>
+                                    <TextBlock Text="Width" FontFamily="{StaticResource FontBody}" FontSize="11"
+                                               Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding GameWindowWidth, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource InputTextBoxStyle}" Width="100" Height="36"/>
+                                </StackPanel>
+                                <TextBlock Text="x" VerticalAlignment="Bottom" Margin="12,0,12,10"
+                                           Foreground="{DynamicResource BrushTextMuted}" FontSize="14"/>
+                                <StackPanel>
+                                    <TextBlock Text="Height" FontFamily="{StaticResource FontBody}" FontSize="11"
+                                               Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding GameWindowHeight, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource InputTextBoxStyle}" Width="100" Height="36"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ═══ PAGE: Mod Updates ═══ -->
+            <ScrollViewer x:Name="PageMods" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                <StackPanel Margin="40,32,40,40" MaxWidth="640">
+                    <TextBlock Text="Mod Updates" FontFamily="{StaticResource FontDisplay}" FontSize="24"
+                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Configure automatic mod updating behavior."
+                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                               Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,28"/>
+
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24">
+                        <StackPanel>
+                            <CheckBox Content="Automatically update mods when checking" IsChecked="{Binding AutoUpdateMods}"
+                                      Foreground="{DynamicResource BrushTextPrimary}" FontFamily="{StaticResource FontBody}" FontSize="13" Margin="0,0,0,14"/>
+                            <CheckBox Content="Check for mod updates on startup" IsChecked="{Binding CheckForUpdatesOnStartup}"
+                                      Foreground="{DynamicResource BrushTextPrimary}" FontFamily="{StaticResource FontBody}" FontSize="13" Margin="0,0,0,14"/>
+                            <CheckBox Content="Keep a backup of replaced mod files" IsChecked="{Binding KeepModsBackup}"
+                                      Foreground="{DynamicResource BrushTextPrimary}" FontFamily="{StaticResource FontBody}" FontSize="13" Margin="0,0,0,14"/>
+                            <CheckBox Content="Notify when updates are available" IsChecked="{Binding NotifyOnModUpdates}"
+                                      Foreground="{DynamicResource BrushTextPrimary}" FontFamily="{StaticResource FontBody}" FontSize="13" Margin="0,0,0,20"/>
+
+                            <Button Content="Check for updates now" Style="{StaticResource PrimaryButtonStyle}"
+                                    Padding="20,10" HorizontalAlignment="Left"
+                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                                    Click="CheckUpdates_Click"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ═══ PAGE: Network & Tunnels ═══ -->
+            <ScrollViewer x:Name="PageTunnel" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                <StackPanel Margin="40,32,40,40" MaxWidth="640">
+                    <TextBlock Text="Network &amp; Tunnels" FontFamily="{StaticResource FontDisplay}" FontSize="24"
+                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Configure tunnel providers for exposing your server."
+                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                               Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,28"/>
+
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24">
+                        <StackPanel>
+                            <Border Background="{DynamicResource BrushPanelElevated}" BorderBrush="{DynamicResource BrushAccent}"
+                                    BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,20">
+                                <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
+                                           Foreground="{DynamicResource BrushTextSecondary}" TextWrapping="Wrap">
+                                    <Run Text="API keys required for " Foreground="{DynamicResource BrushTextSecondary}"/><Run Text="ngrok" FontWeight="SemiBold" Foreground="{DynamicResource BrushAccent}"/><Run Text=" and "/><Run Text="frp" FontWeight="SemiBold" Foreground="{DynamicResource BrushAccent}"/><Run Text=". Leave exe path empty if already on system PATH."/>
+                                </TextBlock>
+                            </Border>
+
+                            <!-- playit -->
+                            <TextBlock Text="playit.gg" FontFamily="{StaticResource FontDisplay}" FontSize="14"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,2"/>
+                            <TextBlock Text="Free, no key needed" FontFamily="{StaticResource FontBody}" FontSize="11"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,8"/>
+                            <Grid Margin="0,0,0,20">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding PlayitExePath, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}" Height="36" FontSize="13"/>
+                                <Button Grid.Column="1" Content="Browse" Tag="playit" Click="BrowseExe_Click"
+                                        Style="{StaticResource SecondaryButtonStyle}" Padding="12,0" Height="36" Margin="8,0,0,0"/>
+                            </Grid>
+
+                            <!-- ngrok -->
+                            <TextBlock Text="ngrok" FontFamily="{StaticResource FontDisplay}" FontSize="14"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,2"/>
+                            <TextBlock Text="Requires authtoken from ngrok.com" FontFamily="{StaticResource FontBody}" FontSize="11"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,8"/>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding NgrokExePath, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}" Height="36" FontSize="13"/>
+                                <Button Grid.Column="1" Content="Browse" Tag="ngrok" Click="BrowseExe_Click"
+                                        Style="{StaticResource SecondaryButtonStyle}" Padding="12,0" Height="36" Margin="8,0,0,0"/>
+                            </Grid>
+                            <PasswordBox x:Name="NgrokApiKeyBox" Style="{StaticResource InputPasswordBoxStyle}"
+                                         Height="36" FontSize="13" Margin="0,0,0,20" PasswordChanged="NgrokApiKey_Changed"/>
+
+                            <!-- bore -->
+                            <TextBlock Text="bore.pub" FontFamily="{StaticResource FontDisplay}" FontSize="14"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,2"/>
+                            <TextBlock Text="Free, no signup" FontFamily="{StaticResource FontBody}" FontSize="11"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,8"/>
+                            <Grid Margin="0,0,0,20">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding BoreExePath, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}" Height="36" FontSize="13"/>
+                                <Button Grid.Column="1" Content="Browse" Tag="bore" Click="BrowseExe_Click"
+                                        Style="{StaticResource SecondaryButtonStyle}" Padding="12,0" Height="36" Margin="8,0,0,0"/>
+                            </Grid>
+
+                            <!-- frp -->
+                            <TextBlock Text="frp (self-hosted)" FontFamily="{StaticResource FontDisplay}" FontSize="14"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,2"/>
+                            <TextBlock Text="Requires your own VPS running frps" FontFamily="{StaticResource FontBody}" FontSize="11"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,8"/>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding FrpExePath, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}" Height="36" FontSize="13"/>
+                                <Button Grid.Column="1" Content="Browse" Tag="frp" Click="BrowseExe_Click"
+                                        Style="{StaticResource SecondaryButtonStyle}" Padding="12,0" Height="36" Margin="8,0,0,0"/>
+                            </Grid>
+                            <PasswordBox x:Name="FrpApiKeyBox" Style="{StaticResource InputPasswordBoxStyle}"
+                                         Height="36" FontSize="13" Margin="0,0,0,20" PasswordChanged="FrpApiKey_Changed"/>
+
+                            <Button Content="Save tunnel settings" Style="{StaticResource PrimaryButtonStyle}"
+                                    Padding="20,10" HorizontalAlignment="Left" Click="SaveTunnelSettings_Click"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ═══ PAGE: AI Terminal ═══ -->
+            <ScrollViewer x:Name="PageAi" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                <StackPanel Margin="40,32,40,40" MaxWidth="640">
+                    <TextBlock Text="AI Terminal" FontFamily="{StaticResource FontDisplay}" FontSize="24"
+                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Configure the AI that controls the launcher via natural language."
+                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                               Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,28"/>
+
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24">
+                        <StackPanel>
+                            <TextBlock Text="Provider" Style="{StaticResource InputLabelStyle}"/>
+                            <ComboBox ItemsSource="{Binding AiProviders}" SelectedItem="{Binding AiProvider, Mode=TwoWay}" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="{Binding AiApiKeyLabel}" Style="{StaticResource InputLabelStyle}"/>
+                            <PasswordBox x:Name="AiApiKeyBox" Style="{StaticResource InputPasswordBoxStyle}"
+                                         Margin="0,0,0,16" PasswordChanged="AiApiKey_Changed"/>
+
+                            <StackPanel Visibility="{Binding ShowEndpointField, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Text="API Endpoint" Style="{StaticResource InputLabelStyle}"/>
+                                <TextBox Text="{Binding AiApiEndpoint, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}" Margin="0,0,0,16"/>
+                            </StackPanel>
+
+                            <TextBlock Text="Model" Style="{StaticResource InputLabelStyle}"/>
+                            <ComboBox IsEditable="True" ItemsSource="{Binding AiModelOptions}"
+                                      Text="{Binding AiModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20"/>
+
+                            <Button Content="Save AI Settings" Style="{StaticResource PrimaryButtonStyle}"
+                                    Padding="20,10" HorizontalAlignment="Left" Click="SaveAiSettings_Click"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ═══ PAGE: Appearance ═══ -->
+            <ScrollViewer x:Name="PageAppearance" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                <StackPanel Margin="40,32,40,40" MaxWidth="640">
+                    <TextBlock Text="Appearance" FontFamily="{StaticResource FontDisplay}" FontSize="24"
+                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Customize the look and feel of the launcher."
+                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                               Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,28"/>
+
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24">
+                        <StackPanel>
+                            <TextBlock Text="Theme" FontFamily="{StaticResource FontDisplay}" FontSize="15"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Toggle between dark and light mode. Applied instantly."
+                                       FontFamily="{StaticResource FontBody}" FontSize="12"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,16"/>
+                            <Button x:Name="ThemeToggleButton" Padding="20,10" HorizontalAlignment="Left"
+                                    Style="{StaticResource SecondaryButtonStyle}" Click="ToggleTheme_Click"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ═══ PAGE: Storage & Data ═══ -->
+            <ScrollViewer x:Name="PageStorage" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                <StackPanel Margin="40,32,40,40" MaxWidth="640">
+                    <TextBlock Text="Storage &amp; Data" FontFamily="{StaticResource FontDisplay}" FontSize="24"
+                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Manage files, logs, and reset the application."
+                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                               Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,28"/>
+
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="Quick Access" FontFamily="{StaticResource FontDisplay}" FontSize="15"
+                                       Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Open folders and logs directly."
+                                       FontFamily="{StaticResource FontBody}" FontSize="12"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,16"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Data folder" Style="{StaticResource SecondaryButtonStyle}"
+                                        Padding="16,10" Margin="0,0,10,0" Click="OpenDataFolder_Click"/>
+                                <Button Content="Diagnostics log" Style="{StaticResource SecondaryButtonStyle}"
+                                        Padding="16,10" Click="OpenDiagnosticsLog_Click"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
-                    <TextBlock Text="Leave the exe path empty if the tool is already on your system PATH (e.g. installed via winget or scoop)."
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="12"
-                               Foreground="{DynamicResource BrushTextMuted}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,20"/>
-
-                    <!-- playit.gg -->
-                    <TextBlock Text="playit.gg"
-                               FontFamily="{StaticResource FontDisplay}" FontSize="14" FontWeight="SemiBold"
-                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
-                    <TextBlock Text="Free · TCP + UDP · Purpose-built for game servers. No API key needed for the free tier."
-                               FontFamily="{StaticResource FontBody}" FontSize="11"
-                               Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,8"/>
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Exe path"
-                                   FontFamily="{StaticResource FontBody}" FontSize="13"
-                                   Foreground="{DynamicResource BrushTextSecondary}"
-                                   VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1"
-                                 Text="{Binding PlayitExePath, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource InputTextBoxStyle}"
-                                 Height="36" FontSize="13"/>
-                        <Button Grid.Column="2"
-                                Content="Browse…"
-                                Tag="playit"
-                                Click="BrowseExe_Click"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Padding="12,0" Height="36"
-                                Margin="8,0,0,0"
-                                VerticalAlignment="Center"/>
-                    </Grid>
-
-                    <!-- ngrok -->
-                    <TextBlock Text="ngrok"
-                               FontFamily="{StaticResource FontDisplay}" FontSize="14" FontWeight="SemiBold"
-                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
-                    <TextBlock Text="Freemium · TCP only · Requires an authtoken from ngrok.com."
-                               FontFamily="{StaticResource FontBody}" FontSize="11"
-                               Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,8"/>
-                    <Grid Margin="0,0,0,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Exe path"
-                                   FontFamily="{StaticResource FontBody}" FontSize="13"
-                                   Foreground="{DynamicResource BrushTextSecondary}"
-                                   VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1"
-                                 Text="{Binding NgrokExePath, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource InputTextBoxStyle}"
-                                 Height="36" FontSize="13"/>
-                        <Button Grid.Column="2"
-                                Content="Browse…"
-                                Tag="ngrok"
-                                Click="BrowseExe_Click"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Padding="12,0" Height="36"
-                                Margin="8,0,0,0"
-                                VerticalAlignment="Center"/>
-                    </Grid>
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Auth token"
-                                   FontFamily="{StaticResource FontBody}" FontSize="13"
-                                   Foreground="{DynamicResource BrushTextSecondary}"
-                                   VerticalAlignment="Center"/>
-                        <PasswordBox Grid.Column="1"
-                                     x:Name="NgrokApiKeyBox"
-                                     Style="{StaticResource InputPasswordBoxStyle}"
-                                     Height="36" FontSize="13"
-                                     PasswordChanged="NgrokApiKey_Changed"/>
-                    </Grid>
-
-                    <!-- bore.pub -->
-                    <TextBlock Text="bore.pub"
-                               FontFamily="{StaticResource FontDisplay}" FontSize="14" FontWeight="SemiBold"
-                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
-                    <TextBlock Text="Free · TCP only · No signup. Download from github.com/ekzhang/bore."
-                               FontFamily="{StaticResource FontBody}" FontSize="11"
-                               Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,8"/>
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Exe path"
-                                   FontFamily="{StaticResource FontBody}" FontSize="13"
-                                   Foreground="{DynamicResource BrushTextSecondary}"
-                                   VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1"
-                                 Text="{Binding BoreExePath, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource InputTextBoxStyle}"
-                                 Height="36" FontSize="13"/>
-                        <Button Grid.Column="2"
-                                Content="Browse…"
-                                Tag="bore"
-                                Click="BrowseExe_Click"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Padding="12,0" Height="36"
-                                Margin="8,0,0,0"
-                                VerticalAlignment="Center"/>
-                    </Grid>
-
-                    <!-- frp -->
-                    <TextBlock Text="frp (self-hosted)"
-                               FontFamily="{StaticResource FontDisplay}" FontSize="14" FontWeight="SemiBold"
-                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
-                    <TextBlock Text="Free · TCP + UDP · Requires your own VPS running frps. Full control, no third-party limits."
-                               FontFamily="{StaticResource FontBody}" FontSize="11"
-                               Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,8"/>
-                    <Grid Margin="0,0,0,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="frpc exe path"
-                                   FontFamily="{StaticResource FontBody}" FontSize="13"
-                                   Foreground="{DynamicResource BrushTextSecondary}"
-                                   VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1"
-                                 Text="{Binding FrpExePath, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource InputTextBoxStyle}"
-                                 Height="36" FontSize="13"/>
-                        <Button Grid.Column="2"
-                                Content="Browse…"
-                                Tag="frp"
-                                Click="BrowseExe_Click"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Padding="12,0" Height="36"
-                                Margin="8,0,0,0"
-                                VerticalAlignment="Center"/>
-                    </Grid>
-                    <Grid Margin="0,0,0,20">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Server token"
-                                   FontFamily="{StaticResource FontBody}" FontSize="13"
-                                   Foreground="{DynamicResource BrushTextSecondary}"
-                                   VerticalAlignment="Center"/>
-                        <PasswordBox Grid.Column="1"
-                                     x:Name="FrpApiKeyBox"
-                                     Style="{StaticResource InputPasswordBoxStyle}"
-                                     Height="36" FontSize="13"
-                                     PasswordChanged="FrpApiKey_Changed"/>
-                    </Grid>
-
-                    <Button Content="Save tunnel settings"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Padding="20,10"
-                            HorizontalAlignment="Left"
-                            Click="SaveTunnelSettings_Click"/>
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24"
+                            BorderBrush="{DynamicResource BrushDanger}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="Danger Zone" FontFamily="{StaticResource FontDisplay}" FontSize="15"
+                                       Foreground="{DynamicResource BrushDanger}" Margin="0,0,0,4"/>
+                            <TextBlock Text="This permanently deletes all data and restarts the app."
+                                       FontFamily="{StaticResource FontBody}" FontSize="12"
+                                       Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,16"/>
+                            <Button Content="Reset Minecraft Control Hub" Style="{StaticResource DangerButtonStyle}"
+                                    Padding="20,10" HorizontalAlignment="Left" Click="ClearCache_Click"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-            </Border>
-
-            <!-- ============ AI Terminal ============ -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24"
-                    Margin="0,20,0,0">
-                <StackPanel>
-                    <TextBlock Text="AI Terminal"
-                               FontFamily="{StaticResource FontDisplay}"
-                               FontSize="16"
-                               Foreground="{DynamicResource BrushTextPrimary}"
-                               Margin="0,0,0,8"/>
-                    <TextBlock Text="Configure the AI Terminal that lets you control the launcher using natural language."
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="13"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,20"/>
-
-                    <!-- Provider -->
-                    <TextBlock Text="AI Provider"
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="12"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               Margin="0,0,0,6"/>
-                    <ComboBox ItemsSource="{Binding AiProviders}"
-                              SelectedItem="{Binding AiProvider, Mode=TwoWay}"
-                              FontFamily="{StaticResource FontBody}"
-                              FontSize="13"
-                              Background="{DynamicResource BrushPanelElevated}"
-                              Foreground="{DynamicResource BrushTextPrimary}"
-                              BorderBrush="{DynamicResource BrushBorder}"
-                              BorderThickness="1"
-                              Padding="12,8"
-                              Margin="0,0,0,16"/>
-
-                    <!-- API Key (label changes per provider) -->
-                    <TextBlock Text="{Binding AiApiKeyLabel}"
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="12"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               Margin="0,0,0,6"/>
-                    <PasswordBox x:Name="AiApiKeyBox"
-                                 FontFamily="{StaticResource FontBody}"
-                                 FontSize="13"
-                                 Background="{DynamicResource BrushPanelElevated}"
-                                 Foreground="{DynamicResource BrushTextPrimary}"
-                                 BorderBrush="{DynamicResource BrushBorder}"
-                                 BorderThickness="1"
-                                 Padding="12,8"
-                                 Margin="0,0,0,16"
-                                 PasswordChanged="AiApiKey_Changed"/>
-
-                    <!-- API Endpoint (hidden for Gemini) -->
-                    <StackPanel Visibility="{Binding ShowEndpointField, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <TextBlock Text="API Endpoint"
-                                   FontFamily="{StaticResource FontBody}"
-                                   FontSize="12"
-                                   Foreground="{DynamicResource BrushTextSecondary}"
-                                   Margin="0,0,0,6"/>
-                        <TextBox Text="{Binding AiApiEndpoint, UpdateSourceTrigger=PropertyChanged}"
-                                 FontFamily="{StaticResource FontBody}"
-                                 FontSize="13"
-                                 Background="{DynamicResource BrushPanelElevated}"
-                                 Foreground="{DynamicResource BrushTextPrimary}"
-                                 BorderBrush="{DynamicResource BrushBorder}"
-                                 BorderThickness="1"
-                                 Padding="12,8"
-                                 Margin="0,0,0,16"/>
-                    </StackPanel>
-
-                    <!-- Model — ComboBox with preset suggestions + free-text editing -->
-                    <TextBlock Text="Model"
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="12"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               Margin="0,0,0,6"/>
-                    <ComboBox IsEditable="True"
-                              ItemsSource="{Binding AiModelOptions}"
-                              Text="{Binding AiModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                              FontFamily="{StaticResource FontBody}"
-                              FontSize="13"
-                              Background="{DynamicResource BrushPanelElevated}"
-                              Foreground="{DynamicResource BrushTextPrimary}"
-                              BorderBrush="{DynamicResource BrushBorder}"
-                              BorderThickness="1"
-                              Padding="12,8"
-                              Margin="0,0,0,16"/>
-
-                    <Button Content="Save AI Settings"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Padding="20,10"
-                            HorizontalAlignment="Left"
-                            Click="SaveAiSettings_Click"/>
-                </StackPanel>
-            </Border>
-
-            <!-- ============ Appearance ============ -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24"
-                    Margin="0,20,0,0">
-                <StackPanel>
-                    <TextBlock Text="Appearance"
-                               FontFamily="{StaticResource FontDisplay}"
-                               FontSize="16"
-                               Foreground="{DynamicResource BrushTextPrimary}"
-                               Margin="0,0,0,8"/>
-                    <TextBlock Text="Switch between dark and light mode. The change is applied immediately and saved automatically."
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="13"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,16"/>
-                    <Button x:Name="ThemeToggleButton"
-                            Padding="20,10"
-                            HorizontalAlignment="Left"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Click="ToggleTheme_Click"/>
-                </StackPanel>
-            </Border>
-
-            <!-- ============ Reset / clear cache ============ -->
-            <Border Background="{DynamicResource BrushPanelBackground}"
-                    BorderBrush="{DynamicResource BrushBorder}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24"
-                    Margin="0,20,0,0">
-                <StackPanel>
-                    <TextBlock Text="Reset / clear cache"
-                               FontFamily="{StaticResource FontDisplay}"
-                               FontSize="16"
-                               Foreground="{DynamicResource BrushTextPrimary}"
-                               Margin="0,0,0,8"/>
-                    <TextBlock Text="Delete ALL Minecraft Control Hub data — settings, installations, installed mods, your signed-in account and every cached/downloaded game file. This returns the app to a brand-new state as if you had never opened it. The app restarts afterwards. This cannot be undone."
-                               FontFamily="{StaticResource FontBody}"
-                               FontSize="13"
-                               Foreground="{DynamicResource BrushTextSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,16"/>
-                    <Button Content="Reset Minecraft Control Hub"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Padding="20,10"
-                            HorizontalAlignment="Left"
-                            Click="ClearCache_Click"/>
-                </StackPanel>
-            </Border>
-        </StackPanel>
-    </ScrollViewer>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
 </UserControl>

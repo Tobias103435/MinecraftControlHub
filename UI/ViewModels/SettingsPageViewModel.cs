@@ -188,6 +188,100 @@ public partial class SettingsPageViewModel : ViewModelBase
             _ = _settingsService.SaveAsync();
         }
     }
+
+    public bool NotifyOnModUpdates
+    {
+        get => _settingsService.Settings.NotifyOnModUpdates;
+        set
+        {
+            if (_settingsService.Settings.NotifyOnModUpdates == value) return;
+            _settingsService.Settings.NotifyOnModUpdates = value;
+            OnPropertyChanged();
+            _ = _settingsService.SaveAsync();
+        }
+    }
+
+    // ---- Java & Performance ----
+
+    public int MaxRamMb
+    {
+        get => _settingsService.Settings.MaxRamMb;
+        set
+        {
+            if (_settingsService.Settings.MaxRamMb == value) return;
+            _settingsService.Settings.MaxRamMb = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(MaxRamDisplay));
+            _ = _settingsService.SaveAsync();
+        }
+    }
+
+    public string MaxRamDisplay => $"{MaxRamMb / 1024.0:0.#} GB";
+
+    public int MinRamMb
+    {
+        get => _settingsService.Settings.MinRamMb;
+        set
+        {
+            if (_settingsService.Settings.MinRamMb == value) return;
+            _settingsService.Settings.MinRamMb = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(MinRamDisplay));
+            _ = _settingsService.SaveAsync();
+        }
+    }
+
+    public string MinRamDisplay => $"{MinRamMb} MB";
+
+    public string CustomJvmArguments
+    {
+        get => _settingsService.Settings.CustomJvmArguments;
+        set
+        {
+            if (_settingsService.Settings.CustomJvmArguments == value) return;
+            _settingsService.Settings.CustomJvmArguments = value;
+            OnPropertyChanged();
+            _ = _settingsService.SaveAsync();
+        }
+    }
+
+    // ---- Launch Options ----
+
+    public bool CloseLauncherOnGameStart
+    {
+        get => _settingsService.Settings.CloseLauncherOnGameStart;
+        set
+        {
+            if (_settingsService.Settings.CloseLauncherOnGameStart == value) return;
+            _settingsService.Settings.CloseLauncherOnGameStart = value;
+            OnPropertyChanged();
+            _ = _settingsService.SaveAsync();
+        }
+    }
+
+    public int GameWindowWidth
+    {
+        get => _settingsService.Settings.GameWindowWidth;
+        set
+        {
+            if (_settingsService.Settings.GameWindowWidth == value) return;
+            _settingsService.Settings.GameWindowWidth = value;
+            OnPropertyChanged();
+            _ = _settingsService.SaveAsync();
+        }
+    }
+
+    public int GameWindowHeight
+    {
+        get => _settingsService.Settings.GameWindowHeight;
+        set
+        {
+            if (_settingsService.Settings.GameWindowHeight == value) return;
+            _settingsService.Settings.GameWindowHeight = value;
+            OnPropertyChanged();
+            _ = _settingsService.SaveAsync();
+        }
+    }
  
     /// <summary>
     /// In-game player name used when launching in offline mode (no Microsoft login).

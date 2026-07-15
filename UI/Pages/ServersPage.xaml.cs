@@ -70,7 +70,14 @@ public partial class ServersPage : UserControl
     {
         if (_viewModel != null && (sender as Button)?.DataContext is Server server)
         {
-            await _viewModel.DeleteServerAsync(server);
+            var confirm = MessageBox.Show(
+                $"Delete \"{server.Name}\"?\n\nThis will remove the server and its associated files. This cannot be undone.",
+                "Delete server",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm == MessageBoxResult.Yes)
+                await _viewModel.DeleteServerAsync(server);
         }
     }
 

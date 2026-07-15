@@ -181,8 +181,7 @@
             </DockPanel>
         </Border>
 
-        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <Grid Margin="24">
+        <Grid Grid.Column="1" Margin="24">
             <Border x:Name="TerminalSection"
                     Background="{StaticResource BrushPanelBackground}"
                     BorderBrush="{StaticResource BrushBorder}"
@@ -193,7 +192,7 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="400"/>
+                        <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0" Margin="0,0,0,16">
@@ -659,19 +658,92 @@
                     BorderBrush="{StaticResource BrushBorder}"
                     BorderThickness="1"
                     CornerRadius="12"
-                    Padding="24"
+                    Padding="0"
                     Visibility="Collapsed">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
                 <StackPanel>
                     <TextBlock Text="Settings"
                                FontFamily="{StaticResource FontDisplay}"
                                FontSize="20"
                                Foreground="{StaticResource BrushTextPrimary}"
-                               Margin="0,0,0,12"/>
-                    <TextBlock Text="Edit this server's runtime settings and save them back to server.properties."
+                               Margin="0,0,0,4"/>
+                    <TextBlock Text="Configure this server's identity, gameplay rules, and network settings."
                                FontFamily="{StaticResource FontBody}"
                                FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}"
-                               TextWrapping="Wrap"/>
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,20"/>
+
+                    <!-- Server Identity Card -->
+                    <Border Background="{StaticResource BrushPanelElevated}"
+                            BorderBrush="{StaticResource BrushBorder}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="20"
+                            Margin="0,0,0,20">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Server Name -->
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Server name"
+                                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                                           Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="ServerNameBox"
+                                         Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="10" FontSize="13"
+                                         Background="{StaticResource BrushAppBackground}"
+                                         BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                         Foreground="{StaticResource BrushTextPrimary}"/>
+                            </StackPanel>
+
+                            <!-- Server Type -->
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Server type"
+                                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                                           Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding Type, Mode=OneWay}"
+                                         IsReadOnly="True"
+                                         Padding="10" FontSize="13"
+                                         Background="{StaticResource BrushAppBackground}"
+                                         BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                         Foreground="{StaticResource BrushTextMuted}"/>
+                            </StackPanel>
+
+                            <!-- Minecraft Version -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,12,12,0">
+                                <TextBlock Text="Minecraft version"
+                                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                                           Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="ServerVersionBox"
+                                         Text="{Binding MinecraftVersion, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                         Padding="10" FontSize="13"
+                                         Background="{StaticResource BrushAppBackground}"
+                                         BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                         Foreground="{StaticResource BrushTextPrimary}"/>
+                            </StackPanel>
+
+                            <!-- MOTD -->
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,12,0,0">
+                                <TextBlock Text="MOTD"
+                                           FontFamily="{StaticResource FontBody}" FontSize="12"
+                                           Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding Motd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="10" FontSize="13"
+                                         Background="{StaticResource BrushAppBackground}"
+                                         BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                                         Foreground="{StaticResource BrushTextPrimary}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
                     <Grid Margin="0,20,0,0">
                         <Grid.ColumnDefinitions>
@@ -724,19 +796,6 @@
                                        Foreground="{StaticResource BrushTextSecondary}"
                                        Margin="0,16,0,4"/>
                             <TextBox Text="{Binding MaxMemoryMB, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Padding="10"
-                                     Background="{StaticResource BrushAppBackground}"
-                                     BorderBrush="{StaticResource BrushBorder}"
-                                     BorderThickness="1"
-                                     Foreground="{StaticResource BrushTextPrimary}"
-                                     FontSize="13"/>
- 
-                            <TextBlock Text="MOTD"
-                                       FontFamily="{StaticResource FontBody}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource BrushTextSecondary}"
-                                       Margin="0,16,0,4"/>
-                            <TextBox Text="{Binding Motd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Padding="10"
                                      Background="{StaticResource BrushAppBackground}"
                                      BorderBrush="{StaticResource BrushBorder}"
@@ -1007,6 +1066,7 @@
                                 Click="OpenServerFolder_Click"/>
                     </StackPanel>
                 </StackPanel>
+                </ScrollViewer>
             </Border>
 
             <Border x:Name="PluginsSection"
@@ -1322,6 +1382,5 @@
                 </StackPanel>
             </Border>
         </Grid>
-        </ScrollViewer>
     </Grid>
 </Window>

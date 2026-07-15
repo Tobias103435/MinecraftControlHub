@@ -1,0 +1,168 @@
+<Window x:Class="MinecraftControlHub.UI.Windows.ModCompatibilityWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mod Compatibility Check"
+        Width="680" Height="520"
+        MinWidth="500" MinHeight="380"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{DynamicResource BrushAppBackground}">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource BrushSidebarBackground}"
+                BorderBrush="{DynamicResource BrushBorder}" BorderThickness="0,0,0,1"
+                Padding="24,18">
+            <StackPanel>
+                <TextBlock x:Name="HeaderText"
+                           Text="Mod Compatibility Check"
+                           FontFamily="{DynamicResource FontDisplay}" FontSize="16"
+                           Foreground="{DynamicResource BrushTextPrimary}"/>
+                <TextBlock x:Name="SubHeaderText"
+                           FontFamily="{DynamicResource FontBody}" FontSize="12"
+                           Foreground="{DynamicResource BrushTextSecondary}" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Progress bar (visible during scanning) -->
+        <Border Grid.Row="1" Padding="24,12"
+                x:Name="ProgressPanel">
+            <StackPanel>
+                <TextBlock x:Name="ProgressText"
+                           Text="Scanning mods…"
+                           FontFamily="{DynamicResource FontBody}" FontSize="12"
+                           Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,6"/>
+                <ProgressBar x:Name="ProgressBar"
+                             Height="4" IsIndeterminate="True"
+                             Foreground="{DynamicResource BrushAccent}"
+                             Background="{DynamicResource BrushPanelElevated}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Mod list -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="16,8">
+            <ItemsControl x:Name="ModList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource BrushPanelBackground}"
+                                BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
+                                CornerRadius="8" Padding="14,10" Margin="8,0,8,6">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Enable/Disable toggle -->
+                                <ToggleButton Grid.Column="0"
+                                              IsChecked="{Binding IsEnabled, Mode=OneWay}"
+                                              Style="{StaticResource SecondaryToggleButtonStyle}"
+                                              Padding="6,3" Margin="0,0,10,0"
+                                              VerticalAlignment="Center"
+                                              ToolTip="Enable/Disable this mod"
+                                              Click="ModToggle_Click">
+                                    <ToggleButton.Content>
+                                        <TextBlock FontSize="11" FontFamily="{DynamicResource FontBody}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="OFF"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                            <Setter Property="Text" Value="ON"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </ToggleButton.Content>
+                                </ToggleButton>
+
+                                <!-- Status indicator -->
+                                <Border Grid.Column="1" Width="8" Height="8" CornerRadius="4"
+                                        Margin="0,0,12,0" VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource BrushOnline}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsCompatible}" Value="False">
+                                                    <Setter Property="Background" Value="{DynamicResource BrushDanger}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                </Border>
+
+                                <!-- Mod info -->
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}"
+                                               FontFamily="{DynamicResource FontBody}" FontSize="13"
+                                               Foreground="{DynamicResource BrushTextPrimary}"/>
+                                    <TextBlock Text="{Binding StatusText}"
+                                               FontFamily="{DynamicResource FontBody}" FontSize="11"
+                                               Foreground="{DynamicResource BrushTextMuted}" Margin="0,2,0,0"/>
+                                </StackPanel>
+
+                                <!-- Action ComboBox (only for incompatible mods) -->
+                                <ComboBox Grid.Column="3"
+                                          Width="130"
+                                          VerticalAlignment="Center"
+                                          SelectedIndex="{Binding SelectedActionIndex, Mode=TwoWay}"
+                                          Visibility="{Binding ShowActions, Converter={StaticResource BoolToVis}}">
+                                    <ComboBoxItem Content="Skip"/>
+                                    <ComboBoxItem Content="Disable"/>
+                                    <ComboBoxItem Content="Uninstall"/>
+                                </ComboBox>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="3"
+                Background="{DynamicResource BrushSidebarBackground}"
+                BorderBrush="{DynamicResource BrushBorder}" BorderThickness="0,1,0,0"
+                Padding="24,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock x:Name="SummaryLabel" Grid.Column="0"
+                           FontFamily="{DynamicResource FontBody}" FontSize="12"
+                           Foreground="{DynamicResource BrushTextSecondary}"
+                           VerticalAlignment="Center"/>
+
+                <Button x:Name="CancelButton" Grid.Column="1"
+                        Content="Cancel"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="18,8" Margin="0,0,10,0"
+                        Click="Cancel_Click"/>
+
+                <Button x:Name="ApplyButton" Grid.Column="2"
+                        Content="Apply"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Padding="18,8"
+                        IsEnabled="False"
+                        Click="Apply_Click"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
