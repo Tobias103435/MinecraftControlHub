@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Eigen project\\MinecraftControlHub\\MinecraftControlHub\\MinecraftControlHub.csproj": {}
+    "D:\\Eigen project\\MinecraftControlHub\\MinecraftControlHub.csproj": {}
   },
   "projects": {
-    "D:\\Eigen project\\MinecraftControlHub\\MinecraftControlHub\\MinecraftControlHub.csproj": {
+    "D:\\Eigen project\\MinecraftControlHub\\MinecraftControlHub.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Eigen project\\MinecraftControlHub\\MinecraftControlHub\\MinecraftControlHub.csproj",
+        "projectUniqueName": "D:\\Eigen project\\MinecraftControlHub\\MinecraftControlHub.csproj",
         "projectName": "MinecraftControlHub",
-        "projectPath": "D:\\Eigen project\\MinecraftControlHub\\MinecraftControlHub\\MinecraftControlHub.csproj",
+        "projectPath": "D:\\Eigen project\\MinecraftControlHub\\MinecraftControlHub.csproj",
         "packagesPath": "C:\\Users\\toobh\\.nuget\\packages\\",
-        "outputPath": "D:\\Eigen project\\MinecraftControlHub\\MinecraftControlHub\\obj\\",
+        "outputPath": "D:\\Eigen project\\MinecraftControlHub\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\toobh\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -51,6 +51,12 @@
               "target": "Package",
               "version": "[8.0.0, )"
             },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.28, )",
+              "autoReferenced": true
+            },
             "SixLabors.ImageSharp": {
               "target": "Package",
               "version": "[3.1.12, )"
@@ -67,6 +73,20 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[8.0.28, 8.0.28]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[8.0.28, 8.0.28]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[8.0.28, 8.0.28]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
@@ -76,6 +96,11 @@
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.422/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
         }
       }
     }

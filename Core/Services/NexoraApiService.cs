@@ -147,7 +147,7 @@ public class NexoraApiService : INexoraApiService
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _http.PostAsync(endpoint, content);
             var body    = await response.Content.ReadAsStringAsync();
-            return ParseFlatResponse<T>(body);
+            return ParseFlatResponse<T>(body, (int)response.StatusCode);
         }
         catch (Exception ex)
         {
@@ -164,7 +164,7 @@ public class NexoraApiService : INexoraApiService
         {
             var response = await _http.GetAsync(endpoint);
             var body     = await response.Content.ReadAsStringAsync();
-            return ParseFlatResponse<T>(body);
+            return ParseFlatResponse<T>(body, (int)response.StatusCode);
         }
         catch (Exception ex)
         {
@@ -175,25 +175,46 @@ public class NexoraApiService : INexoraApiService
     /// <summary>
     /// Parses a flat API response: checks "success", reads "error" on failure,
     /// or deserializes the whole body onto T on success.
+    /// Guards against non-JSON responses (e.g. HTML 404 pages) and returns a
+    /// human-readable error instead of throwing a JsonException.
     /// </summary>
-    private ApiResponse<T> ParseFlatResponse<T>(string body)
+    private ApiResponse<T> ParseFlatResponse<T>(string body, int statusCode = 0)
     {
-        using var doc  = JsonDocument.Parse(body);
-        var root       = doc.RootElement;
+        // Guard: empty body
+        if (string.IsNullOrWhiteSpace(body))
+            return ApiResponse<T>.Fail($"Server returned an empty response (HTTP {statusCode}).");
 
-        var success = root.TryGetProperty("success", out var s) && s.ValueKind == JsonValueKind.True;
-
-        if (!success)
+        // Guard: non-JSON response (e.g. HTML error page from the web server)
+        var trimmed = body.TrimStart();
+        if (!trimmed.StartsWith("{") && !trimmed.StartsWith("["))
         {
-            var err = root.TryGetProperty("error", out var e) && e.ValueKind == JsonValueKind.String
-                ? e.GetString() ?? "Unknown error"
-                : "Request failed";
-            return ApiResponse<T>.Fail(err);
+            var preview = trimmed.Length > 120 ? trimmed[..120] + "…" : trimmed;
+            return ApiResponse<T>.Fail($"Unexpected server response (HTTP {statusCode}): {preview}");
         }
 
-        // Deserialize the full body (snake_case → PascalCase handled by _jsonOptions)
-        var data = JsonSerializer.Deserialize<T>(body, _jsonOptions);
-        return ApiResponse<T>.Ok(data!);
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            var root      = doc.RootElement;
+
+            var success = root.TryGetProperty("success", out var s) && s.ValueKind == JsonValueKind.True;
+
+            if (!success)
+            {
+                var err = root.TryGetProperty("error", out var e) && e.ValueKind == JsonValueKind.String
+                    ? e.GetString() ?? "Unknown error"
+                    : "Request failed";
+                return ApiResponse<T>.Fail(err);
+            }
+
+            // Deserialize the full body (snake_case → PascalCase handled by _jsonOptions)
+            var data = JsonSerializer.Deserialize<T>(body, _jsonOptions);
+            return ApiResponse<T>.Ok(data!);
+        }
+        catch (JsonException ex)
+        {
+            return ApiResponse<T>.Fail($"Failed to parse server response: {ex.Message}");
+        }
     }
 
     // ── Inner wrapper types for array responses ───────────────────────────────
