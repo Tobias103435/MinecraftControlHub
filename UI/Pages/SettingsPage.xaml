@@ -55,8 +55,33 @@
                     </Border>
                 </StackPanel>
 
-                <!-- Navigation items -->
-                <StackPanel x:Name="NavPanel" Margin="8,0,8,0">
+                <!-- Ko-fi support banner — DockPanel.Dock="Bottom" moet vóór de fill-child staan -->
+                <Border DockPanel.Dock="Bottom"
+                        Margin="16,12,16,16"
+                        Background="{DynamicResource BrushPanelBackground}"
+                        BorderBrush="{DynamicResource BrushBorder}"
+                        BorderThickness="1" CornerRadius="10"
+                        Padding="14,12">
+                    <StackPanel>
+                        <TextBlock Text="☕  Support development"
+                                   FontFamily="{StaticResource FontBody}" FontSize="11.5"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource BrushTextPrimary}"
+                                   Margin="0,0,0,4"/>
+                        <TextBlock Text="Nexora Launcher is free. If you like it, a coffee is always appreciated."
+                                   FontFamily="{StaticResource FontBody}" FontSize="11"
+                                   Foreground="{DynamicResource BrushTextMuted}"
+                                   TextWrapping="Wrap" Margin="0,0,0,10"/>
+                        <Button Content="Donate on Ko-fi"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Padding="0,7"
+                                HorizontalAlignment="Stretch"
+                                Click="KoFi_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Navigation items (fill child — must come after all Dock="Bottom" items) -->
+                <StackPanel x:Name="NavPanel" Margin="8,0,8,16">
                     <RadioButton x:Name="NavAccount" GroupName="SettingsNav" Content="Account"
                                  Tag="PageAccount" IsChecked="True"
                                  Checked="NavRadio_Checked" Style="{StaticResource NavItemStyle}"/>

@@ -324,4 +324,13 @@ public partial class SettingsPage : UserControl
         });
         e.Handled = true;
     }
+
+    private void KoFi_Click(object sender, RoutedEventArgs e)
+    {
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        {
+            FileName        = "https://ko-fi.com/nexoralauncher",
+            UseShellExecute = true
+        });
+    }
 }
