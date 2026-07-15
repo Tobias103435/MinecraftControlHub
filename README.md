@@ -1,6 +1,11 @@
-# Minecraft Control Hub
+# Nexora Launcher
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nexoralauncher)
 
 An all-in-one Minecraft management suite for Windows. Launcher, server manager, mod browser, AI assistant, friend system, and tunnel manager — unified in a single desktop application built with .NET 8 and WPF.
+
+**[Download](https://nexoragames.nl/desktop/launcher/download.php)** · **[Documentation](https://nexoragames.nl/desktop/launcher/documentation.php)** · **[Website](https://nexoragames.nl/desktop/launcher/index.php)** · **[GitHub](https://github.com/Tobias103435/MinecraftControlHub)**
 
 ---
 
@@ -31,6 +36,8 @@ Create, start, stop, restart, and delete Minecraft servers with real process man
 
 The server preview window features a sidebar with live status indicators, a terminal with live console output and command history, log viewer, plugin/mod management with compatibility checks, and settings panels.
 
+**Friend whitelisting** — restrict a server to selected Nexora friends. Toggling a friend on writes their UUID/username directly into `whitelist.json` in the format Minecraft expects, with live `/whitelist reload` support while the server is running — no manual entry required.
+
 ### Microsoft Account Integration
 
 Full Microsoft/Xbox Live authentication via device code flow (Xbox Live → XSTS → Minecraft Services). Supports account switching, profile display, skin/cape management including skin uploads from disk.
@@ -48,7 +55,7 @@ Expose local servers publicly without manual port forwarding. Built-in support f
 - **serveo** — SSH-based tunneling
 - **frp** — self-hosted option for full control
 
-**Playit.gg** is supported via manual address input due to undocumented API requirements.
+**Playit.gg** is supported via manual address input: its official Windows client runs as a background service outside the app's control and its remote API requires undocumented HMAC-signed requests, so the app asks for the address it already displays rather than trying to drive it directly.
 
 **Address sharing** — one-click sharing of tunnel addresses with selected Nexora friends, with in-app notifications for recipients.
 
@@ -56,9 +63,11 @@ Expose local servers publicly without manual port forwarding. Built-in support f
 
 ### AI Command Layer
 
-Natural language interface to control the application: *"install a shader mod"*, *"set up a server for my friends"*. Commands are parsed into structured actions and dispatched to existing services — the AI never directly touches files or processes. All actions require explicit user confirmation before execution.
+Natural language interface to control the application: _"install a shader mod"_, _"set up a server for my friends"_. Commands are parsed into structured actions and dispatched to existing services — the AI never directly touches files or processes. All actions require explicit user confirmation before execution, and identical commands are capped at 5 repeats to prevent runaway retry loops.
 
-Powered by Gemini (user-provided API key) with a guided setup flow for non-technical users.
+**Chaining** — the AI can inspect whether a previous command succeeded or failed and adjust its next action accordingly (e.g. recognizing a dependency conflict and proposing an alternative), rather than firing commands blind.
+
+Powered by Gemini (user-provided API key, free tier) with a guided setup flow for non-technical users — a short walkthrough video shows exactly how to generate a free key at Google AI Studio, and the app auto-selects a default model so there's nothing else to configure. Advanced model/parameter options are tucked away in Settings for anyone who wants them.
 
 ### Installation Health
 
@@ -77,18 +86,25 @@ Dedicated browser for resource packs, shader packs, and world saves with drag-an
 
 ## Architecture
 
-| Layer | Technology |
-|-------|-----------|
-| UI Framework | WPF (.NET 8, Windows only) |
-| DI Container | `Microsoft.Extensions.DependencyInjection` |
-| HTTP | `HttpClient` via DI with named factories |
-| JSON | `System.Text.Json` |
-| Image Processing | `SixLabors.ImageSharp` + custom `AsyncImageLoader` |
-| Minecraft Data | Mojang version manifest, Modrinth REST API, CurseForge REST API |
-| Authentication | Microsoft/Xbox Live OAuth (device code flow) |
-| Backend Proxy | PHP proxy for CurseForge API (ToS compliance) |
+| Layer            | Technology                                                      |
+| ---------------- | --------------------------------------------------------------- |
+| UI Framework     | WPF (.NET 8, Windows only)                                      |
+| DI Container     | `Microsoft.Extensions.DependencyInjection`                      |
+| HTTP             | `HttpClient` via DI with named factories                        |
+| JSON             | `System.Text.Json`                                              |
+| Image Processing | `SixLabors.ImageSharp` + custom `AsyncImageLoader`              |
+| Minecraft Data   | Mojang version manifest, Modrinth REST API, CurseForge REST API |
+| Authentication   | Microsoft/Xbox Live OAuth (device code flow)                    |
+| Backend Proxy    | PHP proxy for CurseForge API (ToS compliance)                   |
 
 The codebase follows strict separation between **Core** (pure business logic, no WPF dependencies) and **UI** (Pages, ViewModels, Windows), connected via dependency injection.
+
+---
+
+## Roadmap
+
+- **World screenshots** — a gallery view per world/installation, surfacing Minecraft's own `screenshots` folder in the content browser.
+- **Cloud sync** — syncing servers, friends, and modpacks across devices via the Nexora backend.
 
 ---
 
@@ -103,6 +119,16 @@ dotnet run --project MinecraftControlHub
 
 ---
 
+## Contributing
+
+Nexora Launcher is open source and contributions are welcome — bug reports, feature requests, and pull requests can all be opened on [GitHub](https://github.com/Tobias103435/MinecraftControlHub). Check the [documentation](https://nexoragames.nl/desktop/launcher/documentation.php) for architecture notes before diving into a larger change.
+
+## Support
+
+Nexora Launcher is free, with no ads and no paid tiers — and it'll stay that way. If you'd like to support development, donations on [Ko-fi](https://ko-fi.com/nexoralauncher) go directly toward hosting costs for the website and backend. Nothing is gated behind a donation; it's entirely optional.
+
 ## License
 
-This project is open source. See the [LICENSE](LICENSE) file for details.
+This project is open source under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+CurseForge API integration is subject to the [CurseForge API Terms of Service](https://support.curseforge.com/en/support/solutions/articles/9000207405) — see the Third-Party Notice in [LICENSE](LICENSE) for details.
