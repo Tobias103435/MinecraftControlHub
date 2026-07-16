@@ -12,15 +12,18 @@ public class KnowledgeService : IKnowledgeService
     private readonly IInstallationService _installationService;
     private readonly IModService          _modService;
     private readonly IServerService       _serverService;
+    private readonly ILoaderService       _loaderService;
 
     public KnowledgeService(
         IInstallationService installationService,
         IModService          modService,
-        IServerService       serverService)
+        IServerService       serverService,
+        ILoaderService       loaderService)
     {
         _installationService = installationService;
         _modService          = modService;
         _serverService       = serverService;
+        _loaderService       = loaderService;
     }
 
     public Task<string> GetCommandKnowledgeAsync() =>
@@ -46,10 +49,13 @@ public class KnowledgeService : IKnowledgeService
         var minecraft      = await GetMinecraftKnowledgeAsync();
         var tunnel         = await GetTunnelKnowledgeAsync();
         var liveContext    = await BuildLiveContextAsync();
+        var liveVersions   = await GetLiveMinecraftVersionsAsync();
 
         return
             "You are the AI assistant for Nexora Launcher — a Minecraft launcher, mod manager, and server manager.\n" +
             "Your job is to help users manage their Minecraft installations, mods, servers, and tunnels through natural language.\n\n" +
+            "## LIVE MINECRAFT VERSION DATA (FROM OFFICIAL MOJANG API)\n" +
+            $"{liveVersions}\n\n" +
             "## HARD RULES\n" +
             "- You NEVER execute actions directly. You only plan them.\n" +
             "- You ALWAYS ask for confirmation before suggesting dangerous actions (delete, start server, modify files).\n" +
@@ -181,6 +187,34 @@ public class KnowledgeService : IKnowledgeService
         }
 
         return sb.ToString();
+    }
+
+    private async Task<string> GetLiveMinecraftVersionsAsync()
+    {
+        try
+        {
+            var versions = await _loaderService.GetMinecraftVersionsAsync();
+            var latestRelease = versions.FirstOrDefault(v => v.IsRelease);
+            var releaseList = versions.Where(v => v.IsRelease).Take(20);
+            var snapshotList = versions.Where(v => !v.IsRelease).Take(10);
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Latest release: {latestRelease?.Id ?? "unknown"}");
+            sb.AppendLine();
+            sb.AppendLine("Recent releases (newest first):");
+            foreach (var v in releaseList)
+                sb.AppendLine($"- {v.Id}");
+            sb.AppendLine();
+            sb.AppendLine("Recent snapshots (newest first):");
+            foreach (var v in snapshotList)
+                sb.AppendLine($"- {v.Id}");
+
+            return sb.ToString();
+        }
+        catch
+        {
+            return "Could not fetch live version data from Mojang API.";
+        }
     }
 
     private static async Task<string> ReadFileAsync(string fileName)
