@@ -14,12 +14,11 @@ public partial class SettingsPageViewModel : ViewModelBase
     private readonly IJavaService _javaService;
     private readonly IMinecraftAccountService _accountService;
     private INexoraAccountService? _nexoraAccountService;
-
-    private bool _isSigningIn;
     private string _deviceCode = string.Empty;
     private string _deviceVerificationUri = string.Empty;
     private string _accountStatus = string.Empty;
 
+    private bool _isSigningIn;
     private bool _isBusy;
     private string _statusMessage = string.Empty;
 

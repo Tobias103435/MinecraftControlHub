@@ -1,6 +1,8 @@
 bin/
 obj/
 
+bin/
+
 .vs/
 *.user
 *.suo
@@ -26,5 +28,13 @@ ehthumbs.db
 Nexora/
 
 node_modules/
+build/
+Builds/
+Clean-build.bat
+Compile-Nexora.bat
+
+.dockerignore
+.gitignore
 
 *.log
+

@@ -97,6 +97,9 @@
                     <RadioButton x:Name="NavStorage" GroupName="SettingsNav" Content="Storage &amp; Data"
                                  Tag="PageStorage"
                                  Theme="{StaticResource NavItemStyle}"/>
+                    <RadioButton x:Name="NavUpdate" GroupName="SettingsNav" Content="App Updates"
+                                 Tag="PageUpdate"
+                                 Theme="{StaticResource NavItemStyle}"/>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -528,6 +531,111 @@
                                        Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,16"/>
                             <Button Content="Reset Minecraft Control Hub" Theme="{StaticResource DangerButtonStyle}"
                                     Padding="20,10" HorizontalAlignment="Left" Click="ClearCache_Click"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+            <!-- ═══ PAGE: App Updates ═══ -->
+            <ScrollViewer x:Name="PageUpdate" VerticalScrollBarVisibility="Auto" IsVisible="False">
+                <StackPanel Margin="40,32,40,40" MaxWidth="640">
+                    <TextBlock Text="App Updates" FontFamily="{StaticResource FontDisplay}" FontSize="24"
+                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Keep Nexora Launcher up to date."
+                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                               Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,28"/>
+
+                    <!-- Current version + check button -->
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24" Margin="0,0,0,16">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Current version" FontFamily="{StaticResource FontDisplay}" FontSize="15"
+                                               Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,2"/>
+                                    <TextBlock Text="{Binding UpdateCurrentVersion}"
+                                               FontFamily="{StaticResource FontBody}" FontSize="13"
+                                               Foreground="{DynamicResource BrushTextMuted}"/>
+                                </StackPanel>
+
+                                <!-- "Up to date" badge -->
+                                <Border Grid.Column="1" CornerRadius="20" Padding="12,6"
+                                        Background="{DynamicResource BrushSuccessBg}"
+                                        IsVisible="{Binding IsUpToDate}"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="✓  Up to date"
+                                               FontFamily="{StaticResource FontBody}" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource BrushSuccessText}"/>
+                                </Border>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Check for updates"
+                                        Theme="{StaticResource PrimaryButtonStyle}"
+                                        Padding="20,10" Margin="0,0,10,0"
+                                        IsEnabled="{Binding IsCheckingForUpdate, Converter={StaticResource InverseBoolConverter}}"
+                                        Click="CheckAppUpdate_Click"/>
+                                <TextBlock Text="Checking…"
+                                           FontFamily="{StaticResource FontBody}" FontSize="13"
+                                           Foreground="{DynamicResource BrushTextMuted}"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding IsCheckingForUpdate}"/>
+                                <TextBlock Text="{Binding UpdateStatusMessage}"
+                                           FontFamily="{StaticResource FontBody}" FontSize="13"
+                                           Foreground="{DynamicResource BrushTextSecondary}"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding !IsCheckingForUpdate}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Update available panel -->
+                    <Border Background="{DynamicResource BrushPanelBackground}" CornerRadius="12" Padding="24"
+                            BorderBrush="{DynamicResource BrushAccent}" BorderThickness="1"
+                            IsVisible="{Binding IsUpdateAvailable}">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Update available" FontFamily="{StaticResource FontDisplay}" FontSize="15"
+                                               Foreground="{DynamicResource BrushAccent}" Margin="0,0,0,2"/>
+                                    <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
+                                               Foreground="{DynamicResource BrushTextMuted}">
+                                        <Run Text="v"/><Run Text="{Binding UpdateCurrentVersion}"/>
+                                        <Run Text=" → "/>
+                                        <Run Text="v"/><Run Text="{Binding UpdateLatestVersion}" FontWeight="SemiBold" Foreground="{DynamicResource BrushAccent}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="Install update"
+                                        Theme="{StaticResource PrimaryButtonStyle}"
+                                        Padding="16,10" VerticalAlignment="Center"
+                                        IsEnabled="{Binding IsDownloadingUpdate, Converter={StaticResource InverseBoolConverter}}"
+                                        Click="DownloadAndInstallUpdate_Click"/>
+                            </Grid>
+
+                            <!-- Download progress -->
+                            <StackPanel Margin="0,0,0,12" IsVisible="{Binding IsDownloadingUpdate}">
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                                    <TextBlock Grid.Column="0" Text="{Binding UpdateStatusMessage}"
+                                               FontFamily="{StaticResource FontBody}" FontSize="12"
+                                               Foreground="{DynamicResource BrushTextSecondary}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding UpdateDownloadProgress, StringFormat={}{0:0}%}"
+                                               FontFamily="{StaticResource FontBody}" FontSize="12"
+                                               Foreground="{DynamicResource BrushTextPrimary}" FontWeight="SemiBold"/>
+                                </Grid>
+                                <ProgressBar Value="{Binding UpdateDownloadProgress}" Minimum="0" Maximum="100" Height="8"/>
+                            </StackPanel>
+
+                            <!-- Release notes -->
+                            <Border Background="{DynamicResource BrushAppBackground}" CornerRadius="8" Padding="14,12"
+                                    IsVisible="{Binding HasUpdateReleaseNotes}">
+                                <StackPanel>
+                                    <TextBlock Text="What's new" FontFamily="{StaticResource FontBody}" FontSize="12"
+                                               FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}"
+                                               Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding UpdateReleaseNotes}"
+                                               FontFamily="{StaticResource FontBody}" FontSize="12"
+                                               Foreground="{DynamicResource BrushTextPrimary}"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </Border>
                 </StackPanel>

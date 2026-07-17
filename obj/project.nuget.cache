@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "Klh9eDytZ5k=",
+  "dgSpecHash": "qb0a8AIqQUc=",
   "success": true,
   "projectFilePath": "D:\\Eigen project\\MinecraftControlHub\\MinecraftControlHub.csproj",
   "expectedPackageFiles": [
@@ -48,9 +48,9 @@
     "C:\\Users\\toobh\\.nuget\\packages\\system.diagnostics.diagnosticsource\\8.0.0\\system.diagnostics.diagnosticsource.8.0.0.nupkg.sha512",
     "C:\\Users\\toobh\\.nuget\\packages\\system.io.pipelines\\8.0.0\\system.io.pipelines.8.0.0.nupkg.sha512",
     "C:\\Users\\toobh\\.nuget\\packages\\tmds.dbus.protocol\\0.20.0\\tmds.dbus.protocol.0.20.0.nupkg.sha512",
-    "C:\\Users\\toobh\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\8.0.28\\microsoft.netcore.app.runtime.win-x64.8.0.28.nupkg.sha512",
-    "C:\\Users\\toobh\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\8.0.28\\microsoft.windowsdesktop.app.runtime.win-x64.8.0.28.nupkg.sha512",
-    "C:\\Users\\toobh\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\8.0.28\\microsoft.aspnetcore.app.runtime.win-x64.8.0.28.nupkg.sha512"
+    "C:\\Users\\toobh\\.nuget\\packages\\microsoft.netcore.app.runtime.osx-x64\\8.0.28\\microsoft.netcore.app.runtime.osx-x64.8.0.28.nupkg.sha512",
+    "C:\\Users\\toobh\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.osx-x64\\8.0.28\\microsoft.aspnetcore.app.runtime.osx-x64.8.0.28.nupkg.sha512",
+    "C:\\Users\\toobh\\.nuget\\packages\\microsoft.netcore.app.host.osx-x64\\8.0.28\\microsoft.netcore.app.host.osx-x64.8.0.28.nupkg.sha512"
   ],
   "logs": []
 }

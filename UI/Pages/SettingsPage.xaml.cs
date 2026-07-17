@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
@@ -28,7 +28,8 @@ public partial class SettingsPage : UserControl
         ["tunnel", "network", "ngrok", "playit", "bore", "frp", "port", "server"],
         ["ai", "terminal", "api", "key", "model", "provider", "endpoint"],
         ["appearance", "theme", "dark", "light", "mode"],
-        ["storage", "data", "folder", "log", "reset", "cache", "diagnostics"]
+        ["storage", "data", "folder", "log", "reset", "cache", "diagnostics"],
+        ["update", "app update", "version", "latest", "release", "download", "changelog"]
     ];
 
     public SettingsPage()
@@ -51,9 +52,23 @@ public partial class SettingsPage : UserControl
             Loaded += async (_, _) =>
             {
                 UpdateThemeButtonLabel();
-                _pages = [PageAccount, PageJava, PageLaunch, PageMods, PageTunnel, PageAi, PageAppearance, PageStorage];
+                _pages = [PageAccount, PageJava, PageLaunch, PageMods, PageTunnel, PageAi, PageAppearance, PageStorage, PageUpdate];
                 ShowPage("PageAccount");
                 await _viewModel.RefreshNexoraProfileAsync();
+
+                // Wire the update service after the page is fully loaded
+                var updateService = serviceProvider.GetService<MinecraftControlHub.Core.Services.IUpdateService>();
+                if (updateService != null)
+                {
+                    _viewModel.InitUpdateService(updateService);
+
+                    // TopBar banner click navigates here and fires NavigateToUpdatesRequested
+                    _viewModel.NavigateToUpdatesRequested += (_, _) =>
+                    {
+                        NavUpdate.IsChecked = true;
+                        ShowPage("PageUpdate");
+                    };
+                }
             };
         }
     }
@@ -84,7 +99,7 @@ public partial class SettingsPage : UserControl
         SearchPlaceholder.IsVisible = string.IsNullOrEmpty(query);
 
         // Get all nav radio buttons
-        var navButtons = new RadioButton[] { NavAccount, NavJava, NavLaunch, NavMods, NavTunnel, NavAi, NavAppearance, NavStorage };
+        var navButtons = new RadioButton[] { NavAccount, NavJava, NavLaunch, NavMods, NavTunnel, NavAi, NavAppearance, NavStorage, NavUpdate };
 
         if (string.IsNullOrEmpty(query))
         {
@@ -342,6 +357,25 @@ public partial class SettingsPage : UserControl
             });
         }
         catch { /* user can open it manually */ }
+    }
+
+    // ── App Updates ──────────────────────────────────────────────────────
+
+    private async void CheckAppUpdate_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_viewModel != null)
+            await _viewModel.CheckForAppUpdateAsync();
+    }
+
+    private void DownloadUpdate_Click(object? sender, RoutedEventArgs e)
+    {
+        _viewModel?.DownloadUpdate();
+    }
+
+    private async void DownloadAndInstallUpdate_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_viewModel != null)
+            await _viewModel.DownloadAndInstallUpdateAsync();
     }
 
     private void KoFi_Click(object? sender, RoutedEventArgs e)

@@ -25,6 +25,12 @@ public interface INexoraApiService
     Task<ApiResponse<object>> AcceptFriendRequestAsync(string token, int requestId);
     Task<ApiResponse<object>> DeclineFriendRequestAsync(string token, int requestId);
     Task<ApiResponse<List<Friend>>> GetFriendsAsync(string token);
+
+    /// <summary>
+    /// Checks whether a newer launcher version is available.
+    /// Passes the running version so the server can decide whether an update exists.
+    /// </summary>
+    Task<ApiResponse<AppUpdateResponse>> CheckForAppUpdateAsync(string currentVersion);
 }
 
 public class NexoraApiService : INexoraApiService
@@ -128,6 +134,16 @@ public class NexoraApiService : INexoraApiService
     public async Task<ApiResponse<object>> DeclineFriendRequestAsync(string token, int requestId)
         => await PostFlatAsync<object>("decline-friend.php", new FriendActionPayload(token, requestId));
 
+    // ── App update ────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// GET update-check.php?version=X.Y.Z — server returns:
+    ///   { "success": true, "update_available": bool, "latest_version": "X.Y.Z",
+    ///     "download_url": "https://...", "release_notes": "..." }
+    /// </summary>
+    public async Task<ApiResponse<AppUpdateResponse>> CheckForAppUpdateAsync(string currentVersion)
+        => await GetFlatAsync<AppUpdateResponse>($"update-check.php?version={Uri.EscapeDataString(currentVersion)}");
+
     // Private DTO with explicit JSON property names to bypass the global snake_case naming policy
     private sealed record FriendActionPayload(
         [property: JsonPropertyName("token")]     string Token,
@@ -230,4 +246,18 @@ public class NexoraApiService : INexoraApiService
         [JsonPropertyName("requests")]
         public List<FriendRequest>? Requests { get; set; }
     }
+}
+
+// ── Update response DTO ───────────────────────────────────────────────────────
+
+/// <summary>
+/// Flat response body returned by update-check.php.
+/// snake_case → PascalCase is handled by the global _jsonOptions in NexoraApiService.
+/// </summary>
+public class AppUpdateResponse
+{
+    public bool    UpdateAvailable { get; set; }
+    public string? LatestVersion   { get; set; }
+    public string? DownloadUrl     { get; set; }
+    public string? ReleaseNotes    { get; set; }
 }

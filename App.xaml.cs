@@ -69,6 +69,18 @@ public partial class App : Application
         if (settingsService != null)
             ThemeService.ApplySavedTheme(settingsService);
 
+        // Background update check — runs silently; subscribers (TopBar, SettingsPage) react via the UpdateChecked event
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var updateService = ServiceProvider?.GetService<IUpdateService>();
+                if (updateService != null)
+                    await updateService.CheckAsync();
+            }
+            catch { /* never crash the app over a failed update check */ }
+        });
+
         // Wire crash detection: when a server crashes, automatically send the
         // crash report to the AI terminal for instant diagnosis.
         var serverService = ServiceProvider?.GetService<IServerService>();
@@ -151,6 +163,9 @@ public partial class App : Application
         // Nexora API and account services
         services.AddHttpClient<INexoraApiService, NexoraApiService>();
         services.AddSingleton<INexoraAccountService, NexoraAccountService>();
+
+        // Auto-update
+        services.AddHttpClient<IUpdateService, UpdateService>();
 
         // Tunnel sharing & notifications
         services.AddHttpClient<ITunnelShareService, TunnelShareService>();

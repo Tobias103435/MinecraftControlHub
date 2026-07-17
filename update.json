@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "build": 100,
+  "mandatory": false,
+  "release_date": "2026-07-17",
+  "downloads": {
+    "windows_x64": "Nexora_Setup_X64.exe",
+    "windows_x86": "Nexora_Setup_X86.exe",
+    "linux_x64": "Nexora_Linux_X64",
+    "linux_appimage": "Nexora_Linux_AppImage.AppImage",
+    "mac_arm64": "Nexora_Apple_arm64",
+    "mac_intel": "Nexora_Apple_Intel"
+  },
+  "release_notes": ["1.0.0 Release!.", "Added Auto Update"]
+}

@@ -68,6 +68,7 @@ public partial class TopBar : UserControl
 {
     private ITunnelNotificationManager?   _tunnelNotifManager;
     private IInstanceNotificationManager? _instanceNotifManager;
+    private IUpdateService?               _updateService;
 
     private readonly ObservableCollection<NotificationRow> _rows = new();
 
@@ -82,11 +83,22 @@ public partial class TopBar : UserControl
         var app = Application.Current as App;
         _tunnelNotifManager   = app?.ServiceProvider?.GetService<ITunnelNotificationManager>();
         _instanceNotifManager = app?.ServiceProvider?.GetService<IInstanceNotificationManager>();
+        _updateService        = app?.ServiceProvider?.GetService<IUpdateService>();
 
         if (_tunnelNotifManager != null)
             _tunnelNotifManager.Changed   += (_, _) => Dispatcher.UIThread.Post(Refresh);
         if (_instanceNotifManager != null)
             _instanceNotifManager.Changed += (_, _) => Dispatcher.UIThread.Post(Refresh);
+
+        // React to update checks (including the one that already fired on startup)
+        if (_updateService != null)
+        {
+            _updateService.UpdateChecked += (_, result) => ShowUpdateBanner(result.IsUpdateAvailable, result.LatestVersion);
+
+            // If the startup check already finished before TopBar loaded, apply it now
+            if (_updateService.LastResult is { } cached)
+                ShowUpdateBanner(cached.IsUpdateAvailable, cached.LatestVersion);
+        }
 
         Refresh();
     }
@@ -211,5 +223,31 @@ public partial class TopBar : UserControl
             _ = clipboard?.SetTextAsync(text);
         }
         catch { }
+    }
+
+    // ── Update banner ─────────────────────────────────────────────────────────
+
+    private void ShowUpdateBanner(bool available, string latestVersion)
+    {
+        UpdateBanner.IsVisible  = available;
+        if (available)
+            UpdateBannerText.Text = $"An update is available (v{latestVersion}) — click to update";
+    }
+
+    private void UpdateBanner_Click(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton != MouseButton.Left) return;
+
+        // Navigate to Settings → Updates page so the user can read release notes and download
+        var mainWindow = TopLevel.GetTopLevel(this) as MainWindow;
+        mainWindow?.ShowPage(MinecraftControlHub.UI.AppPage.Settings);
+
+        // Small delay so the page is created, then select the Updates nav item
+        Dispatcher.UIThread.Post(() =>
+        {
+            var settingsVm = (Application.Current as App)?.ServiceProvider
+                ?.GetService<SettingsPageViewModel>();
+            settingsVm?.NavigateToUpdates();
+        }, DispatcherPriority.Background);
     }
 }

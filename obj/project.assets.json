@@ -114,12 +114,12 @@
           "Avalonia.Remote.Protocol": "11.2.7"
         },
         "compile": {
-          "lib/net8.0/Avalonia.Controls.ColorPicker.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net8.0/Avalonia.Controls.ColorPicker.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         }
@@ -131,12 +131,12 @@
           "Avalonia.Remote.Protocol": "11.2.7"
         },
         "compile": {
-          "lib/net8.0/Avalonia.Controls.DataGrid.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net8.0/Avalonia.Controls.DataGrid.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         }
@@ -170,12 +170,12 @@
           "Avalonia.Themes.Simple": "11.2.7"
         },
         "compile": {
-          "lib/net8.0/Avalonia.Diagnostics.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net8.0/Avalonia.Diagnostics.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         }
@@ -276,12 +276,12 @@
           "Avalonia": "11.2.7"
         },
         "compile": {
-          "lib/net8.0/Avalonia.Themes.Simple.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net8.0/Avalonia.Themes.Simple.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         }
@@ -851,7 +851,7 @@
         }
       }
     },
-    "net8.0/win-x64": {
+    "net8.0/osx-x64": {
       "Avalonia/11.2.7": {
         "type": "package",
         "dependencies": {
@@ -935,10 +935,7 @@
         }
       },
       "Avalonia.Angle.Windows.Natives/2.1.22045.20230930": {
-        "type": "package",
-        "native": {
-          "runtimes/win-x64/native/av_libglesv2.dll": {}
-        }
+        "type": "package"
       },
       "Avalonia.BuildServices/0.0.31": {
         "type": "package",
@@ -953,12 +950,12 @@
           "Avalonia.Remote.Protocol": "11.2.7"
         },
         "compile": {
-          "lib/net8.0/Avalonia.Controls.ColorPicker.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net8.0/Avalonia.Controls.ColorPicker.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         }
@@ -970,12 +967,12 @@
           "Avalonia.Remote.Protocol": "11.2.7"
         },
         "compile": {
-          "lib/net8.0/Avalonia.Controls.DataGrid.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net8.0/Avalonia.Controls.DataGrid.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         }
@@ -1009,12 +1006,12 @@
           "Avalonia.Themes.Simple": "11.2.7"
         },
         "compile": {
-          "lib/net8.0/Avalonia.Diagnostics.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net8.0/Avalonia.Diagnostics.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         }
@@ -1050,6 +1047,9 @@
           "lib/net8.0/Avalonia.Native.dll": {
             "related": ".xml"
           }
+        },
+        "native": {
+          "runtimes/osx/native/libAvaloniaNative.dylib": {}
         }
       },
       "Avalonia.Remote.Protocol/11.2.7": {
@@ -1109,12 +1109,12 @@
           "Avalonia": "11.2.7"
         },
         "compile": {
-          "lib/net8.0/Avalonia.Themes.Simple.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net8.0/Avalonia.Themes.Simple.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         }
@@ -1190,6 +1190,9 @@
         },
         "runtime": {
           "lib/net6.0/_._": {}
+        },
+        "native": {
+          "runtimes/osx/native/libHarfBuzzSharp.dylib": {}
         }
       },
       "HarfBuzzSharp.NativeAssets.WebAssembly/7.3.0.3": {
@@ -1212,9 +1215,6 @@
         },
         "runtime": {
           "lib/net6.0/_._": {}
-        },
-        "native": {
-          "runtimes/win-x64/native/libHarfBuzzSharp.dll": {}
         }
       },
       "MicroCom.Runtime/0.11.0": {
@@ -1542,6 +1542,9 @@
         },
         "runtime": {
           "lib/net6.0/_._": {}
+        },
+        "native": {
+          "runtimes/osx/native/libSkiaSharp.dylib": {}
         }
       },
       "SkiaSharp.NativeAssets.WebAssembly/2.88.9": {
@@ -1564,9 +1567,6 @@
         },
         "runtime": {
           "lib/net6.0/_._": {}
-        },
-        "native": {
-          "runtimes/win-x64/native/libSkiaSharp.dll": {}
         }
       },
       "System.Diagnostics.DiagnosticSource/8.0.0": {
@@ -3070,6 +3070,8 @@
             "version": "[11.2.7, )"
           },
           "Avalonia.Diagnostics": {
+            "include": "None",
+            "suppressParent": "All",
             "target": "Package",
             "version": "[11.2.7, )"
           },
@@ -3109,15 +3111,15 @@
         "warn": true,
         "downloadDependencies": [
           {
-            "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+            "name": "Microsoft.AspNetCore.App.Runtime.osx-x64",
             "version": "[8.0.28, 8.0.28]"
           },
           {
-            "name": "Microsoft.NETCore.App.Runtime.win-x64",
+            "name": "Microsoft.NETCore.App.Host.osx-x64",
             "version": "[8.0.28, 8.0.28]"
           },
           {
-            "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+            "name": "Microsoft.NETCore.App.Runtime.osx-x64",
             "version": "[8.0.28, 8.0.28]"
           }
         ],
@@ -3130,7 +3132,7 @@
       }
     },
     "runtimes": {
-      "win-x64": {
+      "osx-x64": {
         "#import": []
       }
     }

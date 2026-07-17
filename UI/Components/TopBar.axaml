@@ -12,7 +12,28 @@
 
         <Grid ColumnDefinitions="*,Auto">
 
-            <!-- Right side: notification bell -->
+            <!-- Update available banner (hidden until update check returns true) -->
+            <Border x:Name="UpdateBanner"
+                    Grid.Column="0"
+                    IsVisible="False"
+                    Background="#1A4CAF7D"
+                    BorderBrush="#4CAF7D"
+                    BorderThickness="0,0,0,2"
+                    Padding="14,0"
+                    VerticalAlignment="Stretch"
+                    Cursor="Hand"
+                    PointerReleased="UpdateBanner_Click">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+                    <!-- Green dot indicator -->
+                    <Ellipse Width="8" Height="8" Fill="#4CAF7D" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="UpdateBannerText"
+                               Text="An update is available — click to update"
+                               FontFamily="{DynamicResource FontBody}"
+                               FontSize="12.5" FontWeight="SemiBold"
+                               Foreground="#4CAF7D"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
             <StackPanel Grid.Column="1"
                         Orientation="Horizontal"
                         VerticalAlignment="Center"
