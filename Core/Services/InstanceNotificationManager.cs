@@ -25,7 +25,6 @@ public class InstanceNotificationManager : IInstanceNotificationManager
     private readonly IInstanceShareService _shareService;
     private readonly INexoraAccountService _nexoraService;
     private CancellationTokenSource?       _cts;
-    private readonly System.Windows.Threading.Dispatcher? _dispatcher;
 
     public ObservableCollection<InstanceShareNotification> Notifications { get; } = new();
     public int UnreadCount => Notifications.Count(n => !n.IsRead);
@@ -37,7 +36,6 @@ public class InstanceNotificationManager : IInstanceNotificationManager
     {
         _shareService  = shareService;
         _nexoraService = nexoraService;
-        _dispatcher    = System.Windows.Application.Current?.Dispatcher;
     }
 
     public void StartPolling()
@@ -132,9 +130,9 @@ public class InstanceNotificationManager : IInstanceNotificationManager
 
     private void RunOnUi(Action action)
     {
-        if (_dispatcher != null && !_dispatcher.CheckAccess())
-            _dispatcher.Invoke(action);
-        else
+        if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             action();
+        else
+            Avalonia.Threading.Dispatcher.UIThread.Post(action);
     }
 }

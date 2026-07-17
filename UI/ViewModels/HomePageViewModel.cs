@@ -1,6 +1,9 @@
 using System.Diagnostics;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
+using MinecraftControlHub.UI.Helpers;
 
 namespace MinecraftControlHub.UI.ViewModels;
 
@@ -597,7 +600,7 @@ public class HomePageViewModel : ViewModelBase
         _ = LoadInstallationsAsync();
 
         _installationService.InstallationsChanged += (_, _) =>
-            System.Windows.Application.Current.Dispatcher.InvokeAsync(
+            Dispatcher.UIThread.InvokeAsync(
                 () => _ = LoadInstallationsAsync());
 
         // React to incoming share notifications
@@ -1373,11 +1376,8 @@ public class HomePageViewModel : ViewModelBase
         finally { IsShareBusy = false; }
     }
 
-    public void CopyShareCode()
-    {
-        if (!string.IsNullOrWhiteSpace(ShareCode))
-            try { System.Windows.Clipboard.SetText(ShareCode); } catch { }
-    }
+    // Clipboard access moved to HomePage.xaml.cs's CopyShareCode_Click — Avalonia's
+    // clipboard is per-window (TopLevel.GetTopLevel(...).Clipboard), not a static API.
 
     public async Task ImportFromCodeAsync()
     {
@@ -1632,27 +1632,28 @@ public class HomePageViewModel : ViewModelBase
         var mods = await _modService.GetInstalledModsAsync(DetailInstallation.Id);
         if (mods.Count == 0) return;
 
-        var answer = System.Windows.MessageBox.Show(
+        var owner = (Avalonia.Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+
+        var confirmed = await SimpleDialog.ConfirmAsync(
+            owner,
             $"Minecraft version changed from {oldVersion} to {newVersion}.\n\n" +
             $"Would you like to check if your {mods.Count} mod(s) are compatible?\n" +
             "Compatible mods will be auto-updated. For incompatible mods you can choose to disable or uninstall them.",
-            "Mod Compatibility Check",
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Question);
+            "Mod Compatibility Check");
 
-        if (answer != System.Windows.MessageBoxResult.Yes)
+        if (!confirmed)
             return;
 
         // Open the compatibility window
         var window = new UI.Windows.ModCompatibilityWindow(
-            DetailInstallation, _modService, oldVersion, newVersion)
-        {
-            Owner = System.Windows.Application.Current.MainWindow
-        };
+            DetailInstallation, _modService, oldVersion, newVersion);
 
-        var dialogResult = window.ShowDialog();
+        if (owner != null)
+            await window.ShowDialog(owner);
+        else
+            window.Show();
 
-        if (dialogResult == true && window.Result.Applied)
+        if (window.Result.Applied)
         {
             // Apply the user's choices for incompatible mods
             IsDetailBusy = true;

@@ -1,5 +1,6 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Microsoft.Extensions.DependencyInjection;
 using MinecraftControlHub.UI.ViewModels;
 using MinecraftControlHub.UI.Windows;
@@ -21,11 +22,15 @@ public partial class FriendsPage : UserControl
         }
     }
 
-    private void OverlayLogin_Click(object sender, RoutedEventArgs e)
+    private async void OverlayLogin_Click(object? sender, RoutedEventArgs e)
     {
-        var window = Window.GetWindow(this);
-        var loginWindow = new NexoraLoginWindow { Owner = window };
-        loginWindow.ShowDialog();
+        var window = TopLevel.GetTopLevel(this) as Window;
+        var loginWindow = new NexoraLoginWindow();
+
+        if (window != null)
+            await loginWindow.ShowDialog(window);
+        else
+            loginWindow.Show();
 
         if (loginWindow.LoginSuccessful)
         {

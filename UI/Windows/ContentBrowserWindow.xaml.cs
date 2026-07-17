@@ -1,6 +1,7 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Input;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.UI.ViewModels;
 
@@ -47,10 +48,10 @@ public partial class ContentBrowserWindow : Window
             await _viewModel.GoToPageAsync(page);
     }
 
-    private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    private void ScrollViewer_PreviewMouseWheel(object sender, PointerWheelEventArgs e)
     {
         if (e.Handled || sender is not ScrollViewer sv) return;
-        sv.ScrollToVerticalOffset(sv.VerticalOffset - e.Delta);
+        sv.Offset = new Avalonia.Vector(sv.Offset.X, sv.Offset.Y - e.Delta.Y);
         e.Handled = true;
     }
 }

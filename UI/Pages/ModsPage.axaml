@@ -1,33 +1,18 @@
-﻿<UserControl x:Class="MinecraftControlHub.UI.Pages.ModsPage"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Class="MinecraftControlHub.UI.Pages.ModsPage"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
              xmlns:models="clr-namespace:MinecraftControlHub.Core.Models"
              xmlns:helpers="clr-namespace:MinecraftControlHub.UI.Helpers"
-             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
-             d:DataContext="{d:DesignInstance viewmodels:ModsPageViewModel}">
-
-    <UserControl.Resources>
-        <!-- Install button that flips to a disabled "Installed" state once the
-             mod is present in the selected installation (install-once). -->
-        <Style x:Key="InstallButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-            <Setter Property="Content" Value="Install"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsInstalled}" Value="True">
-                    <Setter Property="Content" Value="Installed"/>
-                    <Setter Property="IsEnabled" Value="False"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Resources>
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600">
 
     <Grid>
         <!-- ===================== MAIN (list) LAYER ===================== -->
         <ScrollViewer VerticalScrollBarVisibility="Auto"
-                      PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
-                      Visibility="{Binding IsDetailVisible, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                      PointerWheelChanged="ScrollViewer_PreviewMouseWheel"
+                      IsVisible="{Binding IsDetailVisible, Converter={StaticResource InverseBoolToVisibilityConverter}}">
             <StackPanel Margin="32,24,32,32">
                 <TextBlock Text="Mods"
                            FontFamily="{DynamicResource FontDisplay}"
@@ -51,6 +36,7 @@
                                    Margin="0,0,0,8"/>
                         <ComboBox ItemsSource="{Binding Installations}"
                                   SelectedItem="{Binding SelectedInstallation}"
+                                  HorizontalAlignment="Stretch"
                                   Padding="12"
                                   Background="{DynamicResource BrushAppBackground}"
                                   BorderBrush="{DynamicResource BrushBorder}"
@@ -58,7 +44,7 @@
                                   Foreground="{DynamicResource BrushTextPrimary}"
                                   FontSize="14">
                             <ComboBox.ItemTemplate>
-                                <DataTemplate DataType="{x:Type models:Installation}">
+                                <DataTemplate DataType="models:Installation">
                                     <TextBlock Text="{Binding Name}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
@@ -71,11 +57,10 @@
                                 CornerRadius="8"
                                 Padding="16"
                                 Margin="0,16,0,0"
-                                Visibility="{Binding HasInstallationSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+                                IsVisible="{Binding HasInstallationSelected, Converter={StaticResource BoolToVisibilityConverter}}">
                             <StackPanel>
-                                <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="13" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,6">
-                                    Showing mods compatible with this installation:
-                                </TextBlock>
+                                <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="13" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,6"
+                                           Text="Showing mods compatible with this installation:"/>
                                 <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="13" Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,6">
                                     <Run Text="Version: " Foreground="{DynamicResource BrushTextSecondary}"/>
                                     <Run Text="{Binding SelectedInstallation.MinecraftVersion}"/>
@@ -94,19 +79,19 @@
                             IsEnabled="{Binding HasInstallationSelected}">
                     <Button x:Name="SearchTabButton"
                             Content="Browse Mods"
-                            Style="{StaticResource PrimaryButtonStyle}"
+                            Theme="{StaticResource PrimaryButtonStyle}"
                             Margin="0,0,8,0"
                             Padding="24,12"
                             Click="SearchTabButton_Click"/>
                     <Button x:Name="ModpacksTabButton"
                             Content="Modpacks"
-                            Style="{StaticResource SecondaryButtonStyle}"
+                            Theme="{StaticResource SecondaryButtonStyle}"
                             Margin="0,0,8,0"
                             Padding="24,12"
                             Click="ModpacksTabButton_Click"/>
                     <Button x:Name="InstalledTabButton"
                             Content="Installed"
-                            Style="{StaticResource SecondaryButtonStyle}"
+                            Theme="{StaticResource SecondaryButtonStyle}"
                             Padding="24,12"
                             Click="InstalledTabButton_Click"/>
                 </StackPanel>
@@ -143,7 +128,7 @@
                                      KeyDown="SearchBox_KeyDown"/>
                             <Button Content="Search"
                                     Grid.Row="0" Grid.Column="1"
-                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Theme="{StaticResource PrimaryButtonStyle}"
                                     Margin="8,0,0,0"
                                     Padding="24,12"
                                     Click="Search_Click"/>
@@ -197,12 +182,12 @@
                                FontFamily="{DynamicResource FontBody}"
                                FontSize="13"
                                Margin="4,8,0,8"
-                               Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                               IsVisible="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                     <!-- Search Results (Modrinth-style horizontal cards) -->
                     <ItemsControl ItemsSource="{Binding SearchResults}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type models:ModSearchResult}">
+                            <DataTemplate DataType="models:ModSearchResult">
                                 <Border Background="{DynamicResource BrushPanelBackground}"
                                         BorderBrush="{DynamicResource BrushBorder}"
                                         BorderThickness="1"
@@ -239,31 +224,11 @@
                                                        FontSize="12"
                                                        Foreground="{DynamicResource BrushTextMuted}"
                                                        Margin="0,2,0,6"/>
-                                            <Border HorizontalAlignment="Left" CornerRadius="4" Padding="6,2" Margin="0,0,0,4">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Background" Value="#331DB368"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Source}" Value="{x:Static models:ModSource.CurseForge}">
-                                                                <Setter Property="Background" Value="#33F16436"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-                                                <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="10" FontWeight="SemiBold">
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="TextBlock">
-                                                            <Setter Property="Text" Value="Modrinth"/>
-                                                            <Setter Property="Foreground" Value="#1DB368"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding Source}" Value="{x:Static models:ModSource.CurseForge}">
-                                                                    <Setter Property="Text" Value="CurseForge"/>
-                                                                    <Setter Property="Foreground" Value="#F16436"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </TextBlock.Style>
-                                                </TextBlock>
+                                            <Border HorizontalAlignment="Left" CornerRadius="4" Padding="6,2" Margin="0,0,0,4"
+                                                    Background="{Binding SourceBadgeBrush}">
+                                                <TextBlock Text="{Binding SourceLabel}"
+                                                           Foreground="{Binding SourceLabelBrush}"
+                                                           FontFamily="{DynamicResource FontBody}" FontSize="10" FontWeight="SemiBold"/>
                                             </Border>
                                             <TextBlock Text="{Binding Description}"
                                                        FontFamily="{DynamicResource FontBody}"
@@ -282,12 +247,14 @@
                                         <!-- Actions (right) -->
                                         <StackPanel Grid.Column="2" VerticalAlignment="Center" MinWidth="110">
                                             <Button Content="View"
-                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Theme="{StaticResource SecondaryButtonStyle}"
                                                     Padding="20,10"
                                                     HorizontalAlignment="Stretch"
                                                     Margin="0,0,0,8"
                                                     Click="View_Click"/>
-                                            <Button Style="{StaticResource InstallButtonStyle}"
+                                            <Button Theme="{StaticResource PrimaryButtonStyle}"
+                                                    Content="{Binding InstallButtonLabel}"
+                                                    IsEnabled="{Binding IsInstalled, Converter={StaticResource InverseBoolConverter}}"
                                                     Padding="20,10"
                                                     HorizontalAlignment="Stretch"
                                                     Click="Install_Click"/>
@@ -302,9 +269,9 @@
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 Margin="0,8,0,0"
-                                Visibility="{Binding HasPagination, Converter={StaticResource BoolToVisibilityConverter}}">
+                                IsVisible="{Binding HasPagination, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Button Content="Previous"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="16,8"
                                 Margin="0,0,8,0"
                                 IsEnabled="{Binding CanGoPrevious}"
@@ -318,7 +285,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Button Content="{Binding}"
-                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Theme="{StaticResource SecondaryButtonStyle}"
                                             Padding="14,8"
                                             Margin="2,0"
                                             Click="PageNumber_Click"/>
@@ -326,7 +293,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <Button Content="Next"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="16,8"
                                 Margin="8,0,0,0"
                                 IsEnabled="{Binding CanGoNext}"
@@ -335,23 +302,23 @@
                 </StackPanel>
 
                 <!-- Installed Tab Content -->
-                <StackPanel x:Name="InstalledTabContent" Visibility="Collapsed">
+                <StackPanel x:Name="InstalledTabContent" IsVisible="False">
 
                     <!-- Check for updates / Check for dependencies -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                         <Button Content="Check for updates"
-                                Style="{StaticResource PrimaryButtonStyle}"
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 IsEnabled="{Binding IsCheckingModUpdates, Converter={StaticResource InverseBoolConverter}}"
                                 Margin="0,0,10,0"
                                 Click="CheckModUpdates_Click"/>
                         <Button Content="Check for dependencies"
-                                Style="{StaticResource PrimaryButtonStyle}"
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 IsEnabled="{Binding IsCheckingDependencies, Converter={StaticResource InverseBoolConverter}}"
                                 Click="CheckDependencies_Click"/>
                     </StackPanel>
 
                     <TextBlock Text="{Binding UpdateStatus}"
-                               Visibility="{Binding HasUpdateStatus, Converter={StaticResource BoolToVisibilityConverter}}"
+                               IsVisible="{Binding HasUpdateStatus, Converter={StaticResource BoolToVisibilityConverter}}"
                                FontFamily="{DynamicResource FontBody}"
                                FontSize="12"
                                Foreground="{DynamicResource BrushTextSecondary}"
@@ -359,7 +326,7 @@
                                Margin="0,0,0,10"/>
 
                     <TextBlock Text="{Binding DependencyStatus}"
-                               Visibility="{Binding HasDependencyStatus, Converter={StaticResource BoolToVisibilityConverter}}"
+                               IsVisible="{Binding HasDependencyStatus, Converter={StaticResource BoolToVisibilityConverter}}"
                                FontFamily="{DynamicResource FontBody}"
                                FontSize="12"
                                Foreground="{DynamicResource BrushTextSecondary}"
@@ -368,10 +335,10 @@
 
                     <!-- Dependency issues found by "Check for dependencies" -->
                     <ItemsControl ItemsSource="{Binding DependencyIssues}"
-                                  Visibility="{Binding HasDependencyIssues, Converter={StaticResource BoolToVisibilityConverter}}"
+                                  IsVisible="{Binding HasDependencyIssues, Converter={StaticResource BoolToVisibilityConverter}}"
                                   Margin="0,0,0,18">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type models:DependencyIssue}">
+                            <DataTemplate DataType="models:DependencyIssue">
                                 <Border Background="{DynamicResource BrushPanelBackground}"
                                         BorderBrush="{DynamicResource BrushBorder}"
                                         BorderThickness="1"
@@ -400,7 +367,7 @@
 
                                         <Button Grid.Column="1"
                                                 Content="Fix"
-                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Theme="{StaticResource SecondaryButtonStyle}"
                                                 Padding="14,5"
                                                 VerticalAlignment="Center"
                                                 Click="FixDependencyIssue_Click"/>
@@ -417,8 +384,8 @@
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type models:Mod}">
-                                <Border Style="{StaticResource ModCardStyle}">
+                            <DataTemplate DataType="models:Mod">
+                                <Border Theme="{StaticResource ModCardStyle}">
                                     <StackPanel>
                                         <TextBlock Text="{Binding Name}"
                                                    FontFamily="{DynamicResource FontDisplay}"
@@ -442,31 +409,11 @@
                                                    FontSize="12"
                                                    Foreground="{DynamicResource BrushTextMuted}"
                                                    Margin="0,0,0,4"/>
-                                        <Border HorizontalAlignment="Left" CornerRadius="4" Padding="6,2" Margin="0,0,0,8">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Background" Value="#331DB368"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Source}" Value="{x:Static models:ModSource.CurseForge}">
-                                                            <Setter Property="Background" Value="#33F16436"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="10" FontWeight="SemiBold">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Text" Value="Modrinth"/>
-                                                        <Setter Property="Foreground" Value="#1DB368"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Source}" Value="{x:Static models:ModSource.CurseForge}">
-                                                                <Setter Property="Text" Value="CurseForge"/>
-                                                                <Setter Property="Foreground" Value="#F16436"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
+                                        <Border HorizontalAlignment="Left" CornerRadius="4" Padding="6,2" Margin="0,0,0,8"
+                                                Background="{Binding SourceBadgeBrush}">
+                                            <TextBlock Text="{Binding SourceLabel}"
+                                                       Foreground="{Binding SourceLabelBrush}"
+                                                       FontFamily="{DynamicResource FontBody}" FontSize="10" FontWeight="SemiBold"/>
                                         </Border>
                                         <TextBlock Text="Auto-installed dependency"
                                                    FontFamily="{DynamicResource FontBody}"
@@ -474,17 +421,17 @@
                                                    FontStyle="Italic"
                                                    Foreground="{DynamicResource BrushTextMuted}"
                                                    Margin="0,0,0,12"
-                                                   Visibility="{Binding IsDependency, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                   IsVisible="{Binding IsDependency, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                         <StackPanel Orientation="Horizontal">
                                             <Button Content="{Binding UpdateLabel}"
-                                                    Style="{StaticResource PrimaryButtonStyle}"
+                                                    Theme="{StaticResource PrimaryButtonStyle}"
                                                     Padding="20,10"
                                                     Margin="0,0,8,0"
                                                     FontWeight="SemiBold"
-                                                    Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                    IsVisible="{Binding UpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
                                                     Click="Update_Click"/>
                                             <Button Content="Uninstall"
-                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Theme="{StaticResource SecondaryButtonStyle}"
                                                     Click="Uninstall_Click"/>
                                         </StackPanel>
                                     </StackPanel>
@@ -495,7 +442,7 @@
                 </StackPanel>
 
                 <!-- Modpacks Tab Content — inline browser, same layout as Mods tab -->
-                <StackPanel x:Name="ModpacksTabContent" Visibility="Collapsed">
+                <StackPanel x:Name="ModpacksTabContent" IsVisible="False">
 
                     <!-- Search + Sort Panel -->
                     <Border Background="{DynamicResource BrushPanelBackground}"
@@ -522,7 +469,7 @@
                                      KeyDown="ModpackSearchBox_KeyDown"/>
                             <Button Content="Search"
                                     Grid.Row="0" Grid.Column="1"
-                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Theme="{StaticResource PrimaryButtonStyle}"
                                     Margin="8,0,0,0" Padding="24,12"
                                     Click="ModpackSearch_Click"/>
 
@@ -542,7 +489,7 @@
                                            VerticalAlignment="Center" Margin="16,0,0,0"
                                            FontFamily="{DynamicResource FontBody}" FontSize="12"
                                            Foreground="{DynamicResource BrushTextMuted}"
-                                           Visibility="{Binding HasModpackResults, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                           IsVisible="{Binding HasModpackResults, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -552,21 +499,21 @@
                                Foreground="{DynamicResource BrushTextMuted}"
                                FontFamily="{DynamicResource FontBody}" FontSize="13"
                                Margin="4,0,0,8" TextWrapping="Wrap"
-                               Visibility="{Binding ShowModpackPrompt, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                               IsVisible="{Binding ShowModpackPrompt, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                     <!-- Searching indicator -->
                     <TextBlock Text="Searching…"
                                Foreground="{DynamicResource BrushTextMuted}"
                                FontFamily="{DynamicResource FontBody}" FontSize="13"
                                Margin="4,8,0,8"
-                               Visibility="{Binding IsModpackSearching, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                               IsVisible="{Binding IsModpackSearching, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                     <!-- Empty state -->
                     <TextBlock Text="No modpacks found. Try a different search or sort option."
                                Foreground="{DynamicResource BrushTextMuted}"
                                FontFamily="{DynamicResource FontBody}" FontSize="13"
                                Margin="4,8,0,8"
-                               Visibility="{Binding ShowModpackEmptyState, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                               IsVisible="{Binding ShowModpackEmptyState, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                     <!-- Results — expandable modpack cards (ModpackCardViewModel) -->
                     <ItemsControl ItemsSource="{Binding ModpackCards}">
@@ -624,8 +571,9 @@
                                                     x:Name="ModpackInstallBtn"
                                                     VerticalAlignment="Center"
                                                     Padding="20,8"
-                                                    Style="{StaticResource PrimaryButtonStyle}"
-                                                    Content="Install"
+                                                    Theme="{StaticResource PrimaryButtonStyle}"
+                                                    Content="{Binding InstallButtonLabel}"
+                                                    IsEnabled="{Binding IsInstalled, Converter={StaticResource InverseBoolConverter}}"
                                                     Tag="{Binding Modpack}"
                                                     Click="InstallModpack_Click"/>
 
@@ -639,24 +587,14 @@
                                                     Click="ExpandModpack_Click">
                                                 <TextBlock FontFamily="{DynamicResource FontBody}"
                                                            FontSize="12"
-                                                           Foreground="{DynamicResource BrushTextMuted}">
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="TextBlock">
-                                                            <Setter Property="Text" Value="▶"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsExpanded}" Value="True">
-                                                                    <Setter Property="Text" Value="▼"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </TextBlock.Style>
-                                                </TextBlock>
+                                                           Foreground="{DynamicResource BrushTextMuted}"
+                                                           Text="{Binding ExpandChevron}"/>
                                             </Button>
                                         </Grid>
                                         </Border>
 
                                         <!-- ── Expanded mod list (only when installed + expanded) ── -->
-                                        <Border Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        <Border IsVisible="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}"
                                                 Margin="16,0,16,14">
                                             <StackPanel>
                                                 <!-- Divider -->
@@ -669,18 +607,18 @@
                                                            FontFamily="{DynamicResource FontBody}" FontSize="12"
                                                            Foreground="{DynamicResource BrushTextMuted}"
                                                            Margin="0,0,0,8"
-                                                           Visibility="{Binding IsLoadingMods, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                           IsVisible="{Binding IsLoadingMods, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                                                 <!-- No mods state -->
                                                 <TextBlock Text="Geen mods gevonden"
                                                            FontFamily="{DynamicResource FontBody}" FontSize="12"
                                                            Foreground="{DynamicResource BrushTextMuted}"
                                                            Margin="0,0,0,8"
-                                                           Visibility="{Binding HasMods, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                                           IsVisible="{Binding HasMods, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
 
                                                 <!-- Preview: mod names for non-installed modpacks (read-only) -->
                                                 <ItemsControl ItemsSource="{Binding PreviewModNames}"
-                                                              Visibility="{Binding HasPreviewNames, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                              IsVisible="{Binding HasPreviewNames, Converter={StaticResource BoolToVisibilityConverter}}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <Border Background="{DynamicResource BrushPanelElevated}"
@@ -753,8 +691,8 @@
                                                                                       VerticalAlignment="Center"
                                                                                       Cursor="Hand"
                                                                                       Click="ModpackModToggle_Click"
-                                                                                      Style="{StaticResource ModToggleStyle}"
-                                                                                      ToolTip="{Binding IsEnabled, Converter={StaticResource BoolToEnableTooltipConverter}}"/>
+                                                                                      Theme="{StaticResource ModToggleStyle}"
+                                                                                      ToolTip.Tip="{Binding IsEnabled, Converter={StaticResource BoolToEnableTooltipConverter}}"/>
                                                                     </Grid>
                                                                 </Border>
                                                             </DataTemplate>
@@ -766,13 +704,6 @@
 
                                     </StackPanel>
                                 </Border>
-                                <DataTemplate.Triggers>
-                                    <DataTrigger Binding="{Binding IsInstalled}" Value="True">
-                                        <Setter TargetName="ModpackInstallBtn" Property="Content"  Value="Installed"/>
-                                        <Setter TargetName="ModpackInstallBtn" Property="IsEnabled" Value="False"/>
-                                        <Setter TargetName="ModpackInstallBtn" Property="Style"    Value="{StaticResource SecondaryButtonStyle}"/>
-                                    </DataTrigger>
-                                </DataTemplate.Triggers>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -781,9 +712,9 @@
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 Margin="0,16,0,4"
-                                Visibility="{Binding ModpackHasPagination, Converter={StaticResource BoolToVisibilityConverter}}">
+                                IsVisible="{Binding ModpackHasPagination, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Button Content="&#x2190;"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="12,6" Margin="0,0,4,0"
                                 IsEnabled="{Binding ModpackCanGoPrevious}"
                                 Click="ModpackPrevPage_Click"/>
@@ -796,32 +727,15 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Button Content="{Binding}"
+                                            Theme="{StaticResource SecondaryButtonStyle}"
                                             Padding="10,6" Margin="2,0"
                                             Tag="{Binding}"
-                                            Click="ModpackPageNumber_Click">
-                                        <Button.Style>
-                                            <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-                                                <Style.Triggers>
-                                                    <DataTrigger Value="True">
-                                                        <DataTrigger.Binding>
-                                                            <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                <Binding Path="DataContext.ModpackCurrentPage" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
-                                                                <Binding/>
-                                                            </MultiBinding>
-                                                        </DataTrigger.Binding>
-                                                        <Setter Property="Background" Value="{DynamicResource BrushAccent}"/>
-                                                        <Setter Property="Foreground" Value="White"/>
-                                                        <Setter Property="BorderThickness" Value="0"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
+                                            Click="ModpackPageNumber_Click"/>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <Button Content="&#x2192;"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="12,6" Margin="4,0,0,0"
                                 IsEnabled="{Binding ModpackCanGoNext}"
                                 Click="ModpackNextPage_Click"/>
@@ -833,12 +747,12 @@
 
         <!-- ===================== DETAIL LAYER ===================== -->
         <Border Background="{DynamicResource BrushAppBackground}"
-                Visibility="{Binding IsDetailVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                IsVisible="{Binding IsDetailVisible, Converter={StaticResource BoolToVisibilityConverter}}">
             <ScrollViewer VerticalScrollBarVisibility="Auto"
-                          PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                          PointerWheelChanged="ScrollViewer_PreviewMouseWheel">
                 <StackPanel Margin="32,24,32,32">
                     <Button Content="&#x2190;  Back to list"
-                            Style="{StaticResource SecondaryButtonStyle}"
+                            Theme="{StaticResource SecondaryButtonStyle}"
                             Padding="16,8"
                             HorizontalAlignment="Left"
                             Margin="0,0,0,20"
@@ -888,7 +802,7 @@
 
                         <Button Grid.Column="2"
                                 Content="Install"
-                                Style="{StaticResource PrimaryButtonStyle}"
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 Padding="28,12"
                                 VerticalAlignment="Top"
                                 IsEnabled="{Binding SelectedMod.IsInstalled, Converter={StaticResource InverseBoolConverter}}"
@@ -901,10 +815,10 @@
                                FontFamily="{DynamicResource FontBody}"
                                FontSize="13"
                                Margin="0,4,0,12"
-                               Visibility="{Binding IsDetailLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                               IsVisible="{Binding IsDetailLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                     <!-- Screenshots (large gallery with prev/next arrows) -->
-                    <StackPanel Visibility="{Binding HasScreenshots, Converter={StaticResource BoolToVisibilityConverter}}"
+                    <StackPanel IsVisible="{Binding HasScreenshots, Converter={StaticResource BoolToVisibilityConverter}}"
                                 Margin="0,0,0,20">
                         <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
@@ -949,7 +863,7 @@
                                         Background="#99000000"
                                         BorderThickness="0"
                                         Cursor="Hand"
-                                        Visibility="{Binding HasMultipleScreenshots, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        IsVisible="{Binding HasMultipleScreenshots, Converter={StaticResource BoolToVisibilityConverter}}"
                                         IsEnabled="{Binding CanGoPreviousImage}"
                                         Click="PrevImage_Click"/>
 
@@ -965,7 +879,7 @@
                                         Background="#99000000"
                                         BorderThickness="0"
                                         Cursor="Hand"
-                                        Visibility="{Binding HasMultipleScreenshots, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        IsVisible="{Binding HasMultipleScreenshots, Converter={StaticResource BoolToVisibilityConverter}}"
                                         IsEnabled="{Binding CanGoNextImage}"
                                         Click="NextImage_Click"/>
                             </Grid>
@@ -995,7 +909,7 @@
 
         <!-- ===================== INSTALL PROGRESS OVERLAY ===================== -->
         <Grid Background="#B3000000"
-              Visibility="{Binding IsInstallOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+              IsVisible="{Binding IsInstallOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}">
             <Border Background="{DynamicResource BrushPanelBackground}"
                     BorderBrush="{DynamicResource BrushBorder}"
                     BorderThickness="1"
@@ -1020,11 +934,8 @@
                                  Background="{DynamicResource BrushAppBackground}"
                                  BorderThickness="0"
                                  Margin="0,0,0,16"
-                                 Visibility="{Binding IsInstallInProgress, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                 IsVisible="{Binding IsInstallInProgress, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
-                    <!-- BUGFIX: install/update logs (which can include a long installer
-                         failure log) were dumped into a plain, unscrollable, uncopyable
-                         TextBlock - same issue as the launch overlay on Home. -->
                     <Border Background="{DynamicResource BrushAppBackground}"
                             BorderBrush="{DynamicResource BrushBorder}"
                             BorderThickness="1"
@@ -1039,13 +950,12 @@
                                      Background="Transparent"
                                      BorderThickness="0"
                                      TextWrapping="Wrap"
-                                     IsReadOnly="True"
-                                     IsReadOnlyCaretVisible="True"/>
+                                     IsReadOnly="True"/>
                         </ScrollViewer>
                     </Border>
 
                     <Button Content="Copy log"
-                            Style="{StaticResource SecondaryButtonStyle}"
+                            Theme="{StaticResource SecondaryButtonStyle}"
                             Padding="16,6"
                             HorizontalAlignment="Right"
                             Margin="0,0,0,20"
@@ -1053,10 +963,10 @@
 
                     <!-- Finish appears once the install completes -->
                     <Button Content="Finish"
-                            Style="{StaticResource PrimaryButtonStyle}"
+                            Theme="{StaticResource PrimaryButtonStyle}"
                             Padding="28,12"
                             HorizontalAlignment="Right"
-                            Visibility="{Binding InstallComplete, Converter={StaticResource BoolToVisibilityConverter}}"
+                            IsVisible="{Binding InstallComplete, Converter={StaticResource BoolToVisibilityConverter}}"
                             Click="Finish_Click"/>
                 </StackPanel>
             </Border>

@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows;
+using Avalonia.Threading;
 
 namespace MinecraftControlHub.AI.Models;
 
@@ -59,8 +59,12 @@ public class TerminalMessage : INotifyPropertyChanged
             if (_isExpanded == value) return;
             _isExpanded = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(ExpandChevron));
         }
     }
+
+    /// <summary>Chevron glyph reflecting the expand/collapse state.</summary>
+    public string ExpandChevron => _isExpanded ? "▼" : "▶";
 
     public AICommandBatch? CommandBatch { get; init; }
 
@@ -85,6 +89,7 @@ public class TerminalMessage : INotifyPropertyChanged
             if (_isExecuting == value) return;
             _isExecuting = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsExecutingActive));
             // When execution finishes, mark as done so the indicator hides.
             if (!value) IsDone = true;
         }
@@ -99,8 +104,12 @@ public class TerminalMessage : INotifyPropertyChanged
             if (_isDone == value) return;
             _isDone = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsExecutingActive));
         }
     }
+
+    /// <summary>True while executing and not yet done (drives the "Executing…" indicator).</summary>
+    public bool IsExecutingActive => _isExecuting && !_isDone;
 
     public bool IsUser            => Type == TerminalMessageType.User;
     public bool IsAI              => Type == TerminalMessageType.AI;
@@ -116,8 +125,8 @@ public class TerminalMessage : INotifyPropertyChanged
 
         // Always raise on the UI thread so WPF bindings update correctly
         // even when properties are set from a background thread.
-        if (Application.Current?.Dispatcher.CheckAccess() == false)
-            Application.Current.Dispatcher.Invoke(
+        if (Dispatcher.UIThread.CheckAccess() == false)
+            Dispatcher.UIThread.Post(
                 () => handler(this, new PropertyChangedEventArgs(name)));
         else
             handler(this, new PropertyChangedEventArgs(name));

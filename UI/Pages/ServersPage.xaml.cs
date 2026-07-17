@@ -1,7 +1,9 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Microsoft.Extensions.DependencyInjection;
 using MinecraftControlHub.Core.Models;
+using MinecraftControlHub.UI.Helpers;
 using MinecraftControlHub.UI.ViewModels;
 using MinecraftControlHub.UI.Windows;
 
@@ -22,27 +24,27 @@ public partial class ServersPage : UserControl
         }
     }
 
-    private void NewServer_Click(object sender, RoutedEventArgs e)
+    private void NewServer_Click(object? sender, RoutedEventArgs e)
     {
         _viewModel?.StartWizard();
     }
 
-    private void CancelWizard_Click(object sender, RoutedEventArgs e)
+    private void CancelWizard_Click(object? sender, RoutedEventArgs e)
     {
         _viewModel?.CancelWizard();
     }
 
-    private void BackWizard_Click(object sender, RoutedEventArgs e)
+    private void BackWizard_Click(object? sender, RoutedEventArgs e)
     {
         _viewModel?.PreviousWizardStep();
     }
 
-    private void NextWizard_Click(object sender, RoutedEventArgs e)
+    private void NextWizard_Click(object? sender, RoutedEventArgs e)
     {
         _viewModel?.NextWizardStep();
     }
 
-    private async void CreateServer_Click(object sender, RoutedEventArgs e)
+    private async void CreateServer_Click(object? sender, RoutedEventArgs e)
     {
         if (_viewModel != null)
         {
@@ -50,7 +52,7 @@ public partial class ServersPage : UserControl
         }
     }
 
-    private async void StartServer_Click(object sender, RoutedEventArgs e)
+    private async void StartServer_Click(object? sender, RoutedEventArgs e)
     {
         if (_viewModel != null && (sender as Button)?.DataContext is Server server)
         {
@@ -58,7 +60,7 @@ public partial class ServersPage : UserControl
         }
     }
 
-    private async void StopServer_Click(object sender, RoutedEventArgs e)
+    private async void StopServer_Click(object? sender, RoutedEventArgs e)
     {
         if (_viewModel != null && (sender as Button)?.DataContext is Server server)
         {
@@ -66,53 +68,62 @@ public partial class ServersPage : UserControl
         }
     }
 
-    private async void DeleteServer_Click(object sender, RoutedEventArgs e)
+    private async void DeleteServer_Click(object? sender, RoutedEventArgs e)
     {
         if (_viewModel != null && (sender as Button)?.DataContext is Server server)
         {
-            var confirm = MessageBox.Show(
+            var window = TopLevel.GetTopLevel(this) as Window;
+            var confirm = await SimpleDialog.ConfirmAsync(
+                window,
                 $"Delete \"{server.Name}\"?\n\nThis will remove the server and its associated files. This cannot be undone.",
-                "Delete server",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                "Delete server");
 
-            if (confirm == MessageBoxResult.Yes)
+            if (confirm)
                 await _viewModel.DeleteServerAsync(server);
         }
     }
 
-
-    private async void RestartServer_Click(object sender, RoutedEventArgs e)
+    private async void RestartServer_Click(object? sender, RoutedEventArgs e)
     {
-        if (_viewModel != null && (sender as System.Windows.Controls.Button)?.DataContext is MinecraftControlHub.Core.Models.Server server)
+        if (_viewModel != null && (sender as Button)?.DataContext is Server server)
         {
             await _viewModel.StopServerAsync(server);
-            await System.Threading.Tasks.Task.Delay(1500);
+            await Task.Delay(1500);
             await _viewModel.StartServerAsync(server);
         }
     }
 
-    private void PreviewServer_Click(object sender, RoutedEventArgs e)
+    private void PreviewServer_Click(object? sender, RoutedEventArgs e)
     {
         if ((sender as Button)?.DataContext is Server server)
         {
-            var window = new ServerPreviewWindow(server)
+            var ownerWindow = TopLevel.GetTopLevel(this) as Window;
+            var window = new ServerPreviewWindow(server);
+            if (ownerWindow != null)
             {
-                Owner = Window.GetWindow(this)
-            };
-            window.Show();
+                window.Show(ownerWindow);
+            }
+            else
+            {
+                window.Show();
+            }
         }
     }
 
-    private void ServerSettings_Click(object sender, RoutedEventArgs e)
+    private void ServerSettings_Click(object? sender, RoutedEventArgs e)
     {
         if ((sender as Button)?.DataContext is Server server)
         {
-            var window = new ServerSettingsWindow(server)
+            var ownerWindow = TopLevel.GetTopLevel(this) as Window;
+            var window = new ServerSettingsWindow(server);
+            if (ownerWindow != null)
             {
-                Owner = Window.GetWindow(this)
-            };
-            window.ShowDialog();
+                window.ShowDialog(ownerWindow);
+            }
+            else
+            {
+                window.Show();
+            }
         }
     }
 }

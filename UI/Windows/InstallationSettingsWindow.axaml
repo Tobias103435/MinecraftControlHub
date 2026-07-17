@@ -1,5 +1,5 @@
-﻿<Window x:Class="MinecraftControlHub.UI.Windows.InstallationSettingsWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window x:Class="MinecraftControlHub.UI.Windows.InstallationSettingsWindow"
+        xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
         xmlns:models="clr-namespace:MinecraftControlHub.Core.Models"
@@ -7,7 +7,6 @@
         Width="960" Height="720"
         MinWidth="680" MinHeight="500"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="CanResize"
         Background="{DynamicResource BrushAppBackground}"
         d:DataContext="{d:DesignInstance viewmodels:HomePageViewModel}"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -42,7 +41,7 @@
 
                     <!-- General -->
                     <RadioButton x:Name="DetailNavHome" GroupName="DetailNav" Tag="Home"
-                                 Style="{StaticResource NavItemStyle}" IsChecked="True">
+                                 Theme="{StaticResource NavItemStyle}" IsChecked="True">
                         <StackPanel Orientation="Horizontal">
                             <Canvas Width="16" Height="16" VerticalAlignment="Center">
                                 <Polygon Points="8,1 15,7 15,15 1,15 1,7"
@@ -56,7 +55,7 @@
 
                     <!-- Content (resourcepacks / shaderpacks / worlds) -->
                     <RadioButton x:Name="DetailNavContent" GroupName="DetailNav" Tag="Content"
-                                 Style="{StaticResource NavItemStyle}">
+                                 Theme="{StaticResource NavItemStyle}">
                         <StackPanel Orientation="Horizontal">
                             <Canvas Width="16" Height="16" VerticalAlignment="Center">
                                 <!-- Layers icon -->
@@ -73,7 +72,7 @@
 
                     <!-- Advanced -->
                     <RadioButton x:Name="DetailNavAdvanced" GroupName="DetailNav" Tag="Advanced"
-                                 Style="{StaticResource NavItemStyle}">
+                                 Theme="{StaticResource NavItemStyle}">
                         <StackPanel Orientation="Horizontal">
                             <Canvas Width="16" Height="16" VerticalAlignment="Center">
                                 <Ellipse Canvas.Left="2" Canvas.Top="2" Width="12" Height="12" StrokeThickness="2"
@@ -87,15 +86,15 @@
 
                     <!-- Server Sync -->
                     <RadioButton x:Name="DetailNavServerSync" GroupName="DetailNav" Tag="ServerSync"
-                                 Style="{StaticResource NavItemStyle}">
+                                 Theme="{StaticResource NavItemStyle}">
                         <StackPanel Orientation="Horizontal">
                             <Canvas Width="16" Height="16" VerticalAlignment="Center">
                                 <!-- Up arrow -->
                                 <Polyline Points="8,2 12,7 8,7 8,14 8,7 4,7"
                                           Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
-                                          StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                          StrokeThickness="2" StrokeJoin="Round" StrokeLineCap="Round"/>
                                 <!-- Down arrow -->
-                                <Line X1="8" Y1="14" X2="8" Y2="7"
+                                <Line StartPoint="8,14" EndPoint="8,7"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
                                       StrokeThickness="2"/>
                             </Canvas>
@@ -105,7 +104,7 @@
 
                     <!-- Screenshots -->
                     <RadioButton x:Name="DetailNavScreenshots" GroupName="DetailNav" Tag="Screenshots"
-                                 Style="{StaticResource NavItemStyle}">
+                                 Theme="{StaticResource NavItemStyle}">
                         <StackPanel Orientation="Horizontal">
                             <Canvas Width="16" Height="16" VerticalAlignment="Center">
                                 <!-- Camera body -->
@@ -130,7 +129,7 @@
 
                     <!-- Health -->
                     <RadioButton x:Name="DetailNavHealth" GroupName="DetailNav" Tag="Health"
-                                 Style="{StaticResource NavItemStyle}">
+                                 Theme="{StaticResource NavItemStyle}">
                         <StackPanel Orientation="Horizontal">
                             <Canvas Width="16" Height="16" VerticalAlignment="Center">
                                 <!-- Heart -->
@@ -149,7 +148,7 @@
                 <StackPanel Margin="28,20,28,20">
 
                     <!-- ===== General section ===== -->
-                    <StackPanel Visibility="{Binding IsHomeSection, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel IsVisible="{Binding IsHomeSection, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="General"
                                    FontFamily="{DynamicResource FontDisplay}"
                                    FontSize="16"
@@ -191,7 +190,7 @@
                     </StackPanel>
 
                     <!-- ===== Content section (Mods / ResourcePacks / ShaderPacks) ===== -->
-                    <StackPanel Visibility="{Binding IsContentSection, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel IsVisible="{Binding IsContentSection, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="Content"
                                    FontFamily="{DynamicResource FontDisplay}" FontSize="16"
                                    Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,6"/>
@@ -206,22 +205,22 @@
                                          GroupName="ContentSubNav" Tag="Mods"
                                          IsChecked="True"
                                          Content="Mods"
-                                         Style="{StaticResource ContentTabStyle}"
+                                         Theme="{StaticResource ContentTabStyle}"
                                          Padding="14,10" Margin="0,0,2,0"/>
                             <RadioButton x:Name="SubNavResourcePacks"
                                          GroupName="ContentSubNav" Tag="ResourcePacks"
                                          Content="Resource Packs"
-                                         Style="{StaticResource ContentTabStyle}"
+                                         Theme="{StaticResource ContentTabStyle}"
                                          Padding="14,10" Margin="0,0,2,0"/>
                             <RadioButton x:Name="SubNavShaderPacks"
                                          GroupName="ContentSubNav" Tag="ShaderPacks"
                                          Content="Shader Packs"
-                                         Style="{StaticResource ContentTabStyle}"
+                                         Theme="{StaticResource ContentTabStyle}"
                                          Padding="14,10" Margin="0,0,2,0"/>
                             <RadioButton x:Name="SubNavMaps"
                                          GroupName="ContentSubNav" Tag="Maps"
                                          Content="Maps"
-                                         Style="{StaticResource ContentTabStyle}"
+                                         Theme="{StaticResource ContentTabStyle}"
                                          Padding="14,10"/>
                         </StackPanel>
 
@@ -230,21 +229,21 @@
                             <!-- Action buttons row -->
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                                 <Button Content="Browse Mods"
-                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Theme="{StaticResource PrimaryButtonStyle}"
                                         Padding="14,8" Margin="0,0,10,0"
                                         Click="BrowseMods_Click"/>
                                 <Button Content="Check for updates"
-                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Theme="{StaticResource SecondaryButtonStyle}"
                                         Padding="14,8" Margin="0,0,10,0"
                                         IsEnabled="{Binding IsCheckingModUpdates, Converter={StaticResource InverseBoolConverter}}"
                                         Click="CheckModUpdates_Click"/>
                                 <Button Content="Check dependencies"
-                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Theme="{StaticResource SecondaryButtonStyle}"
                                         Padding="14,8" Margin="0,0,10,0"
                                         IsEnabled="{Binding IsCheckingDependencies, Converter={StaticResource InverseBoolConverter}}"
                                         Click="CheckDependencies_Click"/>
                                 <Button Content="Open folder"
-                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Theme="{StaticResource SecondaryButtonStyle}"
                                         Padding="14,8"
                                         Click="OpenModsFolder_Click"/>
                             </StackPanel>
@@ -254,18 +253,18 @@
                                        FontFamily="{DynamicResource FontBody}" FontSize="12"
                                        Foreground="{DynamicResource BrushTextSecondary}"
                                        TextWrapping="Wrap" Margin="0,0,0,8"
-                                       Visibility="{Binding HasDetailUpdateStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                       IsVisible="{Binding HasDetailUpdateStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                             <!-- Dependency issues -->
                             <TextBlock Text="{Binding DetailDependencyStatus}"
                                        FontFamily="{DynamicResource FontBody}" FontSize="12"
                                        Foreground="{DynamicResource BrushTextSecondary}"
                                        TextWrapping="Wrap" Margin="0,0,0,8"
-                                       Visibility="{Binding HasDetailDependencyStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                       IsVisible="{Binding HasDetailDependencyStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                             <ItemsControl ItemsSource="{Binding DetailDependencyIssues}"
                                           Margin="0,0,0,12"
-                                          Visibility="{Binding HasDetailDependencyIssues, Converter={StaticResource BoolToVisibilityConverter}}">
+                                          IsVisible="{Binding HasDetailDependencyIssues, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Background="{DynamicResource BrushPanelElevated}"
@@ -282,13 +281,13 @@
                                                            Foreground="{DynamicResource BrushTextPrimary}"
                                                            TextWrapping="Wrap" VerticalAlignment="Center"/>
                                                 <Button Grid.Column="1" Content="Fix"
-                                                        Style="{StaticResource PrimaryButtonStyle}"
+                                                        Theme="{StaticResource PrimaryButtonStyle}"
                                                         Padding="12,5" Margin="10,0,4,0"
                                                         Click="FixDependencyIssue_Click"/>
                                                 <Button Grid.Column="2" Content="Fix all"
-                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Theme="{StaticResource SecondaryButtonStyle}"
                                                         Padding="12,5"
-                                                        Visibility="{Binding HasDetailDependencyIssues, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                        IsVisible="{Binding HasDetailDependencyIssues, Converter={StaticResource BoolToVisibilityConverter}}"
                                                         Click="FixAllDependencyIssues_Click"/>
                                             </Grid>
                                         </Border>
@@ -297,12 +296,12 @@
                             </ItemsControl>
 
                             <Border Height="1" Background="{DynamicResource BrushBorder}" Margin="0,0,0,12"
-                                    Visibility="{Binding HasDetailDependencyIssues, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    IsVisible="{Binding HasDetailDependencyIssues, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                             <!-- Installed mods list — drag & drop enabled -->
-                            <Border AllowDrop="True"
-                                    DragOver="ModsDropZone_DragOver"
-                                    Drop="ModsDropZone_Drop"
+                            <Border DragDrop.AllowDrop="True"
+                                    DragDrop.DragOver="ModsDropZone_DragOver"
+                                    DragDrop.Drop="ModsDropZone_Drop"
                                     BorderBrush="{DynamicResource BrushBorder}"
                                     BorderThickness="1"
                                     CornerRadius="8"
@@ -315,7 +314,7 @@
                                             BorderBrush="{DynamicResource BrushBorder}"
                                             BorderThickness="1" CornerRadius="6"
                                             Padding="0,8" Margin="0,0,0,8"
-                                            Visibility="{Binding HasDetailMods, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                            IsVisible="{Binding HasDetailMods, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                                         <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="12"
                                                    Foreground="{DynamicResource BrushTextMuted}"
                                                    HorizontalAlignment="Center"
@@ -326,7 +325,7 @@
                                                Foreground="{DynamicResource BrushTextMuted}"
                                                HorizontalAlignment="Right" Margin="0,0,4,6"
                                                Text="⬇ Sleep hier een .jar om nog een mod toe te voegen"
-                                               Visibility="{Binding HasDetailMods, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                               IsVisible="{Binding HasDetailMods, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                                     <ItemsControl ItemsSource="{Binding DetailModRows}">
                                         <ItemsControl.ItemTemplate>
@@ -353,8 +352,8 @@
                                                         <!-- Enable/Disable toggle -->
                                                         <ToggleButton Grid.Column="0"
                                                                       IsChecked="{Binding IsEnabled, Mode=OneWay}"
-                                                                      ToolTip="{Binding IsEnabled, Converter={StaticResource BoolToEnableTooltipConverter}}"
-                                                                      Style="{StaticResource ModToggleStyle}"
+                                                                      ToolTip.Tip="{Binding IsEnabled, Converter={StaticResource BoolToEnableTooltipConverter}}"
+                                                                      Theme="{StaticResource ModToggleStyle}"
                                                                       Margin="0,0,12,0"
                                                                       Click="ModToggle_Click"/>
 
@@ -362,7 +361,7 @@
                                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                             <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="13"
                                                                        Foreground="{DynamicResource BrushTextPrimary}"
-                                                                       Cursor="Hand" MouseLeftButtonUp="ModLink_Click">
+                                                                       Cursor="Hand" PointerPressed="ModLink_Click">
                                                                 <Run Text="{Binding Mod.Name, Mode=OneWay}"/>
                                                             </TextBlock>
                                                             <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="11"
@@ -372,7 +371,7 @@
                                                                 <Run Text="{Binding LoaderLabel, Mode=OneWay}"/>
                                                             </TextBlock>
                                                             <TextBlock Text="{Binding StatusText}"
-                                                                       Visibility="{Binding HasStatusText, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                       IsVisible="{Binding HasStatusText, Converter={StaticResource BoolToVisibilityConverter}}"
                                                                        FontFamily="{DynamicResource FontBody}" FontSize="11"
                                                                        Foreground="{DynamicResource BrushTextSecondary}" Margin="0,2,0,0"/>
                                                         </StackPanel>
@@ -380,23 +379,23 @@
                                                         <!-- Change version button -->
                                                         <Button Grid.Column="2"
                                                                 Content="Version"
-                                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                                Theme="{StaticResource SecondaryButtonStyle}"
                                                                 Padding="10,5" Margin="8,0,0,0" VerticalAlignment="Center"
                                                                 Click="ChangeVersion_Click"/>
 
                                                         <!-- Update button -->
                                                         <Button Grid.Column="3"
                                                                 Content="{Binding UpdateLabel}"
-                                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                                Theme="{StaticResource PrimaryButtonStyle}"
                                                                 Padding="12,5" Margin="4,0,0,0" VerticalAlignment="Center"
-                                                                Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                IsVisible="{Binding UpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
                                                                 Click="UpdateModRow_Click"/>
 
                                                         <!-- Uninstall button -->
                                                         <Button Grid.Column="4"
                                                                 Content="Uninstall"
                                                                 DataContext="{Binding Mod}"
-                                                                Style="{StaticResource DangerButtonStyle}"
+                                                                Theme="{StaticResource DangerButtonStyle}"
                                                                 Padding="12,5" Margin="4,0,0,0" VerticalAlignment="Center"
                                                                 Click="UninstallMod_Click"/>
                                                     </Grid>
@@ -409,17 +408,17 @@
                         </StackPanel>
 
                         <!-- ─ Resource Packs panel ─ -->
-                        <StackPanel x:Name="ResourcePacksPanel" Visibility="Collapsed">
+                        <StackPanel x:Name="ResourcePacksPanel" IsVisible="False">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                 <Button Content="Browse Resource Packs"
-                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Theme="{StaticResource PrimaryButtonStyle}"
                                         Padding="14,8"
                                         Click="BrowseResourcePacks_Click"/>
                             </StackPanel>
                             <Border x:Name="ResourcePacksDropZone"
-                                    AllowDrop="True"
-                                    DragOver="ContentPanel_DragOver"
-                                    Drop="ContentPanel_Drop"
+                                    DragDrop.AllowDrop="True"
+                                    DragDrop.DragOver="ContentPanel_DragOver"
+                                    DragDrop.Drop="ContentPanel_Drop"
                                     Background="{DynamicResource BrushPanelBackground}"
                                     BorderBrush="{DynamicResource BrushBorder}"
                                     BorderThickness="1" CornerRadius="8" Padding="12"
@@ -429,7 +428,7 @@
                                             BorderBrush="{DynamicResource BrushBorder}"
                                             BorderThickness="1" CornerRadius="6"
                                             Padding="0,8" Margin="0,0,0,8"
-                                            Visibility="{Binding HasItems, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                            IsVisible="{Binding HasItems, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                                         <TextBlock Text="⬇  Sleep .zip resource pack bestanden hiernaartoe"
                                                    FontFamily="{DynamicResource FontBody}" FontSize="12"
                                                    Foreground="{DynamicResource BrushTextMuted}"
@@ -439,12 +438,12 @@
                                                FontFamily="{DynamicResource FontBody}" FontSize="11"
                                                Foreground="{DynamicResource BrushTextMuted}"
                                                HorizontalAlignment="Right" Margin="0,0,4,6"
-                                               Visibility="{Binding HasItems, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                               IsVisible="{Binding HasItems, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                     <TextBlock Text="Loading…"
                                                FontFamily="{DynamicResource FontBody}" FontSize="12"
                                                Foreground="{DynamicResource BrushTextMuted}"
                                                HorizontalAlignment="Center"
-                                               Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                               IsVisible="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                     <ItemsControl ItemsSource="{Binding InstalledItems}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate DataType="{x:Type models:ContentItem}">
@@ -470,17 +469,17 @@
                                                         <ToggleButton Grid.Column="1"
                                                                       IsChecked="{Binding IsEnabled, Mode=OneWay}"
                                                                       Content="{Binding IsEnabled, Converter={StaticResource BoolToEnabledLabelConverter}}"
-                                                                      Style="{StaticResource SecondaryToggleButtonStyle}"
+                                                                      Theme="{StaticResource SecondaryToggleButtonStyle}"
                                                                       Padding="10,4" Margin="8,0,0,0" VerticalAlignment="Center"
                                                                       Click="ToggleContentItem_Click"/>
                                                         <!-- Version picker -->
                                                         <Button Grid.Column="2"
                                                                 Content="Version"
-                                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                                Theme="{StaticResource SecondaryButtonStyle}"
                                                                 Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Center"
                                                                 Click="ContentVersionPicker_Click"/>
                                                         <Button Grid.Column="3" Content="Delete"
-                                                                Style="{StaticResource DangerButtonStyle}"
+                                                                Theme="{StaticResource DangerButtonStyle}"
                                                                 Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Center"
                                                                 Click="DeleteContentItem_Click"/>
                                                     </Grid>
@@ -491,22 +490,22 @@
                                     <TextBlock Text="{Binding Status}"
                                                FontFamily="{DynamicResource FontBody}" FontSize="12"
                                                Foreground="{DynamicResource BrushTextSecondary}" Margin="0,4,0,0"
-                                               Visibility="{Binding HasStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                               IsVisible="{Binding HasStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
                         <!-- ─ Shader Packs panel ─ -->
-                        <StackPanel x:Name="ShaderPacksPanel" Visibility="Collapsed">
+                        <StackPanel x:Name="ShaderPacksPanel" IsVisible="False">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                 <Button Content="Browse Shader Packs"
-                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Theme="{StaticResource PrimaryButtonStyle}"
                                         Padding="14,8"
                                         Click="BrowseShaderPacks_Click"/>
                             </StackPanel>
-                            <Border AllowDrop="True"
-                                    DragOver="ContentPanel_DragOver"
-                                    Drop="ContentPanel_Drop"
+                            <Border DragDrop.AllowDrop="True"
+                                    DragDrop.DragOver="ContentPanel_DragOver"
+                                    DragDrop.Drop="ContentPanel_Drop"
                                     Background="{DynamicResource BrushPanelBackground}"
                                     BorderBrush="{DynamicResource BrushBorder}"
                                     BorderThickness="1" CornerRadius="8" Padding="12"
@@ -516,7 +515,7 @@
                                             BorderBrush="{DynamicResource BrushBorder}"
                                             BorderThickness="1" CornerRadius="6"
                                             Padding="0,8" Margin="0,0,0,8"
-                                            Visibility="{Binding HasItems, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                            IsVisible="{Binding HasItems, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                                         <TextBlock Text="⬇  Sleep .zip shader pack bestanden hiernaartoe"
                                                    FontFamily="{DynamicResource FontBody}" FontSize="12"
                                                    Foreground="{DynamicResource BrushTextMuted}"
@@ -526,12 +525,12 @@
                                                FontFamily="{DynamicResource FontBody}" FontSize="11"
                                                Foreground="{DynamicResource BrushTextMuted}"
                                                HorizontalAlignment="Right" Margin="0,0,4,6"
-                                               Visibility="{Binding HasItems, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                               IsVisible="{Binding HasItems, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                     <TextBlock Text="Loading…"
                                                FontFamily="{DynamicResource FontBody}" FontSize="12"
                                                Foreground="{DynamicResource BrushTextMuted}"
                                                HorizontalAlignment="Center"
-                                               Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                               IsVisible="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                     <ItemsControl ItemsSource="{Binding InstalledItems}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate DataType="{x:Type models:ContentItem}">
@@ -557,17 +556,17 @@
                                                         <ToggleButton Grid.Column="1"
                                                                       IsChecked="{Binding IsEnabled, Mode=OneWay}"
                                                                       Content="{Binding IsEnabled, Converter={StaticResource BoolToEnabledLabelConverter}}"
-                                                                                              Style="{StaticResource SecondaryToggleButtonStyle}"
+                                                                      Theme="{StaticResource SecondaryToggleButtonStyle}"
                                                                       Padding="10,4" Margin="8,0,0,0" VerticalAlignment="Center"
                                                                       Click="ToggleContentItem_Click"/>
                                                         <!-- Version picker -->
                                                         <Button Grid.Column="2"
                                                                 Content="Version"
-                                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                                Theme="{StaticResource SecondaryButtonStyle}"
                                                                 Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Center"
                                                                 Click="ContentVersionPicker_Click"/>
                                                         <Button Grid.Column="3" Content="Delete"
-                                                                Style="{StaticResource DangerButtonStyle}"
+                                                                Theme="{StaticResource DangerButtonStyle}"
                                                                 Padding="10,4" Margin="4,0,0,0" VerticalAlignment="Center"
                                                                 Click="DeleteContentItem_Click"/>
                                                     </Grid>
@@ -578,18 +577,18 @@
                                     <TextBlock Text="{Binding Status}"
                                                FontFamily="{DynamicResource FontBody}" FontSize="12"
                                                Foreground="{DynamicResource BrushTextSecondary}" Margin="0,4,0,0"
-                                               Visibility="{Binding HasStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                               IsVisible="{Binding HasStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
                         <!-- ─ Maps panel ─ -->
-                        <StackPanel x:Name="MapsPanel" Visibility="Collapsed">
+                        <StackPanel x:Name="MapsPanel" IsVisible="False">
                             <!-- Drop zone: always visible, doubles as hint when empty -->
                             <Border x:Name="MapsDropZone"
-                                    AllowDrop="True"
-                                    DragOver="ContentPanel_DragOver"
-                                    Drop="MapsPanel_Drop"
+                                    DragDrop.AllowDrop="True"
+                                    DragDrop.DragOver="ContentPanel_DragOver"
+                                    DragDrop.Drop="MapsPanel_Drop"
                                     Background="{DynamicResource BrushPanelBackground}"
                                     BorderBrush="{DynamicResource BrushAccent}"
                                     BorderThickness="1"
@@ -640,7 +639,7 @@
                                                                Foreground="{DynamicResource BrushTextMuted}" Margin="0,2,0,0"/>
                                                 </StackPanel>
                                                 <Button Grid.Column="1" Content="Delete"
-                                                        Style="{StaticResource DangerButtonStyle}"
+                                                        Theme="{StaticResource DangerButtonStyle}"
                                                         Padding="12,5" VerticalAlignment="Center"
                                                         Tag="{Binding}"
                                                         Click="DeleteMapItem_Click"/>
@@ -654,7 +653,7 @@
                     </StackPanel>
 
                     <!-- ===== Advanced section ===== -->
-                    <StackPanel Visibility="{Binding IsAdvancedSection, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel IsVisible="{Binding IsAdvancedSection, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="Advanced"
                                    FontFamily="{DynamicResource FontDisplay}" FontSize="16"
                                    Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,4"/>
@@ -708,14 +707,14 @@
                                 </StackPanel>
 
                                 <Button Content="Calculate recommended RAM"
-                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Theme="{StaticResource SecondaryButtonStyle}"
                                         Padding="14,8" HorizontalAlignment="Left"
                                         Click="CalculateRam_Click"/>
                                 <TextBlock Text="{Binding DetailRamRecommendation}"
                                            FontFamily="{DynamicResource FontBody}" FontSize="12"
                                            Foreground="{DynamicResource BrushTextSecondary}"
                                            TextWrapping="Wrap" Margin="0,8,0,0"
-                                           Visibility="{Binding HasDetailRamRecommendation, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                           IsVisible="{Binding HasDetailRamRecommendation, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             </StackPanel>
                         </Border>
 
@@ -740,11 +739,11 @@
                                                FontFamily="{DynamicResource FontBody}" FontSize="11"
                                                Foreground="{DynamicResource BrushTextMuted}"
                                                VerticalAlignment="Center"
-                                               Visibility="{Binding DetailJavaHealth, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                               IsVisible="{Binding DetailJavaHealth, Converter={StaticResource NullToVisibilityConverter}}"/>
                                     <Button Content="⬇ Download Java automatically"
-                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Theme="{StaticResource SecondaryButtonStyle}"
                                             Padding="10,4" Margin="10,0,0,0" FontSize="11"
-                                            Visibility="{Binding DetailJavaOk, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+                                            IsVisible="{Binding DetailJavaOk, Converter={StaticResource InverseBoolToVisibilityConverter}}"
                                             Click="DownloadJava_Click"/>
                                 </StackPanel>
                             </StackPanel>
@@ -812,7 +811,7 @@
                                                Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,10"
                                                TextWrapping="Wrap"/>
                                     <Button Content="Export .mrpack…"
-                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Theme="{StaticResource SecondaryButtonStyle}"
                                             Padding="14,8" HorizontalAlignment="Left"
                                             IsEnabled="{Binding IsExportingDetail, Converter={StaticResource InverseBoolConverter}}"
                                             Click="ExportInstallationDetail_Click"/>
@@ -820,7 +819,7 @@
                                                FontFamily="{DynamicResource FontBody}" FontSize="11"
                                                Foreground="{DynamicResource BrushTextSecondary}"
                                                TextWrapping="Wrap" Margin="0,6,0,0"
-                                               Visibility="{Binding HasDetailExportStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                               IsVisible="{Binding HasDetailExportStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                 </StackPanel>
                             </Border>
 
@@ -836,7 +835,7 @@
                                                Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,10"
                                                TextWrapping="Wrap"/>
                                     <Button Content="Export Prism zip…"
-                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Theme="{StaticResource SecondaryButtonStyle}"
                                             Padding="14,8" HorizontalAlignment="Left"
                                             IsEnabled="{Binding IsExportingPrismDetail, Converter={StaticResource InverseBoolConverter}}"
                                             Click="ExportInstallationDetailPrism_Click"/>
@@ -844,7 +843,7 @@
                                                FontFamily="{DynamicResource FontBody}" FontSize="11"
                                                Foreground="{DynamicResource BrushTextSecondary}"
                                                TextWrapping="Wrap" Margin="0,6,0,0"
-                                               Visibility="{Binding HasDetailPrismExportStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                               IsVisible="{Binding HasDetailPrismExportStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -852,7 +851,7 @@
 
 
                     <!-- ===== Server Sync section ===== -->
-                    <StackPanel Visibility="{Binding IsServerSyncSection, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel IsVisible="{Binding IsServerSyncSection, Converter={StaticResource BoolToVisibilityConverter}}">
 
                         <!-- Header row -->
                         <Grid Margin="0,0,0,20">
@@ -866,7 +865,7 @@
                             </StackPanel>
                             <Button x:Name="MakeServerButton"
                                     Content="&#x2795; Make Server"
-                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Theme="{StaticResource PrimaryButtonStyle}"
                                     Padding="16,8"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Top"
@@ -877,7 +876,7 @@
                         <ItemsControl x:Name="ServerSyncItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <CheckBox Style="{StaticResource CardCheckBoxStyle}"
+                                    <CheckBox Theme="{StaticResource CardCheckBoxStyle}"
                                               IsChecked="{Binding SyncEnabled, Mode=TwoWay}"
                                               IsEnabled="{Binding IsCompatible}"
                                               Opacity="{Binding RowOpacity}"
@@ -922,7 +921,7 @@
                                             <!-- Sync now button -->
                                             <Button Grid.Column="2"
                                                     Content="Sync now"
-                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Theme="{StaticResource SecondaryButtonStyle}"
                                                     Padding="12,5" IsEnabled="{Binding IsCompatible}"
                                                     VerticalAlignment="Center" Tag="{Binding}"
                                                     Click="ServerSyncInstance_Click"/>
@@ -933,7 +932,7 @@
                         </ItemsControl>
 
                         <!-- Empty state -->
-                        <Border x:Name="ServerSyncEmptyState" Padding="24" Visibility="Collapsed">
+                        <Border x:Name="ServerSyncEmptyState" Padding="24" IsVisible="False">
                             <TextBlock Text="No servers found. Create a server first in the Servers tab."
                                        FontFamily="{DynamicResource FontBody}" FontSize="13"
                                        Foreground="{DynamicResource BrushTextMuted}" HorizontalAlignment="Center"/>
@@ -943,11 +942,11 @@
                         <StackPanel Orientation="Horizontal" Margin="0,16,0,4">
                             <Button x:Name="ServerSyncAllButton"
                                     Content="Sync Checked"
-                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Theme="{StaticResource PrimaryButtonStyle}"
                                     Padding="16,8"
                                     Click="ServerSyncAll_Click"/>
                             <Button Content="&#x21BB; Refresh"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Theme="{StaticResource SecondaryButtonStyle}"
                                     Padding="12,8" Margin="10,0,0,0"
                                     Click="RefreshServerSync_Click"/>
                         </StackPanel>
@@ -960,7 +959,7 @@
                     </StackPanel>
 
                     <!-- ===== Screenshots section ===== -->
-                    <StackPanel Visibility="{Binding IsScreenshotsSection, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel IsVisible="{Binding IsScreenshotsSection, Converter={StaticResource BoolToVisibilityConverter}}">
 
                         <!-- Header -->
                         <Grid Margin="0,0,0,16">
@@ -981,11 +980,11 @@
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Content="Open folder"
-                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Theme="{StaticResource SecondaryButtonStyle}"
                                         Padding="12,7" Margin="0,0,8,0"
                                         Click="OpenScreenshotsFolder_Click"/>
                                 <Button Content="&#x21BB; Refresh"
-                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Theme="{StaticResource SecondaryButtonStyle}"
                                         Padding="12,7"
                                         Click="RefreshScreenshots_Click"/>
                             </StackPanel>
@@ -996,7 +995,7 @@
                                 Background="{DynamicResource BrushPanelBackground}"
                                 BorderBrush="{DynamicResource BrushBorder}"
                                 BorderThickness="1" CornerRadius="10"
-                                Padding="40,32" Visibility="Collapsed">
+                                Padding="40,32" IsVisible="False">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="📷"
                                            FontSize="36"
@@ -1022,18 +1021,18 @@
                         <!-- Screenshot grid -->
                         <WrapPanel x:Name="ScreenshotsPanel"
                                    Orientation="Horizontal"
-                                   Visibility="Collapsed">
+                                   IsVisible="False">
                         </WrapPanel>
 
                     </StackPanel>
 
                     <!-- Health Section -->
-                    <StackPanel x:Name="HealthSection" Visibility="{Binding IsHealthSection, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="HealthSection" IsVisible="{Binding IsHealthSection, Converter={StaticResource BoolToVisibilityConverter}}">
                         <!-- Header with refresh button -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,20" VerticalAlignment="Center">
                             <TextBlock Text="Installation Health Check" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource BrushTextPrimary}" />
-                            <Button x:Name="RefreshHealthBtn" Content="⟳ Refresh" Style="{StaticResource SecondaryButtonStyle}" Padding="12,8" Margin="12,0,0,0" Click="RefreshHealth_Click" IsEnabled="{Binding IsLoadingHealth, Converter={StaticResource InverseBoolConverter}}"/>
-                            <ProgressBar x:Name="HealthLoadingBar" Width="100" Height="4" Background="Transparent" Foreground="{DynamicResource BrushAccent}" IsIndeterminate="True" Visibility="{Binding IsLoadingHealth, Converter={StaticResource BoolToVisibilityConverter}}" Margin="12,0,0,0"/>
+                            <Button x:Name="RefreshHealthBtn" Content="⟳ Refresh" Theme="{StaticResource SecondaryButtonStyle}" Padding="12,8" Margin="12,0,0,0" Click="RefreshHealth_Click" IsEnabled="{Binding IsLoadingHealth, Converter={StaticResource InverseBoolConverter}}"/>
+                            <ProgressBar x:Name="HealthLoadingBar" Width="100" Height="4" Background="Transparent" Foreground="{DynamicResource BrushAccent}" IsIndeterminate="True" IsVisible="{Binding IsLoadingHealth, Converter={StaticResource BoolToVisibilityConverter}}" Margin="12,0,0,0"/>
                         </StackPanel>
 
                         <!-- Overall Score Card -->
@@ -1080,7 +1079,7 @@
                                     <!-- Auto-tune RAM suggestion -->
                                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Left">
                                         <TextBlock x:Name="RamRecommendationText" Text="" FontSize="11" Foreground="{DynamicResource BrushTextMuted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <Button x:Name="AutoTuneRamButton" Content="Auto-tune RAM" Style="{StaticResource SecondaryButtonStyle}" Padding="8,6" Click="AutoTuneRam_Click"/>
+                                        <Button x:Name="AutoTuneRamButton" Content="Auto-tune RAM" Theme="{StaticResource SecondaryButtonStyle}" Padding="8,6" Click="AutoTuneRam_Click"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
@@ -1130,13 +1129,12 @@
                            VerticalAlignment="Center" Margin="0,0,14,0"
                            FontFamily="{DynamicResource FontBody}" FontSize="12"
                            Foreground="{DynamicResource BrushTextSecondary}"
-                           Visibility="{Binding HasDetailSaveStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                           IsVisible="{Binding HasDetailSaveStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
                 <Button Content="Save"
-                        Style="{StaticResource PrimaryButtonStyle}"
+                        Theme="{StaticResource PrimaryButtonStyle}"
                         Padding="28,10"
                         Click="SaveDetail_Click"/>
             </StackPanel>
         </Border>
     </Grid>
 </Window>
-

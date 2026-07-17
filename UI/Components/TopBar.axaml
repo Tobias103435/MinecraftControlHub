@@ -1,5 +1,5 @@
-﻿<UserControl x:Class="MinecraftControlHub.UI.Components.TopBar"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Class="MinecraftControlHub.UI.Components.TopBar"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -10,11 +10,7 @@
             BorderBrush="{DynamicResource BrushBorder}"
             BorderThickness="0,0,0,1">
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <Grid ColumnDefinitions="*,Auto">
 
             <!-- Right side: notification bell -->
             <StackPanel Grid.Column="1"
@@ -27,45 +23,44 @@
 
                     <Button x:Name="BellButton"
                             Click="BellButton_Click"
-                            ToolTip="Notifications"
+                            ToolTip.Tip="Notifications"
                             Width="36" Height="36"
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
                             Padding="0">
-                        <TextBlock Text="🔔"
-                                   FontSize="16"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   IsHitTestVisible="False"/>
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border x:Name="Bg"
-                                                    Background="{TemplateBinding Background}"
-                                                    CornerRadius="6"
-                                                    Width="36" Height="36">
-                                                <ContentPresenter HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="Bg" Property="Background"
-                                                            Value="{DynamicResource BrushPanelElevated}"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover /template/ Border#Bg">
+                                <Setter Property="Background" Value="{DynamicResource BrushPanelElevated}"/>
                             </Style>
-                        </Button.Style>
+                        </Button.Styles>
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="Bg"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="6"
+                                        Width="36" Height="36">
+                                    <ContentPresenter Content="{TemplateBinding Content}"
+                                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Canvas Width="18" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <!-- Bell dome -->
+                            <Ellipse Canvas.Left="4" Canvas.Top="3" Width="10" Height="3" Fill="{Binding $parent[Button].Foreground}"/>
+                            <Rectangle Canvas.Left="4" Canvas.Top="4" Width="10" Height="8" Fill="{Binding $parent[Button].Foreground}"/>
+                            <!-- Bell bottom -->
+                            <Rectangle Canvas.Left="3" Canvas.Top="11" Width="12" Height="2" Fill="{Binding $parent[Button].Foreground}"/>
+                            <!-- Bell clapper -->
+                            <Rectangle Canvas.Left="7" Canvas.Top="13" Width="4" Height="3" Fill="{Binding $parent[Button].Foreground}"/>
+                        </Canvas>
                     </Button>
 
                     <!-- Badge — named here at UserControl level, accessible from code-behind -->
                     <Border x:Name="BadgeBorder"
-                            Visibility="Collapsed"
+                            IsVisible="False"
                             Background="{DynamicResource BrushDanger}"
                             CornerRadius="8"
                             MinWidth="16" Height="16"
@@ -89,37 +84,25 @@
             <Popup x:Name="NotificationPopup"
                    Grid.Column="1"
                    Placement="Bottom"
-                   PlacementTarget="{Binding ElementName=BellButton}"
-                   StaysOpen="False"
-                   AllowsTransparency="True"
-                   PopupAnimation="Fade">
+                   PlacementTarget="{Binding #BellButton}"
+                   IsLightDismissEnabled="True">
                 <Border Background="{DynamicResource BrushPanelBackground}"
                         BorderBrush="{DynamicResource BrushBorder}"
                         BorderThickness="1"
                         CornerRadius="10"
                         Width="360"
                         MaxHeight="480"
-                        Margin="0,4,16,0">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.35" Color="#000000"/>
-                    </Border.Effect>
+                        Margin="0,4,16,0"
+                        BoxShadow="0 4 16 0 #59000000">
 
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
+                    <Grid RowDefinitions="Auto,*">
 
                         <!-- Popup header -->
                         <Border Grid.Row="0"
                                 BorderBrush="{DynamicResource BrushBorder}"
                                 BorderThickness="0,0,0,1"
                                 Padding="16,12">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                            <Grid ColumnDefinitions="*,Auto">
                                 <TextBlock Grid.Column="0"
                                            Text="Notifications"
                                            FontFamily="{DynamicResource FontDisplay}"
@@ -130,7 +113,7 @@
                                         x:Name="MarkAllReadButton"
                                         Content="Mark all read"
                                         Click="MarkAllRead_Click"
-                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Theme="{StaticResource SecondaryButtonStyle}"
                                         Padding="10,4" FontSize="11"/>
                             </Grid>
                         </Border>
@@ -156,26 +139,19 @@
                                                     BorderThickness="0,0,0,1"
                                                     Padding="16,12"
                                                     Cursor="Hand"
-                                                    MouseLeftButtonUp="NotifRow_Click"
-                                                    Tag="{Binding}">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsRead}" Value="False">
-                                                                <Setter Property="Background" Value="{DynamicResource BrushPanelElevated}"/>
-                                                            </DataTrigger>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Background" Value="{DynamicResource BrushPanelElevated}"/>
-                                                            </Trigger>
-                                                        </Style.Triggers>
+                                                    PointerReleased="NotifRow_Click"
+                                                    Tag="{Binding}"
+                                                    Classes.unread="{Binding !IsRead}">
+                                                <Border.Styles>
+                                                    <Style Selector="Border.unread">
+                                                        <Setter Property="Background" Value="{DynamicResource BrushPanelElevated}"/>
                                                     </Style>
-                                                </Border.Style>
+                                                    <Style Selector="Border:pointerover">
+                                                        <Setter Property="Background" Value="{DynamicResource BrushPanelElevated}"/>
+                                                    </Style>
+                                                </Border.Styles>
 
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
+                                                <Grid ColumnDefinitions="Auto,*">
 
                                                     <!-- Sender avatar -->
                                                     <Border Grid.Column="0"
@@ -191,11 +167,7 @@
 
                                                     <StackPanel Grid.Column="1">
                                                         <!-- Header row -->
-                                                        <Grid Margin="0,0,0,6">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                            </Grid.ColumnDefinitions>
+                                                        <Grid Margin="0,0,0,6" ColumnDefinitions="*,Auto">
                                                             <TextBlock Grid.Column="0"
                                                                        FontFamily="{DynamicResource FontBody}"
                                                                        FontSize="12"
@@ -217,15 +189,7 @@
                                                         <Border Background="{DynamicResource BrushAppBackground}"
                                                                 CornerRadius="5" Padding="10,8"
                                                                 Margin="0,0,0,8">
-                                                            <Grid>
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="Auto"/>
-                                                                    <ColumnDefinition Width="*"/>
-                                                                </Grid.ColumnDefinitions>
-                                                                <Grid.RowDefinitions>
-                                                                    <RowDefinition Height="Auto"/>
-                                                                    <RowDefinition Height="Auto"/>
-                                                                </Grid.RowDefinitions>
+                                                            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
 
                                                                 <TextBlock Grid.Row="0" Grid.Column="0"
                                                                            Text="IP:"
@@ -259,19 +223,19 @@
                                                             <Button Content="Copy IP"
                                                                     Tag="{Binding Tunnel.Ip}"
                                                                     Click="CopyIp_Click"
-                                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                                    Theme="{StaticResource SecondaryButtonStyle}"
                                                                     Padding="10,4" FontSize="10"
                                                                     Margin="0,0,6,0"/>
                                                             <Button Content="Copy Port"
                                                                     Tag="{Binding Tunnel.Port}"
                                                                     Click="CopyPort_Click"
-                                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                                    Theme="{StaticResource SecondaryButtonStyle}"
                                                                     Padding="10,4" FontSize="10"
                                                                     Margin="0,0,6,0"/>
                                                             <Button Content="Copy IP:PORT"
                                                                     Tag="{Binding Tunnel.IpPort}"
                                                                     Click="CopyIpPort_Click"
-                                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                                    Theme="{StaticResource SecondaryButtonStyle}"
                                                                     Padding="10,4" FontSize="10"/>
                                                         </StackPanel>
                                                     </StackPanel>

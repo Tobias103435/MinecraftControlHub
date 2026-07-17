@@ -1,12 +1,12 @@
-﻿<UserControl x:Class="MinecraftControlHub.UI.Pages.TunnelPage"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Class="MinecraftControlHub.UI.Pages.TunnelPage"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
              xmlns:models="clr-namespace:MinecraftControlHub.Core.Models"
-             mc:Ignorable="d" d:DesignWidth="980" d:DesignHeight="900"
-             d:DataContext="{d:DesignInstance viewmodels:TunnelPageViewModel}">
+             xmlns:helpers="clr-namespace:MinecraftControlHub.UI.Helpers"
+             mc:Ignorable="d" d:DesignWidth="980" d:DesignHeight="900">
 
     <UserControl.Resources>
 
@@ -19,12 +19,8 @@
         <SolidColorBrush x:Key="BrushWarningText"     Color="{DynamicResource ColorTextSecondary}"/>
 
         <!-- Provider item in dropdown list -->
-        <DataTemplate x:Key="ProviderItemTemplate" DataType="{x:Type models:TunnelProvider}">
-            <Grid Margin="2,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <DataTemplate x:Key="ProviderItemTemplate" DataType="models:TunnelProvider">
+            <Grid Margin="2,5" ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                     <TextBlock Text="{Binding DisplayName}"
                                FontFamily="{StaticResource FontBody}"
@@ -48,7 +44,7 @@
         </DataTemplate>
 
         <!-- Selected item shown in closed ComboBox -->
-        <DataTemplate x:Key="ProviderSelectedTemplate" DataType="{x:Type models:TunnelProvider}">
+        <DataTemplate x:Key="ProviderSelectedTemplate" DataType="models:TunnelProvider">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="{Binding DisplayName}"
                            FontFamily="{StaticResource FontBody}"
@@ -66,6 +62,23 @@
         </DataTemplate>
 
     </UserControl.Resources>
+
+    <!-- Protocol pill styles: Avalonia requires Styles (with Selectors) outside Resources.
+         The UDP/TCP swap is done with a Classes.udp binding driving a nested Style Selector. -->
+    <UserControl.Styles>
+        <Style Selector="Border.protocolPill">
+            <Setter Property="Background" Value="{DynamicResource BrushProtocolTcp}"/>
+        </Style>
+        <Style Selector="Border.protocolPill.udp">
+            <Setter Property="Background" Value="{DynamicResource BrushProtocolUdp}"/>
+        </Style>
+        <Style Selector="TextBlock.protocolPillText">
+            <Setter Property="Foreground" Value="{DynamicResource BrushProtocolTcpText}"/>
+        </Style>
+        <Style Selector="TextBlock.protocolPillText.udp">
+            <Setter Property="Foreground" Value="{DynamicResource BrushProtocolUdpText}"/>
+        </Style>
+    </UserControl.Styles>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,4,0">
         <StackPanel Margin="28,24,28,28">
@@ -91,11 +104,7 @@
                     BorderBrush="{DynamicResource BrushInfoText}"
                     BorderThickness="1" CornerRadius="8"
                     Padding="16,12" Margin="0,0,0,20">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="🔑  " FontSize="16" VerticalAlignment="Center"/>
                         <StackPanel>
@@ -112,7 +121,7 @@
                     <Button Grid.Column="1"
                             Content="Open Settings"
                             Command="{Binding GoToSettingsCommand}"
-                            Style="{StaticResource SecondaryButtonStyle}"
+                            Theme="{StaticResource SecondaryButtonStyle}"
                             Padding="14,7" FontSize="12"
                             Margin="16,0,0,0"
                             VerticalAlignment="Center"/>
@@ -125,11 +134,7 @@
             <Border Background="{DynamicResource BrushPanelBackground}"
                     BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                     CornerRadius="10" Padding="20,16" Margin="0,0,0,16">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                <Grid ColumnDefinitions="Auto,*">
 
                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,20,0">
                         <TextBlock Text="Server"
@@ -141,15 +146,13 @@
                                    Foreground="{DynamicResource BrushTextMuted}"/>
                     </StackPanel>
 
-                    <!-- ItemStringFormat shows only the Name, not the full type name -->
                     <ComboBox Grid.Column="1"
                               ItemsSource="{Binding Servers}"
                               SelectedItem="{Binding SelectedServer}"
-                              ItemStringFormat="{}{0}"
                               Height="44"
                               FontFamily="{StaticResource FontBody}" FontSize="14">
                         <ComboBox.ItemTemplate>
-                            <DataTemplate DataType="{x:Type models:Server}">
+                            <DataTemplate DataType="models:Server">
                                 <TextBlock Text="{Binding Name}"
                                            FontFamily="{StaticResource FontBody}"
                                            FontSize="13"
@@ -166,13 +169,13 @@
                        FontFamily="{StaticResource FontBody}" FontSize="13"
                        Foreground="{DynamicResource BrushTextMuted}"
                        HorizontalAlignment="Center" Margin="0,8,0,8"
-                       Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                       IsVisible="{Binding IsLoading}"/>
 
             <!-- No server selected -->
             <Border Background="{DynamicResource BrushPanelBackground}"
                     BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                     CornerRadius="10" Padding="40,36"
-                    Visibility="{Binding HasSelectedServer, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+                    IsVisible="{Binding !HasSelectedServer}"
                     Margin="0,0,0,16">
                 <StackPanel HorizontalAlignment="Center">
                     <TextBlock Text="No server selected"
@@ -193,16 +196,12 @@
             <Border Background="{DynamicResource BrushPanelBackground}"
                     BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                     CornerRadius="10" Padding="20"
-                    Visibility="{Binding HasSelectedServer, Converter={StaticResource BoolToVisibilityConverter}}"
+                    IsVisible="{Binding HasSelectedServer}"
                     Margin="0,0,0,16">
                 <StackPanel>
 
                     <!-- Section header -->
-                    <Grid Margin="0,0,0,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                    <Grid Margin="0,0,0,6" ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Ports"
                                        FontFamily="{StaticResource FontDisplay}" FontSize="16"
@@ -216,7 +215,7 @@
                         <Button Grid.Column="1"
                                 Content="↻  Refresh"
                                 Command="{Binding RefreshPortsCommand}"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="12,6" FontSize="12"
                                 VerticalAlignment="Top"/>
                     </Grid>
@@ -224,23 +223,14 @@
                     <!-- Column headers -->
                     <Border Background="{DynamicResource BrushAppBackground}"
                             CornerRadius="6" Padding="12,8" Margin="0,8,0,6">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="36"/>
-                                <ColumnDefinition Width="110"/>
-                                <ColumnDefinition Width="80"/>
-                                <ColumnDefinition Width="180"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="200"/>
-                                <ColumnDefinition Width="70"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="On"        Style="{StaticResource TableHeaderStyle}"/>
-                            <TextBlock Grid.Column="1" Text="Port"      Style="{StaticResource TableHeaderStyle}"/>
-                            <TextBlock Grid.Column="2" Text="Protocol"  Style="{StaticResource TableHeaderStyle}"/>
-                            <TextBlock Grid.Column="3" Text="Label"     Style="{StaticResource TableHeaderStyle}"/>
-                            <TextBlock Grid.Column="4" Text="Source"    Style="{StaticResource TableHeaderStyle}"/>
-                            <TextBlock Grid.Column="5" Text="Tunnel via" Style="{StaticResource TableHeaderStyle}"/>
-                            <TextBlock Grid.Column="6" Text=""          Style="{StaticResource TableHeaderStyle}"/>
+                        <Grid ColumnDefinitions="36,110,80,180,*,200,70">
+                            <TextBlock Grid.Column="0" Text="On"        Theme="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="1" Text="Port"      Theme="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="2" Text="Protocol"  Theme="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="3" Text="Label"     Theme="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="4" Text="Source"    Theme="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="5" Text="Tunnel via" Theme="{StaticResource TableHeaderStyle}"/>
+                            <TextBlock Grid.Column="6" Text=""          Theme="{StaticResource TableHeaderStyle}"/>
                         </Grid>
                     </Border>
 
@@ -249,27 +239,18 @@
                                FontFamily="{StaticResource FontBody}" FontSize="13"
                                Foreground="{DynamicResource BrushTextMuted}"
                                HorizontalAlignment="Center" Margin="0,20,0,20"
-                               Visibility="{Binding HasPorts, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                               IsVisible="{Binding !HasPorts}"/>
 
                     <!-- Port rows — editable inline -->
                     <ItemsControl ItemsSource="{Binding Ports}"
-                                  Visibility="{Binding HasPorts, Converter={StaticResource BoolToVisibilityConverter}}">
+                                  IsVisible="{Binding HasPorts}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type models:PortInfo}">
+                            <DataTemplate DataType="models:PortInfo">
                                 <Border Background="{DynamicResource BrushPanelElevated}"
                                         BorderBrush="{DynamicResource BrushBorder}"
                                         BorderThickness="1" CornerRadius="6"
                                         Padding="12,8" Margin="0,0,0,4">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="36"/>
-                                            <ColumnDefinition Width="110"/>
-                                            <ColumnDefinition Width="80"/>
-                                            <ColumnDefinition Width="180"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="200"/>
-                                            <ColumnDefinition Width="70"/>
-                                        </Grid.ColumnDefinitions>
+                                    <Grid ColumnDefinitions="36,110,80,180,*,200,70">
 
                                         <!-- Enable checkbox -->
                                         <CheckBox Grid.Column="0"
@@ -278,50 +259,33 @@
 
                                         <!-- Port number — editable TextBox -->
                                         <TextBox Grid.Column="1"
-                                                 Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"
-                                                 Style="{StaticResource InputTextBoxStyle}"
+                                                 Text="{Binding Port}"
+                                                 Theme="{StaticResource InputTextBoxStyle}"
                                                  Height="32" FontSize="13" FontWeight="Bold"
-                                                 ToolTip="Click to edit the port number — saves automatically"
+                                                 ToolTip.Tip="Click to edit the port number — saves automatically"
                                                  VerticalAlignment="Center"
                                                  Margin="0,0,6,0"/>
 
                                         <!-- Protocol pill (read-only for detected, editable for custom) -->
                                         <Border Grid.Column="2" CornerRadius="4"
                                                 Padding="7,3" Margin="0,0,6,0"
-                                                VerticalAlignment="Center">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Background" Value="{DynamicResource BrushProtocolTcp}"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Protocol}" Value="UDP">
-                                                            <Setter Property="Background" Value="{DynamicResource BrushProtocolUdp}"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
+                                                VerticalAlignment="Center"
+                                                Classes="protocolPill"
+                                                Classes.udp="{Binding Protocol, Converter={x:Static helpers:StringEqualsConverter.Instance}, ConverterParameter=UDP}">
                                             <TextBlock Text="{Binding Protocol}"
                                                        FontFamily="{StaticResource FontBody}"
                                                        FontSize="11" FontWeight="SemiBold"
-                                                       VerticalAlignment="Center">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Foreground" Value="{DynamicResource BrushProtocolTcpText}"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Protocol}" Value="UDP">
-                                                                <Setter Property="Foreground" Value="{DynamicResource BrushProtocolUdpText}"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
+                                                       VerticalAlignment="Center"
+                                                       Classes="protocolPillText"
+                                                       Classes.udp="{Binding Protocol, Converter={x:Static helpers:StringEqualsConverter.Instance}, ConverterParameter=UDP}"/>
                                         </Border>
 
                                         <!-- Label / Purpose — editable TextBox -->
                                         <TextBox Grid.Column="3"
-                                                 Text="{Binding Purpose, UpdateSourceTrigger=PropertyChanged}"
-                                                 Style="{StaticResource InputTextBoxStyle}"
+                                                 Text="{Binding Purpose}"
+                                                 Theme="{StaticResource InputTextBoxStyle}"
                                                  Height="32" FontSize="12"
-                                                 ToolTip="Click to edit the label — saves automatically"
+                                                 ToolTip.Tip="Click to edit the label — saves automatically"
                                                  VerticalAlignment="Center"
                                                  Margin="0,0,6,0"/>
 
@@ -347,9 +311,9 @@
                                                 Content="Remove"
                                                 Tag="{Binding}"
                                                 Click="RemovePort_Click"
-                                                Style="{StaticResource DangerButtonStyle}"
+                                                Theme="{StaticResource DangerButtonStyle}"
                                                 Padding="6,3" FontSize="10"
-                                                Visibility="{Binding IsCustom, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                IsVisible="{Binding IsCustom}"
                                                 VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
@@ -369,27 +333,18 @@
                                FontFamily="{StaticResource FontBody}" FontSize="11"
                                Foreground="{DynamicResource BrushTextMuted}" Margin="0,0,0,12"/>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="110"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="110"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                    <Grid ColumnDefinitions="Auto,110,Auto,110,Auto,*,Auto">
 
                         <TextBlock Grid.Column="0" Text="Port"
-                                   Style="{StaticResource TableHeaderStyle}"
+                                   Theme="{StaticResource TableHeaderStyle}"
                                    VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBox Grid.Column="1"
-                                 Text="{Binding NewCustomPort, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource InputTextBoxStyle}"
+                                 Text="{Binding NewCustomPort}"
+                                 Theme="{StaticResource InputTextBoxStyle}"
                                  Height="38" FontSize="13"/>
 
                         <TextBlock Grid.Column="2" Text="Protocol"
-                                   Style="{StaticResource TableHeaderStyle}"
+                                   Theme="{StaticResource TableHeaderStyle}"
                                    VerticalAlignment="Center" Margin="14,0,8,0"/>
                         <ComboBox Grid.Column="3"
                                   ItemsSource="{Binding Protocols}"
@@ -397,17 +352,17 @@
                                   Height="38" FontSize="13"/>
 
                         <TextBlock Grid.Column="4" Text="Label"
-                                   Style="{StaticResource TableHeaderStyle}"
+                                   Theme="{StaticResource TableHeaderStyle}"
                                    VerticalAlignment="Center" Margin="14,0,8,0"/>
                         <TextBox Grid.Column="5"
-                                 Text="{Binding NewCustomPurpose, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource InputTextBoxStyle}"
+                                 Text="{Binding NewCustomPurpose}"
+                                 Theme="{StaticResource InputTextBoxStyle}"
                                  Height="38" FontSize="13"/>
 
                         <Button Grid.Column="6"
                                 Content="+ Add Port"
                                 Click="AddCustomPort_Click"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="18,8" Margin="12,0,0,0"
                                 VerticalAlignment="Center"/>
                     </Grid>
@@ -421,7 +376,7 @@
             <Border Background="{DynamicResource BrushPanelBackground}"
                     BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                     CornerRadius="10" Padding="20"
-                    Visibility="{Binding HasAssignments, Converter={StaticResource BoolToVisibilityConverter}}"
+                    IsVisible="{Binding HasAssignments}"
                     Margin="0,0,0,16">
                 <StackPanel>
 
@@ -436,30 +391,21 @@
 
                     <ItemsControl ItemsSource="{Binding Assignments}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type models:PortTunnelAssignment}">
+                            <DataTemplate DataType="models:PortTunnelAssignment">
                                 <Border Margin="0,0,0,10" CornerRadius="8"
-                                        Padding="16,14" BorderThickness="1">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background"  Value="{DynamicResource BrushPanelElevated}"/>
-                                            <Setter Property="BorderBrush" Value="{DynamicResource BrushBorder}"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsUsingRecommended}" Value="True">
-                                                    <Setter Property="BorderBrush" Value="{DynamicResource BrushRecommended}"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
+                                        Padding="16,14" BorderThickness="1"
+                                        Background="{DynamicResource BrushPanelElevated}"
+                                        BorderBrush="{DynamicResource BrushBorder}"
+                                        Classes.recommended="{Binding IsUsingRecommended}">
+                                    <Border.Styles>
+                                        <Style Selector="Border.recommended">
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BrushRecommended}"/>
                                         </Style>
-                                    </Border.Style>
+                                    </Border.Styles>
                                     <StackPanel>
 
                                         <!-- Card header -->
-                                        <Grid Margin="0,0,0,12">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
+                                        <Grid Margin="0,0,0,12" ColumnDefinitions="Auto,Auto,*,Auto">
 
                                             <TextBlock Grid.Column="0"
                                                        Text="{Binding Port.Port}"
@@ -469,32 +415,15 @@
                                                        VerticalAlignment="Center" Margin="0,0,10,0"/>
 
                                             <Border Grid.Column="1" CornerRadius="5"
-                                                    Padding="8,3" VerticalAlignment="Center" Margin="0,0,12,0">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Background" Value="{DynamicResource BrushProtocolTcp}"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Port.Protocol}" Value="UDP">
-                                                                <Setter Property="Background" Value="{DynamicResource BrushProtocolUdp}"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
+                                                    Padding="8,3" VerticalAlignment="Center" Margin="0,0,12,0"
+                                                    Classes="protocolPill"
+                                                    Classes.udp="{Binding Port.Protocol, Converter={x:Static helpers:StringEqualsConverter.Instance}, ConverterParameter=UDP}">
                                                 <TextBlock Text="{Binding Port.Protocol}"
                                                            FontFamily="{StaticResource FontBody}"
                                                            FontSize="11" FontWeight="SemiBold"
-                                                           VerticalAlignment="Center">
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="TextBlock">
-                                                            <Setter Property="Foreground" Value="{DynamicResource BrushProtocolTcpText}"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding Port.Protocol}" Value="UDP">
-                                                                    <Setter Property="Foreground" Value="{DynamicResource BrushProtocolUdpText}"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </TextBlock.Style>
-                                                </TextBlock>
+                                                           VerticalAlignment="Center"
+                                                           Classes="protocolPillText"
+                                                           Classes.udp="{Binding Port.Protocol, Converter={x:Static helpers:StringEqualsConverter.Instance}, ConverterParameter=UDP}"/>
                                             </Border>
 
                                             <TextBlock Grid.Column="2"
@@ -507,7 +436,7 @@
                                             <Border Grid.Column="3" CornerRadius="5"
                                                     Padding="9,4" VerticalAlignment="Center"
                                                     Background="{DynamicResource BrushRecommended}"
-                                                    Visibility="{Binding IsUsingRecommended, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                    IsVisible="{Binding IsUsingRecommended}">
                                                 <TextBlock Text="✓  Recommended"
                                                            FontFamily="{StaticResource FontBody}"
                                                            FontSize="10" FontWeight="SemiBold"
@@ -526,21 +455,22 @@
                                         <Border Background="{DynamicResource BrushWarningBg}"
                                                 CornerRadius="6" Padding="10,6"
                                                 Margin="0,4,0,0"
-                                                Visibility="{Binding SelectedProvider.RequiresApiKey, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                IsVisible="{Binding SelectedProvider.RequiresApiKey}">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="⚠  " FontSize="11"
                                                            Foreground="{DynamicResource BrushWarningText}"
                                                            VerticalAlignment="Center"/>
-                                                <TextBlock FontFamily="{StaticResource FontBody}" FontSize="11"
+                                                <TextBlock Text="This provider needs an API key. "
+                                                           FontFamily="{StaticResource FontBody}" FontSize="11"
                                                            Foreground="{DynamicResource BrushWarningText}"
-                                                           TextWrapping="Wrap">
-                                                    <Run Text="This provider needs an API key. "/>
-                                                    <Hyperlink Command="{Binding DataContext.GoToSettingsCommand,
-                                                               RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                               Foreground="{DynamicResource BrushInfoText}">
-                                                        Configure it in Settings →
-                                                    </Hyperlink>
-                                                </TextBlock>
+                                                           VerticalAlignment="Center"/>
+                                                <Button Content="Configure it in Settings →"
+                                                        Command="{Binding $parent[UserControl].DataContext.GoToSettingsCommand}"
+                                                        Background="Transparent" BorderThickness="0"
+                                                        Foreground="{DynamicResource BrushInfoText}"
+                                                        FontFamily="{StaticResource FontBody}" FontSize="11"
+                                                        Padding="4,0,0,0" Cursor="Hand"
+                                                        VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Border>
 
@@ -548,7 +478,7 @@
                                         <TextBlock FontFamily="{StaticResource FontBody}" FontSize="11"
                                                    Foreground="{DynamicResource BrushTextMuted}"
                                                    Margin="0,4,0,0"
-                                                   Visibility="{Binding IsUsingRecommended, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                                   IsVisible="{Binding !IsUsingRecommended}">
                                             <Run Text="Recommended: "/>
                                             <Run Text="{Binding RecommendedProvider.DisplayName}"
                                                  Foreground="{DynamicResource BrushRecommended}"/>
@@ -568,17 +498,12 @@
             <Border Background="{DynamicResource BrushPanelBackground}"
                     BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                     CornerRadius="10" Padding="20"
-                    Visibility="{Binding HasAssignments, Converter={StaticResource BoolToVisibilityConverter}}"
+                    IsVisible="{Binding HasAssignments}"
                     Margin="0,0,0,16">
                 <StackPanel>
 
                     <!-- Header row -->
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                    <Grid Margin="0,0,0,16" ColumnDefinitions="*,Auto,Auto">
 
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                             <TextBlock Text="Launch Tunnels"
@@ -593,89 +518,68 @@
                         <Button Grid.Column="1"
                                 Content="Stop All"
                                 Command="{Binding StopAllTunnelsCommand}"
-                                Style="{StaticResource DangerButtonStyle}"
+                                Theme="{StaticResource DangerButtonStyle}"
                                 Padding="18,9" FontSize="13"
                                 Margin="0,0,10,0"
-                                Visibility="{Binding HasActiveSessions, Converter={StaticResource BoolToVisibilityConverter}}"
+                                IsVisible="{Binding HasActiveSessions}"
                                 VerticalAlignment="Center"/>
 
                         <Button Grid.Column="2"
-                                Content="▶  Launch All Tunnels"
+                                Content="{Binding LaunchButtonLabel}"
                                 Command="{Binding LaunchAllTunnelsCommand}"
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 Padding="18,9" FontSize="13"
-                                VerticalAlignment="Center">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsLaunching}" Value="True">
-                                            <Setter Property="Content" Value="Starting…"/>
-                                            <Setter Property="IsEnabled" Value="False"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding HasActiveSessions}" Value="True">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                                IsEnabled="{Binding !IsLaunching}"
+                                IsVisible="{Binding !HasActiveSessions}"
+                                VerticalAlignment="Center"/>
                     </Grid>
 
                     <!-- Session cards -->
                     <ItemsControl ItemsSource="{Binding SessionViewModels}"
-                                  Visibility="{Binding HasAnySessions, Converter={StaticResource BoolToVisibilityConverter}}">
+                                  IsVisible="{Binding HasAnySessions}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type viewmodels:TunnelSessionViewModel}">
+                            <DataTemplate DataType="viewmodels:TunnelSessionViewModel">
                                 <Border CornerRadius="8" Padding="16,14"
-                                        BorderThickness="1" Margin="0,0,0,10">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background"  Value="{DynamicResource BrushPanelElevated}"/>
-                                            <Setter Property="BorderBrush" Value="{DynamicResource BrushBorder}"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsRunning}"  Value="True">
-                                                    <Setter Property="BorderBrush" Value="#2E7D52"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsError}"    Value="True">
-                                                    <Setter Property="BorderBrush" Value="#7D2E2E"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsStarting}" Value="True">
-                                                    <Setter Property="BorderBrush" Value="{DynamicResource BrushRecommended}"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
+                                        BorderThickness="1" Margin="0,0,0,10"
+                                        Background="{DynamicResource BrushPanelElevated}"
+                                        BorderBrush="{DynamicResource BrushBorder}"
+                                        Classes.running="{Binding IsRunning}"
+                                        Classes.error="{Binding IsError}"
+                                        Classes.starting="{Binding IsStarting}">
+                                    <Border.Styles>
+                                        <Style Selector="Border.running">
+                                            <Setter Property="BorderBrush" Value="#2E7D52"/>
                                         </Style>
-                                    </Border.Style>
+                                        <Style Selector="Border.error">
+                                            <Setter Property="BorderBrush" Value="#7D2E2E"/>
+                                        </Style>
+                                        <Style Selector="Border.starting">
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BrushRecommended}"/>
+                                        </Style>
+                                    </Border.Styles>
                                     <StackPanel>
 
                                         <!-- Card header -->
-                                        <Grid Margin="0,0,0,10">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
+                                        <Grid Margin="0,0,0,10" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
 
                                             <!-- Status dot -->
                                             <Ellipse Grid.Column="0" Width="10" Height="10"
-                                                     VerticalAlignment="Center" Margin="0,0,10,0">
-                                                <Ellipse.Style>
-                                                    <Style TargetType="Ellipse">
-                                                        <Setter Property="Fill" Value="{DynamicResource BrushTextMuted}"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsRunning}"  Value="True">
-                                                                <Setter Property="Fill" Value="#4CAF7D"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding IsStarting}" Value="True">
-                                                                <Setter Property="Fill" Value="#B090F0"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding IsError}"    Value="True">
-                                                                <Setter Property="Fill" Value="#E57373"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
+                                                     VerticalAlignment="Center" Margin="0,0,10,0"
+                                                     Fill="{DynamicResource BrushTextMuted}"
+                                                     Classes.running="{Binding IsRunning}"
+                                                     Classes.starting="{Binding IsStarting}"
+                                                     Classes.error="{Binding IsError}">
+                                                <Ellipse.Styles>
+                                                    <Style Selector="Ellipse.running">
+                                                        <Setter Property="Fill" Value="#4CAF7D"/>
                                                     </Style>
-                                                </Ellipse.Style>
+                                                    <Style Selector="Ellipse.starting">
+                                                        <Setter Property="Fill" Value="#B090F0"/>
+                                                    </Style>
+                                                    <Style Selector="Ellipse.error">
+                                                        <Setter Property="Fill" Value="#E57373"/>
+                                                    </Style>
+                                                </Ellipse.Styles>
                                             </Ellipse>
 
                                             <!-- Port number -->
@@ -689,31 +593,14 @@
                                             <!-- Protocol pill -->
                                             <Border Grid.Column="2" CornerRadius="4"
                                                     Padding="7,3" Margin="0,0,12,0"
-                                                    VerticalAlignment="Center">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Background" Value="{DynamicResource BrushProtocolTcp}"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Protocol}" Value="UDP">
-                                                                <Setter Property="Background" Value="{DynamicResource BrushProtocolUdp}"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
+                                                    VerticalAlignment="Center"
+                                                    Classes="protocolPill"
+                                                    Classes.udp="{Binding Protocol, Converter={x:Static helpers:StringEqualsConverter.Instance}, ConverterParameter=UDP}">
                                                 <TextBlock Text="{Binding Protocol}"
                                                            FontFamily="{StaticResource FontBody}"
-                                                           FontSize="10" FontWeight="SemiBold">
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="TextBlock">
-                                                            <Setter Property="Foreground" Value="{DynamicResource BrushProtocolTcpText}"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding Protocol}" Value="UDP">
-                                                                    <Setter Property="Foreground" Value="{DynamicResource BrushProtocolUdpText}"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </TextBlock.Style>
-                                                </TextBlock>
+                                                           FontSize="10" FontWeight="SemiBold"
+                                                           Classes="protocolPillText"
+                                                           Classes.udp="{Binding Protocol, Converter={x:Static helpers:StringEqualsConverter.Instance}, ConverterParameter=UDP}"/>
                                             </Border>
 
                                             <!-- Provider name -->
@@ -735,28 +622,20 @@
                                             <!-- Stop button -->
                                             <Button Grid.Column="5"
                                                     Content="Stop"
-                                                    Command="{Binding DataContext.StopOneTunnelCommand,
-                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    Command="{Binding $parent[UserControl].DataContext.StopOneTunnelCommand}"
                                                     CommandParameter="{Binding}"
-                                                    Style="{StaticResource DangerButtonStyle}"
+                                                    Theme="{StaticResource DangerButtonStyle}"
                                                     Padding="12,5" FontSize="11"
                                                     VerticalAlignment="Center"
-                                                    Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                    IsVisible="{Binding IsRunning}"/>
                                         </Grid>
 
                                         <!-- Public address row -->
                                         <Border Background="{DynamicResource BrushPanelBackground}"
                                                 CornerRadius="6" Padding="12,8"
                                                 Margin="0,0,0,6"
-                                                Visibility="{Binding HasAddress, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
+                                                IsVisible="{Binding HasAddress}">
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
                                                 <TextBlock Grid.Column="0"
                                                            Text="Public address: "
                                                            FontFamily="{StaticResource FontBody}" FontSize="12"
@@ -772,10 +651,9 @@
                                                 <!-- Copy address -->
                                                 <Button Grid.Column="2"
                                                         Content="Copy address"
-                                                        Command="{Binding DataContext.CopyAddressCommand,
-                                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                        CommandParameter="{Binding}"
-                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Tag="{Binding}"
+                                                        Click="CopyAddress_Click"
+                                                        Theme="{StaticResource SecondaryButtonStyle}"
                                                         Padding="12,4" FontSize="11"
                                                         Margin="12,0,6,0"
                                                         VerticalAlignment="Center"/>
@@ -784,7 +662,7 @@
                                                         Content="Copy log"
                                                         Tag="{Binding LogText}"
                                                         Click="CopyLog_Click"
-                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Theme="{StaticResource SecondaryButtonStyle}"
                                                         Padding="10,4" FontSize="11"
                                                         VerticalAlignment="Center"/>
                                                 <!-- Share Tunnel -->
@@ -792,13 +670,11 @@
                                                         Content="Share Tunnel"
                                                         Tag="{Binding}"
                                                         Click="ShareTunnel_Click"
-                                                        Style="{StaticResource PrimaryButtonStyle}"
+                                                        Theme="{StaticResource PrimaryButtonStyle}"
                                                         Padding="12,4" FontSize="11"
                                                         Margin="6,0,0,0"
                                                         VerticalAlignment="Center"
-                                                        Visibility="{Binding DataContext.IsNexoraLoggedIn,
-                                                                     RelativeSource={RelativeSource AncestorType=UserControl},
-                                                                     Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                        IsVisible="{Binding $parent[UserControl].IsNexoraLoggedIn}"/>
                                             </Grid>
                                         </Border>
 
@@ -807,7 +683,7 @@
                                                 BorderBrush="{DynamicResource BrushAccent}" BorderThickness="1"
                                                 CornerRadius="6" Padding="14,12"
                                                 Margin="0,0,0,6"
-                                                Visibility="{Binding IsWaitingForPlayit, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                IsVisible="{Binding IsWaitingForPlayit}">
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                     <TextBlock Text="⏳  " FontSize="15" VerticalAlignment="Center"/>
@@ -839,7 +715,7 @@
                                                         <Button Content="Open playit.gg dashboard"
                                                                 Tag="https://playit.gg/account/tunnels"
                                                                 Click="OpenClaimUrl_Click"
-                                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                                Theme="{StaticResource SecondaryButtonStyle}"
                                                                 Padding="12,5" FontSize="11"
                                                                 HorizontalAlignment="Left"
                                                                 Margin="0,8,0,0"/>
@@ -868,7 +744,7 @@
                                                 BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                                                 CornerRadius="6" Padding="14,10"
                                                 Margin="0,0,0,6"
-                                                Visibility="{Binding IsWaitingGeneric, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                IsVisible="{Binding IsWaitingGeneric}">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="⏳  " FontSize="14" VerticalAlignment="Center"/>
                                                 <TextBlock FontFamily="{StaticResource FontBody}" FontSize="12"
@@ -879,12 +755,12 @@
                                             </StackPanel>
                                         </Border>
 
-                                                                                <!-- playit.gg claim URL banner (first-run setup) -->
+                                        <!-- playit.gg claim URL banner (first-run setup) -->
                                         <Border Background="{DynamicResource BrushPanelElevated}"
                                                 BorderBrush="{DynamicResource BrushOnline}" BorderThickness="1"
                                                 CornerRadius="6" Padding="14,10"
                                                 Margin="0,0,0,6"
-                                                Visibility="{Binding HasClaimUrl, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                IsVisible="{Binding HasClaimUrl}">
                                             <StackPanel>
                                                 <TextBlock Text="⚡  Action required — one-time setup"
                                                            FontFamily="{StaticResource FontDisplay}"
@@ -897,11 +773,7 @@
                                                     Open the link below in your browser, log in (or create a free account),
                                                     and click Claim. The tunnel will start automatically after that.
                                                 </TextBlock>
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
+                                                <Grid ColumnDefinitions="*,Auto">
                                                     <Border Grid.Column="0"
                                                             Background="{DynamicResource BrushAppBackground}"
                                                             CornerRadius="4" Padding="8,6">
@@ -915,7 +787,7 @@
                                                             Content="Open in browser"
                                                             Tag="{Binding ClaimUrl}"
                                                             Click="OpenClaimUrl_Click"
-                                                            Style="{StaticResource PrimaryButtonStyle}"
+                                                            Theme="{StaticResource PrimaryButtonStyle}"
                                                             Padding="14,7" FontSize="12"
                                                             Margin="10,0,0,0"
                                                             VerticalAlignment="Center"/>
@@ -928,7 +800,7 @@
                                                 BorderBrush="{DynamicResource BrushOnline}" BorderThickness="1"
                                                 CornerRadius="6" Padding="14,10"
                                                 Margin="0,0,0,6"
-                                                Visibility="{Binding RequiresManualAddress, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                IsVisible="{Binding RequiresManualAddress}">
                                             <StackPanel>
                                                 <TextBlock Text="Enter Your Public Address"
                                                            FontFamily="{StaticResource FontDisplay}"
@@ -938,39 +810,16 @@
                                                            FontFamily="{StaticResource FontBody}" FontSize="12"
                                                            Foreground="{DynamicResource BrushTextSecondary}"
                                                            TextWrapping="Wrap" Margin="0,0,0,8"/>
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
+                                                <Grid ColumnDefinitions="*,Auto">
                                                     <TextBox Grid.Column="0"
-                                                             Text="{Binding ManualAddressInput, UpdateSourceTrigger=PropertyChanged}"
+                                                             Text="{Binding ManualAddressInput}"
+                                                             Watermark="e.g. 123.456.78.90:25565"
                                                              FontFamily="Consolas, Courier New, monospace"
-                                                             FontSize="12" Padding="8,6">
-                                                        <TextBox.Resources>
-                                                            <VisualBrush x:Key="HintBrush" AlignmentX="Left" AlignmentY="Center" Stretch="None">
-                                                                <VisualBrush.Visual>
-                                                                    <TextBlock Text="e.g. 123.456.78.90:25565"
-                                                                               Foreground="#666" FontSize="12"
-                                                                               FontFamily="Consolas, Courier New, monospace"
-                                                                               Margin="8,0,0,0"/>
-                                                                </VisualBrush.Visual>
-                                                            </VisualBrush>
-                                                        </TextBox.Resources>
-                                                        <TextBox.Style>
-                                                            <Style TargetType="TextBox">
-                                                                <Style.Triggers>
-                                                                    <Trigger Property="Text" Value="">
-                                                                        <Setter Property="Background" Value="{StaticResource HintBrush}"/>
-                                                                    </Trigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBox.Style>
-                                                    </TextBox>
+                                                             FontSize="12" Padding="8,6"/>
                                                     <Button Grid.Column="1"
                                                             Content="Use This Address"
                                                             Command="{Binding SubmitManualAddressCommand}"
-                                                            Style="{StaticResource PrimaryButtonStyle}"
+                                                            Theme="{StaticResource PrimaryButtonStyle}"
                                                             Padding="14,7" FontSize="12"
                                                             Margin="10,0,0,0"
                                                             VerticalAlignment="Center"/>
@@ -982,7 +831,7 @@
                                         <Border Background="{DynamicResource BrushWarningBg}"
                                                 CornerRadius="6" Padding="12,8"
                                                 Margin="0,0,0,6"
-                                                Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                IsVisible="{Binding HasError}">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="⚠  " FontSize="12"
                                                            Foreground="{DynamicResource BrushWarningText}"
@@ -1004,11 +853,11 @@
                                                 <Button Content="Copy log"
                                                         Tag="{Binding LogText}"
                                                         Click="CopyLog_Click"
-                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Theme="{StaticResource SecondaryButtonStyle}"
                                                         Padding="10,4" FontSize="11"
                                                         HorizontalAlignment="Right"
                                                         Margin="0,6,0,4"
-                                                        Visibility="{Binding HasAddress, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                                        IsVisible="{Binding !HasAddress}"/>
                                                 <Border Background="{DynamicResource BrushAppBackground}"
                                                         CornerRadius="5" Padding="10,8"
                                                         Margin="0,0,0,0"

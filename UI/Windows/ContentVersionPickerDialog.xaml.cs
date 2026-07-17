@@ -1,5 +1,7 @@
-using System.Windows;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using MinecraftControlHub.Core.Services;
 
 namespace MinecraftControlHub.UI.Windows;
@@ -20,18 +22,18 @@ public partial class ContentVersionPickerDialog : Window
     {
         SelectedVersion = VersionList.SelectedItem as ContentVersionInfo;
         if (SelectedVersion == null) return;
-        DialogResult = true;
+        Close(true);
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
-        => DialogResult = false;
+        => Close(false);
 
-    private void VersionList_DoubleClick(object sender, MouseButtonEventArgs e)
+    private void VersionList_DoubleClick(object sender, PointerPressedEventArgs e)
     {
         if (VersionList.SelectedItem is ContentVersionInfo v)
         {
             SelectedVersion = v;
-            DialogResult = true;
+            Close(true);
         }
     }
 }

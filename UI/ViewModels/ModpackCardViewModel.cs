@@ -33,6 +33,7 @@ public class ModpackCardViewModel : ViewModelBase
     public string?  Author      => Modpack.Author;
     public int      Downloads   => Modpack.Downloads;
     public bool     IsInstalled => Modpack.IsInstalled;
+    public string   InstallButtonLabel => IsInstalled ? "Installed" : "Install";
 
     // ── Expand / collapse ────────────────────────────────────────────────────
     public bool IsExpanded
@@ -41,10 +42,14 @@ public class ModpackCardViewModel : ViewModelBase
         set
         {
             if (!SetProperty(ref _isExpanded, value)) return;
+            OnPropertyChanged(nameof(ExpandChevron));
             if (value && !_modsLoaded)
                 _ = LoadModsAsync();
         }
     }
+
+    /// <summary>Chevron glyph reflecting the expand/collapse state.</summary>
+    public string ExpandChevron => _isExpanded ? "▼" : "▶";
 
     public bool IsLoadingMods
     {

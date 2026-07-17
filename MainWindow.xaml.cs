@@ -1,4 +1,8 @@
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Microsoft.Extensions.DependencyInjection;
 using MinecraftControlHub.Core.Services;
 using MinecraftControlHub.UI;
@@ -14,13 +18,13 @@ public partial class MainWindow : Window
     private IInstanceNotificationManager?        _instanceNotifManager;
 
     // Page cache — keeps the same instance alive so state (e.g. launch progress) survives navigation
-    private readonly Dictionary<AppPage, System.Windows.Controls.UserControl> _pageCache = new();
+    private readonly Dictionary<AppPage, UserControl> _pageCache = new();
 
     public MainWindow()
     {
         InitializeComponent();
 
-        var app = (App)Application.Current;
+        var app = (App)Application.Current!;
         _nexoraService        = app.ServiceProvider?.GetService<INexoraAccountService>()!;
         _notifManager         = app.ServiceProvider?.GetService<ITunnelNotificationManager>()!;
         _instanceNotifManager = app.ServiceProvider?.GetService<IInstanceNotificationManager>();
@@ -39,26 +43,20 @@ public partial class MainWindow : Window
 
         if (_nexoraService.Current == null)
         {
-            await Dispatcher.InvokeAsync(() =>
-            {
-                var loginWindow = new NexoraLoginWindow { Owner = this };
-                loginWindow.ShowDialog();
-                loggedIn = loginWindow.LoginSuccessful;
-                continuedWithoutAccount = loginWindow.ContinuedWithoutAccount;
-            });
+            var loginWindow = new NexoraLoginWindow();
+            await loginWindow.ShowDialog(this);
+            loggedIn = loginWindow.LoginSuccessful;
+            continuedWithoutAccount = loginWindow.ContinuedWithoutAccount;
         }
         else
         {
             var validAccount = await _nexoraService.ValidateStoredTokenAsync();
             if (validAccount == null)
             {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    var loginWindow = new NexoraLoginWindow { Owner = this };
-                    loginWindow.ShowDialog();
-                    loggedIn = loginWindow.LoginSuccessful;
-                    continuedWithoutAccount = loginWindow.ContinuedWithoutAccount;
-                });
+                var loginWindow = new NexoraLoginWindow();
+                await loginWindow.ShowDialog(this);
+                loggedIn = loginWindow.LoginSuccessful;
+                continuedWithoutAccount = loginWindow.ContinuedWithoutAccount;
             }
             else
             {
@@ -66,20 +64,17 @@ public partial class MainWindow : Window
             }
         }
 
-        await Dispatcher.InvokeAsync(() =>
+        SidebarControl.IsNexoraLoggedIn = loggedIn;
+        if (loggedIn)
         {
-            SidebarControl.IsNexoraLoggedIn = loggedIn;
-            if (loggedIn)
-            {
-                SidebarControl.RefreshNexoraProfile();
-                _notifManager?.StartPolling();
-                _instanceNotifManager?.StartPolling();
-            }
-        });
+            SidebarControl.RefreshNexoraProfile();
+            _notifManager?.StartPolling();
+            _instanceNotifManager?.StartPolling();
+        }
 
         if (!loggedIn && !continuedWithoutAccount)
         {
-            await Dispatcher.InvokeAsync(() => Application.Current.Shutdown());
+            (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
         }
     }
 
@@ -133,19 +128,45 @@ public partial class MainWindow : Window
         return page;
     }
 
-        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+    private void MinimizeButton_Click(object? sender, RoutedEventArgs e)
         => WindowState = WindowState.Minimized;
 
-    private void MaximizeRestoreButton_Click(object sender, RoutedEventArgs e)
+    private void MaximizeRestoreButton_Click(object? sender, RoutedEventArgs e)
         => WindowState = WindowState == WindowState.Maximized
             ? WindowState.Normal
             : WindowState.Maximized;
 
-    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    private void CloseButton_Click(object? sender, RoutedEventArgs e)
         => Close();
 
-    private void MainWindow_StateChanged(object? sender, EventArgs e)
-        => RootBorder.Margin = WindowState == WindowState.Maximized
-            ? new Thickness(7)
-            : new Thickness(0);
+    // Custom title bar drag + double-click-to-maximize, replacing WPF's
+    // WindowChrome caption behavior (no chrome is drawn natively here since
+    // ExtendClientAreaChromeHints="NoChrome" removes it).
+    private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
+        }
+        else
+        {
+            BeginMoveDrag(e);
+        }
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == WindowStateProperty)
+        {
+            RootBorder.Margin = WindowState == WindowState.Maximized
+                ? new Thickness(7)
+                : new Thickness(0);
+        }
+    }
 }

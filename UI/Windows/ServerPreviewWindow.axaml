@@ -1,5 +1,5 @@
-﻿<Window x:Class="MinecraftControlHub.UI.Windows.ServerPreviewWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window x:Class="MinecraftControlHub.UI.Windows.ServerPreviewWindow"
+        xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -11,25 +11,7 @@
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BrushAppBackground}">
     <Window.Resources>
-        <x:Array x:Key="GamemodeOptions" Type="sys:String">
-            <sys:String>survival</sys:String>
-            <sys:String>creative</sys:String>
-            <sys:String>adventure</sys:String>
-            <sys:String>spectator</sys:String>
-        </x:Array>
-        <x:Array x:Key="DifficultyOptions" Type="sys:String">
-            <sys:String>peaceful</sys:String>
-            <sys:String>easy</sys:String>
-            <sys:String>normal</sys:String>
-            <sys:String>hard</sys:String>
-        </x:Array>
-        <x:Array x:Key="OpPermissionLevelOptions" Type="sys:Int32">
-            <sys:Int32>1</sys:Int32>
-            <sys:Int32>2</sys:Int32>
-            <sys:Int32>3</sys:Int32>
-            <sys:Int32>4</sys:Int32>
-        </x:Array>
-        <Style x:Key="FriendCheckboxStyle" TargetType="CheckBox">
+        <ControlTheme x:Key="FriendCheckboxStyle" TargetType="CheckBox">
             <Setter Property="Margin" Value="0,0,0,12"/>
             <Setter Property="Padding" Value="12"/>
             <Setter Property="FontFamily" Value="{StaticResource FontBody}"/>
@@ -61,9 +43,8 @@
                                       Data="M 4 10 L 8 14 L 16 6"
                                       Stroke="White"
                                       StrokeThickness="2"
-                                      StrokeEndLineCap="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeLineJoin="Round"
+                                      StrokeLineCap="Round"
+                                      StrokeJoin="Round"
                                       Opacity="0"
                                       HorizontalAlignment="Center"
                                       VerticalAlignment="Center"
@@ -81,19 +62,11 @@
                                 </StackPanel>
                             </DockPanel>
                         </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="CheckBoxMarker" Property="Background" Value="{StaticResource BrushAccent}"/>
-                                <Setter TargetName="CheckBoxMarker" Property="BorderBrush" Value="{StaticResource BrushAccent}"/>
-                                <Setter TargetName="FriendCheckMark" Property="Opacity" Value="1"/>
-                            </Trigger>                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{StaticResource BrushPanelBackground}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
+                        <!-- Triggers removed -->
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>
+        </ControlTheme>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -139,38 +112,38 @@
                 <!-- Nav items -->
                 <StackPanel Margin="0,8,0,0">
                     <RadioButton GroupName="ServerNav" Tag="Terminal"
-                                 Style="{StaticResource NavItemStyle}"
+                                 Theme="{StaticResource NavItemStyle}"
                                  IsChecked="True"
                                  Checked="NavRadio_Checked">
                         <TextBlock Text="Terminal" FontSize="13.5"/>
                     </RadioButton>
 
                     <RadioButton GroupName="ServerNav" Tag="Friends"
-                                 Style="{StaticResource NavItemStyle}"
+                                 Theme="{StaticResource NavItemStyle}"
                                  Checked="NavRadio_Checked">
                         <TextBlock Text="Friends" FontSize="13.5"/>
                     </RadioButton>
 
                     <RadioButton GroupName="ServerNav" Tag="Settings"
-                                 Style="{StaticResource NavItemStyle}"
+                                 Theme="{StaticResource NavItemStyle}"
                                  Checked="NavRadio_Checked">
                         <TextBlock Text="Settings" FontSize="13.5"/>
                     </RadioButton>
 
                     <RadioButton GroupName="ServerNav" Tag="Plugins"
-                                 Style="{StaticResource NavItemStyle}"
+                                 Theme="{StaticResource NavItemStyle}"
                                  Checked="NavRadio_Checked">
                         <TextBlock Text="Plugins/Mods" FontSize="13.5"/>
                     </RadioButton>
 
                     <RadioButton GroupName="ServerNav" Tag="Advanced"
-                                 Style="{StaticResource NavItemStyle}"
+                                 Theme="{StaticResource NavItemStyle}"
                                  Checked="NavRadio_Checked">
                         <TextBlock Text="Advanced" FontSize="13.5"/>
                     </RadioButton>
 
                     <RadioButton GroupName="ServerNav" Tag="Health"
-                                 Style="{StaticResource NavItemStyle}"
+                                 Theme="{StaticResource NavItemStyle}"
                                  Checked="NavRadio_Checked">
                         <TextBlock Text="Health" FontSize="13.5"/>
                     </RadioButton>
@@ -188,7 +161,7 @@
                     BorderThickness="1"
                     CornerRadius="12"
                     Padding="24"
-                    Visibility="Visible">
+                    IsVisible="True">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -208,14 +181,14 @@
                                    VerticalAlignment="Center"
                                    Grid.Column="0"/>
                         <Button Content="Clear"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Width="110"
                                 Margin="0,0,12,0"
                                 Grid.Column="1"
                                 Click="ClearTerminal_Click"/>
                         <Button x:Name="TerminalStartStopButton"
                                 Content="Start"
-                                Style="{StaticResource PrimaryButtonStyle}"
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 Width="110"
                                 Grid.Column="2"
                                 Click="TerminalStartStop_Click"/>
@@ -233,8 +206,8 @@
                                  IsReadOnly="True"
                                  AcceptsReturn="True"
                                  TextWrapping="NoWrap"
-                                 VerticalScrollBarVisibility="Auto"
-                                 HorizontalScrollBarVisibility="Auto"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
                                  Background="Transparent"
                                  BorderThickness="0"
                                  Foreground="{DynamicResource BrushTextPrimary}"
@@ -262,7 +235,7 @@
                                  Text=""/>
                         <Button Grid.Column="1"
                                 Content="Send"
-                                Style="{StaticResource PrimaryButtonStyle}"
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 Width="120"
                                 Margin="0,0,12,0"
                                 Click="SendTerminalCommand_Click"/>
@@ -277,7 +250,7 @@
                             BorderThickness="1"
                             CornerRadius="12"
                             Padding="20"
-                            Visibility="Collapsed"
+                            IsVisible="False"
                             Grid.Column="1"
                             Grid.Row="0">
                         <StackPanel>
@@ -305,7 +278,7 @@
                                 <Button x:Name="RefreshServerHealthBtn"
                                         Grid.Column="1"
                                         Content="⟳ Refresh"
-                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Theme="{StaticResource SecondaryButtonStyle}"
                                         Padding="14,8"
                                         VerticalAlignment="Center"
                                         Click="RefreshServerHealth_Click"/>
@@ -460,7 +433,7 @@
                     BorderThickness="1"
                     CornerRadius="12"
                     Padding="24"
-                    Visibility="Collapsed">
+                    IsVisible="False">
                 <StackPanel>
                     <TextBlock Text="Friends &amp; Whitelist"
                                FontFamily="{StaticResource FontDisplay}"
@@ -566,7 +539,7 @@
                                        TextAlignment="Center"
                                        TextWrapping="Wrap"
                                        Margin="20"
-                                       Visibility="Collapsed"/>
+                                       IsVisible="False"/>
 
                             <!-- Friends list -->
                             <ItemsControl Grid.Row="2"
@@ -577,15 +550,6 @@
                                                 BorderThickness="0,0,0,1"
                                                 Padding="16,12"
                                                 Cursor="Hand">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="{StaticResource BrushPanelBackground}"/>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto"/>
@@ -615,7 +579,7 @@
                                                                FontSize="11"
                                                                Foreground="{StaticResource BrushTextSecondary}"
                                                                Margin="0,2,0,0"
-                                                               Visibility="{Binding MinecraftUsername, Converter={StaticResource NullToVisibilityConverter}}">
+                                                               IsVisible="{Binding MinecraftUsername, Converter={StaticResource NullToVisibilityConverter}}">
                                                         <Run Text="MC: "/><Run Text="{Binding MinecraftUsername, Mode=OneWay}"/>
                                                     </TextBlock>
                                                 </StackPanel>
@@ -637,7 +601,7 @@
                     <!-- Save whitelist button -->
                     <Button x:Name="SaveWhitelistBtn"
                             Content="Save Whitelist"
-                            Style="{StaticResource PrimaryButtonStyle}"
+                            Theme="{StaticResource PrimaryButtonStyle}"
                             Padding="20,10"
                             Margin="0,16,0,0"
                             HorizontalAlignment="Left"
@@ -659,7 +623,7 @@
                     BorderThickness="1"
                     CornerRadius="12"
                     Padding="0"
-                    Visibility="Collapsed">
+                    IsVisible="False">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
                 <StackPanel>
                     <TextBlock Text="Settings"
@@ -776,7 +740,7 @@
                                      BorderThickness="1"
                                      Foreground="{StaticResource BrushTextPrimary}"
                                      FontSize="13"/>
- 
+
                             <TextBlock Text="Min JVM memory (MB)"
                                        FontFamily="{StaticResource FontBody}"
                                        FontSize="12"
@@ -789,7 +753,7 @@
                                      BorderThickness="1"
                                      Foreground="{StaticResource BrushTextPrimary}"
                                      FontSize="13"/>
- 
+
                             <TextBlock Text="Max JVM memory (MB)"
                                        FontFamily="{StaticResource FontBody}"
                                        FontSize="12"
@@ -811,13 +775,17 @@
                                        Foreground="{StaticResource BrushTextSecondary}"
                                        Margin="0,0,0,4"/>
                             <ComboBox SelectedItem="{Binding Gamemode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      ItemsSource="{StaticResource GamemodeOptions}"
                                       Padding="10"
                                       Background="{StaticResource BrushAppBackground}"
                                       BorderBrush="{StaticResource BrushBorder}"
                                       BorderThickness="1"
                                       Foreground="{StaticResource BrushTextPrimary}"
-                                      FontSize="13"/>
+                                      FontSize="13">
+                                <sys:String>survival</sys:String>
+                                <sys:String>creative</sys:String>
+                                <sys:String>adventure</sys:String>
+                                <sys:String>spectator</sys:String>
+                            </ComboBox>
 
                             <TextBlock Text="Difficulty"
                                        FontFamily="{StaticResource FontBody}"
@@ -825,24 +793,28 @@
                                        Foreground="{StaticResource BrushTextSecondary}"
                                        Margin="0,16,0,4"/>
                             <ComboBox SelectedItem="{Binding Difficulty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      ItemsSource="{StaticResource DifficultyOptions}"
                                       Padding="10"
                                       Background="{StaticResource BrushAppBackground}"
                                       BorderBrush="{StaticResource BrushBorder}"
                                       BorderThickness="1"
                                       Foreground="{StaticResource BrushTextPrimary}"
-                                      FontSize="13"/>
- 
+                                      FontSize="13">
+                                <sys:String>peaceful</sys:String>
+                                <sys:String>easy</sys:String>
+                                <sys:String>normal</sys:String>
+                                <sys:String>hard</sys:String>
+                            </ComboBox>
+
                             <CheckBox Content="Online mode"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding AllowOnlineMode, Mode=TwoWay}"
                                       Margin="0,16,0,0"/>
                             <CheckBox Content="Allow cheats"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding AllowCheats, Mode=TwoWay}"
                                       Margin="0,10,0,0"/>
                             <CheckBox Content="Enable whitelist"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding WhiteListEnabled, Mode=TwoWay}"
                                       Margin="0,10,0,0"/>
                         </StackPanel>
@@ -954,13 +926,17 @@
                                        Foreground="{StaticResource BrushTextSecondary}"
                                        Margin="0,0,0,4"/>
                             <ComboBox SelectedItem="{Binding OpPermissionLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      ItemsSource="{StaticResource OpPermissionLevelOptions}"
                                       Padding="10"
                                       Background="{StaticResource BrushAppBackground}"
                                       BorderBrush="{StaticResource BrushBorder}"
                                       BorderThickness="1"
                                       Foreground="{StaticResource BrushTextPrimary}"
-                                      FontSize="13"/>
+                                      FontSize="13">
+                                <sys:Int32>1</sys:Int32>
+                                <sys:Int32>2</sys:Int32>
+                                <sys:Int32>3</sys:Int32>
+                                <sys:Int32>4</sys:Int32>
+                            </ComboBox>
                             <TextBlock Text="Permission level for opped players (1-4)."
                                        FontFamily="{StaticResource FontBody}"
                                        FontSize="11"
@@ -968,39 +944,39 @@
                                        Margin="0,4,0,0"/>
 
                             <CheckBox Content="PvP enabled"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding PvpEnabled, Mode=TwoWay}"
                                       Margin="0,16,0,0"/>
                             <CheckBox Content="Allow Nether"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding AllowNether, Mode=TwoWay}"
                                       Margin="0,10,0,0"/>
                             <CheckBox Content="Allow flight"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding AllowFlight, Mode=TwoWay}"
                                       Margin="0,10,0,0"/>
                             <CheckBox Content="Hardcore mode"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding HardcoreMode, Mode=TwoWay}"
                                       Margin="0,10,0,0"/>
                             <CheckBox Content="Force gamemode"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding ForceGamemode, Mode=TwoWay}"
                                       Margin="0,10,0,0"/>
                             <CheckBox Content="Enable command blocks"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding EnableCommandBlocks, Mode=TwoWay}"
                                       Margin="0,10,0,0"/>
                             <CheckBox Content="Spawn animals"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding SpawnAnimals, Mode=TwoWay}"
                                       Margin="0,10,0,0"/>
                             <CheckBox Content="Spawn monsters"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding SpawnMonsters, Mode=TwoWay}"
                                       Margin="0,10,0,0"/>
                             <CheckBox Content="Spawn NPCs"
-                                      Style="{StaticResource CardCheckBoxStyle}"
+                                      Theme="{StaticResource CardCheckBoxStyle}"
                                       IsChecked="{Binding SpawnNpcs, Mode=TwoWay}"
                                       Margin="0,10,0,0"/>
                         </StackPanel>
@@ -1022,7 +998,7 @@
                                  AcceptsReturn="True"
                                  Height="72"
                                  TextWrapping="Wrap"/>
-                        <TextBlock Text="Comma-separated list of players who should be ops." 
+                        <TextBlock Text="Comma-separated list of players who should be ops."
                                    FontFamily="{StaticResource FontBody}"
                                    FontSize="12"
                                    Foreground="{StaticResource BrushTextSecondary}"
@@ -1056,12 +1032,12 @@
                                 HorizontalAlignment="Right"
                                 Margin="0,24,0,0">
                         <Button Content="Save settings"
-                                Style="{StaticResource PrimaryButtonStyle}"
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 Padding="16,8"
                                 Margin="0,0,12,0"
                                 Click="SaveServerSettings_Click"/>
                         <Button Content="Open server folder"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="16,8"
                                 Click="OpenServerFolder_Click"/>
                     </StackPanel>
@@ -1075,7 +1051,7 @@
                     BorderThickness="1"
                     CornerRadius="12"
                     Padding="24"
-                    Visibility="Collapsed">
+                    IsVisible="False">
                 <StackPanel>
                     <TextBlock Text="Plugins / Mods"
                                FontFamily="{StaticResource FontDisplay}"
@@ -1090,24 +1066,24 @@
 
                     <StackPanel Orientation="Horizontal" Margin="0,20,0,16">
                         <Button Content="Install local files..."
-                                ToolTip="Select plugin or mod jars from your computer and install them into this server."
-                                Style="{StaticResource PrimaryButtonStyle}"
+                                ToolTip.Tip="Select plugin or mod jars from your computer and install them into this server."
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 Padding="14,8"
                                 Margin="0,0,10,0"
                                 Click="BrowsePlugins_Click"/>
                         <Button Content="Browse Plugins &amp; Mods..."
-                                ToolTip="Search and install plugins, mods, and datapacks from Modrinth directly into this server."
-                                Style="{StaticResource PrimaryButtonStyle}"
+                                ToolTip.Tip="Search and install plugins, mods, and datapacks from Modrinth directly into this server."
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 Padding="14,8"
                                 Margin="0,0,10,0"
                                 Click="BrowseServerPlugins_Click"/>
                         <Button Content="Check compatibility"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="14,8"
                                 Margin="0,0,10,0"
                                 Click="CheckPluginCompatibility_Click"/>
                         <Button Content="Open folder"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="14,8"
                                 Click="OpenPluginFolder_Click"/>
                     </StackPanel>
@@ -1127,7 +1103,7 @@
 
                     <ItemsControl x:Name="PluginIssuesItemsControl"
                                   Margin="0,0,0,12"
-                                  Visibility="Collapsed">
+                                  IsVisible="False">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Background="{StaticResource BrushPanelElevated}"
@@ -1156,7 +1132,7 @@
                                         </StackPanel>
                                         <Button Grid.Column="1"
                                                 Content="Fix"
-                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Theme="{StaticResource PrimaryButtonStyle}"
                                                 Padding="10,5"
                                                 Margin="10,0,0,0"
                                                 Click="FixPluginDependencyIssue_Click"/>
@@ -1167,18 +1143,18 @@
                     </ItemsControl>
                     <Button x:Name="PluginFixAllButton"
                             Content="Fix all"
-                            Style="{StaticResource SecondaryButtonStyle}"
+                            Theme="{StaticResource SecondaryButtonStyle}"
                             Padding="12,6"
                             Width="120"
                             HorizontalAlignment="Left"
                             Margin="0,0,0,12"
-                            Visibility="Collapsed"
+                            IsVisible="False"
                             Click="FixAllPluginDependencyIssues_Click"/>
 
                     <Border x:Name="PluginDropZone"
-                            AllowDrop="True"
-                            DragOver="PluginDropZone_DragOver"
-                            Drop="PluginDropZone_Drop"
+                            DragDrop.AllowDrop="True"
+                            DragDrop.DragOver="PluginDropZone_DragOver"
+                            DragDrop.Drop="PluginDropZone_Drop"
                             BorderBrush="{StaticResource BrushBorder}"
                             BorderThickness="1"
                             CornerRadius="8"
@@ -1206,7 +1182,7 @@
                                        HorizontalAlignment="Right"
                                        Margin="0,0,4,6"
                                        Text="⬇ Drop another .jar to add more plugins or mods"
-                                       Visibility="Collapsed"/>
+                                       IsVisible="False"/>
                             <ItemsControl x:Name="PluginFilesItemsControl">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -1228,7 +1204,7 @@
                                                            VerticalAlignment="Center"/>
                                                 <Button Grid.Column="1"
                                                         Content="Remove"
-                                                        Style="{StaticResource DangerButtonStyle}"
+                                                        Theme="{StaticResource DangerButtonStyle}"
                                                         Padding="10,4"
                                                         Margin="8,0,0,0"
                                                         Click="RemovePluginFile_Click"/>
@@ -1248,7 +1224,7 @@
                     BorderThickness="1"
                     CornerRadius="12"
                     Padding="24"
-                    Visibility="Collapsed">
+                    IsVisible="False">
                 <StackPanel>
                     <TextBlock Text="Advanced"
                                FontFamily="{StaticResource FontDisplay}"
@@ -1257,15 +1233,15 @@
                                Margin="0,0,0,12"/>
                     <WrapPanel Margin="0,0,0,16">
                         <Button Content="Open Server Folder"
-                                Style="{StaticResource PrimaryButtonStyle}"
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 Margin="0,0,8,8"
                                 Click="OpenServerFolder_Click"/>
                         <Button Content="Terminal"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Margin="0,0,0,8"
                                 Click="AdvancedTerminal_Click"/>
                         <Button Content="Logs"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Margin="0,0,0,8"
                                 Click="AdvancedLogs_Click"/>
                     </WrapPanel>
@@ -1290,7 +1266,7 @@
                                      Foreground="{StaticResource BrushTextPrimary}"
                                      FontSize="13"/>
                             <Button Content="Browse"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Theme="{StaticResource SecondaryButtonStyle}"
                                     Margin="10,0,0,0"
                                     Padding="16,8"
                                     Click="BrowseJavaPath_Click"/>
@@ -1312,12 +1288,12 @@
                                      Foreground="{StaticResource BrushTextPrimary}"
                                      FontSize="13"/>
                             <Button Content="Detect"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Theme="{StaticResource SecondaryButtonStyle}"
                                     Margin="10,0,0,0"
                                     Padding="16,8"
                                     Click="DetectJarFile_Click"/>
                         </StackPanel>
- 
+
                         <TextBlock Text="Custom JVM arguments"
                                    FontFamily="{StaticResource FontBody}"
                                    FontSize="12"
@@ -1341,14 +1317,14 @@
                                    Foreground="{StaticResource BrushTextSecondary}"
                                    Margin="0,8,0,0"
                                    TextWrapping="Wrap"/>
- 
+
                         <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
                             <Button Content="Save advanced settings"
-                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Theme="{StaticResource PrimaryButtonStyle}"
                                     Padding="16,8"
                                     Margin="0,0,12,0"
                                     Click="SaveAdvancedSettings_Click"/>                            <Button Content="Regenerate start scripts"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Theme="{StaticResource SecondaryButtonStyle}"
                                     Padding="16,8"
                                     Click="RegenerateStartScripts_Click"/>
                         </StackPanel>
@@ -1362,7 +1338,7 @@
                     BorderThickness="1"
                     CornerRadius="12"
                     Padding="24"
-                    Visibility="Collapsed">
+                    IsVisible="False">
                 <StackPanel>
                     <TextBlock Text="Logs"
                                FontFamily="{StaticResource FontDisplay}"
@@ -1372,7 +1348,7 @@
                     <TextBox x:Name="LogsTextBox"
                              IsReadOnly="True"
                              AcceptsReturn="True"
-                             VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                              Height="360"
                              Padding="12"
                              Background="{StaticResource BrushAppBackground}"

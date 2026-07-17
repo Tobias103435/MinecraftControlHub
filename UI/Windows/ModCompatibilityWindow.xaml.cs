@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
 
@@ -89,7 +91,7 @@ public partial class ModCompatibilityWindow : Window
 
     private async Task ScanModsAsync()
     {
-        ProgressPanel.Visibility = Visibility.Visible;
+        ProgressPanel.IsVisible = true;
         ApplyButton.IsEnabled = false;
 
         try
@@ -98,14 +100,14 @@ public partial class ModCompatibilityWindow : Window
             var total = mods.Count;
             var scanned = 0;
 
-            ProgressBar.IsIndeterminate = false;
-            ProgressBar.Maximum = total;
+            this.FindControl<ProgressBar>("ProgressBar")!.IsIndeterminate = false;
+            this.FindControl<ProgressBar>("ProgressBar")!.Maximum = total;
 
             foreach (var mod in mods)
             {
                 scanned++;
                 ProgressText.Text = $"Scanning {scanned}/{total}: {mod.Name}…";
-                ProgressBar.Value = scanned;
+                this.FindControl<ProgressBar>("ProgressBar")!.Value = scanned;
 
                 var row = new ModCompatibilityRow { Mod = mod, IsEnabled = mod.IsEnabled };
 
@@ -167,7 +169,7 @@ public partial class ModCompatibilityWindow : Window
                 ? $"All {total} mod(s) are compatible. {updatedCount} auto-updated."
                 : $"{incompatCount} incompatible · {updatedCount} auto-updated · {total - incompatCount - updatedCount} OK";
 
-            ProgressPanel.Visibility = Visibility.Collapsed;
+            ProgressPanel.IsVisible = false;
             ApplyButton.IsEnabled = incompatCount > 0;
 
             // If everything is fine, just let them close
@@ -175,13 +177,13 @@ public partial class ModCompatibilityWindow : Window
             {
                 ApplyButton.Content = "Done";
                 ApplyButton.IsEnabled = true;
-                CancelButton.Visibility = Visibility.Collapsed;
+                CancelButton.IsVisible = false;
             }
         }
         catch (Exception ex)
         {
             ProgressText.Text = $"Error: {ex.Message}";
-            ProgressBar.Visibility = Visibility.Collapsed;
+            this.FindControl<ProgressBar>("ProgressBar")!.IsVisible = false;
             ApplyButton.IsEnabled = false;
         }
     }
@@ -190,20 +192,18 @@ public partial class ModCompatibilityWindow : Window
     {
         Result.Applied = true;
         Result.Rows = _rows;
-        DialogResult = true;
-        Close();
+        Close(true);
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
         Result.Applied = false;
-        DialogResult = false;
-        Close();
+        Close(false);
     }
 
     private async void ModToggle_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not System.Windows.Controls.Primitives.ToggleButton tb) return;
+        if (sender is not Avalonia.Controls.Primitives.ToggleButton tb) return;
         if (tb.DataContext is not ModCompatibilityRow row) return;
 
         try

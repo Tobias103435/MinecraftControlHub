@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using System.Windows;
+using Avalonia.Threading;
 using MinecraftControlHub.Core.Services;
 
 namespace MinecraftControlHub.UI.ViewModels;
@@ -170,10 +170,10 @@ public class AccountPageViewModel : ViewModelBase
         DeviceCode = string.Empty;
         DeviceVerificationUri = string.Empty;
 
-        var dispatcher = System.Windows.Application.Current.Dispatcher;
+        var dispatcher = Dispatcher.UIThread;
         var progress = new Progress<DeviceCodeInfo>(info =>
         {
-            dispatcher.Invoke(() =>
+            dispatcher.Post(() =>
             {
                 DeviceCode = info.UserCode;
                 DeviceVerificationUri = info.VerificationUri;
@@ -218,13 +218,9 @@ public class AccountPageViewModel : ViewModelBase
         RaiseAccountProps();
     }
 
-    public void CopyDeviceCode()
-    {
-        if (!string.IsNullOrEmpty(DeviceCode))
-        {
-            try { Clipboard.SetText(DeviceCode); } catch { /* ignore */ }
-        }
-    }
+    // NOTE: Clipboard access moved to AccountPage.xaml.cs (the view), since
+    // Avalonia's clipboard is per-TopLevel/window rather than a static WPF-style
+    // System.Windows.Clipboard class the ViewModel could call directly.
 
     public async Task LoadAppearanceAsync()
     {

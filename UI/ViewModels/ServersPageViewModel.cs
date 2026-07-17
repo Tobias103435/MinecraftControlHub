@@ -190,7 +190,7 @@ public class ServersPageViewModel : ViewModelBase
 
         // Reload whenever a server is created or deleted externally (e.g. by the AI terminal).
         _serverService.ServersChanged += (_, _) =>
-            System.Windows.Application.Current.Dispatcher.InvokeAsync(
+            Avalonia.Threading.Dispatcher.UIThread.Post(
                 () => _ = LoadServersAsync());
     }
 

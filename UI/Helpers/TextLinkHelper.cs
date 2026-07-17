@@ -1,16 +1,17 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
-using System.Windows.Navigation;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace MinecraftControlHub.UI.Helpers;
 
 /// <summary>
-/// Attached property that converts plain text containing URLs into a TextBlock
-/// with clickable Hyperlink inlines.  Usage in XAML:
+/// Avalonia attached property that converts plain text containing URLs into a TextBlock
+/// with clickable hyperlink-styled inlines.  Usage in AXAML:
 ///   &lt;TextBlock helpers:TextLinkHelper.TextWithLinks="{Binding Text}" /&gt;
 /// </summary>
 public static class TextLinkHelper
@@ -19,91 +20,84 @@ public static class TextLinkHelper
         @"(https?://[^\s\])<,""]+)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public static readonly DependencyProperty TextWithLinksProperty =
-        DependencyProperty.RegisterAttached(
+    public static readonly AttachedProperty<string> TextWithLinksProperty =
+        AvaloniaProperty.RegisterAttached<TextBlock, string>(
             "TextWithLinks",
-            typeof(string),
             typeof(TextLinkHelper),
-            new PropertyMetadata(string.Empty, OnTextWithLinksChanged));
+            defaultValue: string.Empty);
 
-    public static readonly DependencyProperty LinkBrushProperty =
-        DependencyProperty.RegisterAttached(
+    public static readonly AttachedProperty<IBrush?> LinkBrushProperty =
+        AvaloniaProperty.RegisterAttached<TextBlock, IBrush?>(
             "LinkBrush",
-            typeof(Brush),
             typeof(TextLinkHelper),
-            new PropertyMetadata(null));
+            defaultValue: null);
 
-    public static void SetTextWithLinks(DependencyObject obj, string value)
+    static TextLinkHelper()
+    {
+        TextWithLinksProperty.Changed.AddClassHandler<TextBlock>(OnTextWithLinksChanged);
+    }
+
+    public static void SetTextWithLinks(TextBlock obj, string value)
         => obj.SetValue(TextWithLinksProperty, value);
 
-    public static string GetTextWithLinks(DependencyObject obj)
-        => (string)obj.GetValue(TextWithLinksProperty);
+    public static string GetTextWithLinks(TextBlock obj)
+        => obj.GetValue(TextWithLinksProperty);
 
-    public static void SetLinkBrush(DependencyObject obj, Brush value)
+    public static void SetLinkBrush(TextBlock obj, IBrush? value)
         => obj.SetValue(LinkBrushProperty, value);
 
-    public static Brush? GetLinkBrush(DependencyObject obj)
-        => obj.GetValue(LinkBrushProperty) as Brush;
+    public static IBrush? GetLinkBrush(TextBlock obj)
+        => obj.GetValue(LinkBrushProperty);
 
-    private static void OnTextWithLinksChanged(
-        DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void OnTextWithLinksChanged(TextBlock textBlock, AvaloniaPropertyChangedEventArgs e)
     {
-        if (d is not TextBlock textBlock) return;
         var text = e.NewValue as string ?? string.Empty;
 
-        textBlock.Inlines.Clear();
+        textBlock.Inlines?.Clear();
+        if (textBlock.Inlines == null) return;
 
         if (string.IsNullOrEmpty(text)) return;
 
         var matches = UrlRegex.Matches(text);
         if (matches.Count == 0)
         {
-            // No links — just plain text
             textBlock.Inlines.Add(new Run(text));
             return;
         }
 
         var linkBrush = GetLinkBrush(textBlock)
-                        ?? new SolidColorBrush(Color.FromRgb(0x4F, 0xC3, 0xF7)); // default accent blue
+                        ?? new SolidColorBrush(Color.FromRgb(0x4F, 0xC3, 0xF7));
 
         var lastIndex = 0;
         foreach (Match match in matches)
         {
-            // Add plain text before the URL
             if (match.Index > lastIndex)
             {
-                textBlock.Inlines.Add(
-                    new Run(text[lastIndex..match.Index]));
+                textBlock.Inlines.Add(new Run(text[lastIndex..match.Index]));
             }
 
-            // Add clickable hyperlink
             var url = match.Value;
-            var hyperlink = new Hyperlink(new Run(url))
+            var link = new HyperlinkButton
             {
-                NavigateUri    = new Uri(url, UriKind.Absolute),
-                Foreground     = linkBrush,
-                TextDecorations = TextDecorations.Underline
+                Content = url,
+                NavigateUri = new Uri(url, UriKind.Absolute),
+                Padding = new Thickness(0),
+                Margin = new Thickness(0),
+                Foreground = linkBrush,
+                Cursor = new Cursor(StandardCursorType.Hand),
+                FontSize = textBlock.FontSize,
+                FontFamily = textBlock.FontFamily
             };
-            hyperlink.RequestNavigate += HyperlinkOnRequestNavigate;
-            textBlock.Inlines.Add(hyperlink);
+            // Use inline style: make it look like an inline hyperlink
+            link.Classes.Add("InlineHyperlink");
+            textBlock.Inlines.Add(link);
 
             lastIndex = match.Index + match.Length;
         }
 
-        // Add remaining text after the last URL
         if (lastIndex < text.Length)
         {
             textBlock.Inlines.Add(new Run(text[lastIndex..]));
         }
-    }
-
-    private static void HyperlinkOnRequestNavigate(object sender, RequestNavigateEventArgs e)
-    {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName        = e.Uri.AbsoluteUri,
-            UseShellExecute = true
-        });
-        e.Handled = true;
     }
 }

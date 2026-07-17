@@ -39,7 +39,6 @@ public class TunnelNotificationManager : ITunnelNotificationManager
     private readonly ITunnelShareService   _shareService;
     private readonly INexoraAccountService _nexoraService;
     private CancellationTokenSource?       _cts;
-    private System.Windows.Threading.Dispatcher? _dispatcher;
 
     public ObservableCollection<TunnelNotification> Notifications { get; } = new();
     public int UnreadCount => Notifications.Count(n => !n.IsRead);
@@ -51,8 +50,6 @@ public class TunnelNotificationManager : ITunnelNotificationManager
     {
         _shareService  = shareService;
         _nexoraService = nexoraService;
-        // Capture the UI dispatcher at construction time (DI runs on UI thread)
-        _dispatcher = System.Windows.Application.Current?.Dispatcher;
     }
 
     public void StartPolling()
@@ -167,9 +164,9 @@ public class TunnelNotificationManager : ITunnelNotificationManager
 
     private void RunOnUi(Action action)
     {
-        if (_dispatcher != null && !_dispatcher.CheckAccess())
-            _dispatcher.Invoke(action);
-        else
+        if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             action();
+        else
+            Avalonia.Threading.Dispatcher.UIThread.Post(action);
     }
 }

@@ -244,14 +244,20 @@ public class RelayCommand : ICommand
     {
         if (_executeAsync != null)
         {
-            // Fire-and-forget op de WPF dispatcher zodat exceptions niet stil verdwijnen.
             var task = _executeAsync(parameter);
             task.ContinueWith(t =>
             {
                 if (t.Exception != null)
-                    System.Windows.MessageBox.Show(
-                        $"An error occurred:\n\n{t.Exception.InnerException?.Message ?? t.Exception.Message}",
-                        "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                {
+                    var msg = t.Exception.InnerException?.Message ?? t.Exception.Message;
+                    Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
+                    {
+                        var owner = (Avalonia.Application.Current?.ApplicationLifetime
+                            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+                        if (owner != null)
+                            await UI.Helpers.SimpleDialog.InfoAsync(owner, $"An error occurred:\n\n{msg}", "Error");
+                    });
+                }
             }, System.Threading.Tasks.TaskScheduler.FromCurrentSynchronizationContext());
         }
         else if (_execute != null)

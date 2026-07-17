@@ -97,8 +97,69 @@ public class Server : INotifyPropertyChanged
     public ServerStatus Status
     {
         get => _status;
-        set => SetProperty(ref _status, value);
+        set
+        {
+            if (SetProperty(ref _status, value))
+            {
+                OnPropertyChanged(nameof(IsRunning));
+                OnPropertyChanged(nameof(IsStopped));
+                OnPropertyChanged(nameof(IsStarting));
+                OnPropertyChanged(nameof(IsStopping));
+                OnPropertyChanged(nameof(IsProvisioning));
+                OnPropertyChanged(nameof(StatusDotColor));
+                OnPropertyChanged(nameof(StatusTextColor));
+                OnPropertyChanged(nameof(StartButtonContent));
+                OnPropertyChanged(nameof(StopButtonContent));
+                OnPropertyChanged(nameof(StartButtonVisible));
+                OnPropertyChanged(nameof(StopButtonVisible));
+                OnPropertyChanged(nameof(RestartButtonVisible));
+                OnPropertyChanged(nameof(StartButtonEnabled));
+                OnPropertyChanged(nameof(StopButtonEnabled));
+                OnPropertyChanged(nameof(RestartButtonEnabled));
+                OnPropertyChanged(nameof(ProvisioningPanelVisible));
+            }
+        }
     }
+
+    // ── Computed properties for Avalonia (replaces WPF DataTriggers) ──
+    public bool IsRunning      => Status == ServerStatus.Running;
+    public bool IsStopped      => Status == ServerStatus.Stopped;
+    public bool IsStarting     => Status == ServerStatus.Starting;
+    public bool IsStopping     => Status == ServerStatus.Stopping;
+    public bool IsProvisioning => Status == ServerStatus.Provisioning;
+
+    public string StatusDotColor => Status switch
+    {
+        ServerStatus.Running      => "#57C785",
+        ServerStatus.Starting     => "#F0A020",
+        ServerStatus.Stopping     => "#F0A020",
+        ServerStatus.Provisioning => "#6C5DD3",
+        _                         => "#7A7F8A"
+    };
+
+    public string StatusTextColor => StatusDotColor;
+
+    public Avalonia.Media.SolidColorBrush StatusDotBrush =>
+        Avalonia.Media.SolidColorBrush.Parse(StatusDotColor);
+    public Avalonia.Media.SolidColorBrush StatusTextBrush =>
+        Avalonia.Media.SolidColorBrush.Parse(StatusTextColor);
+
+    public string StartButtonContent => Status switch
+    {
+        ServerStatus.Starting     => "Starting\u2026",
+        ServerStatus.Provisioning => "Downloading\u2026",
+        _                         => "\u25B6  Start"
+    };
+
+    public string StopButtonContent => Status == ServerStatus.Stopping ? "Stopping\u2026" : "\u25A0  Stop";
+
+    public bool StartButtonVisible  => !IsRunning;
+    public bool StopButtonVisible   => IsRunning;
+    public bool RestartButtonVisible => IsRunning;
+    public bool StartButtonEnabled  => !IsStarting && !IsProvisioning;
+    public bool StopButtonEnabled   => !IsStopping;
+    public bool RestartButtonEnabled => IsRunning;
+    public bool ProvisioningPanelVisible => IsProvisioning;
 
     public int MaxMemoryMB
     {
@@ -332,5 +393,10 @@ public class Server : INotifyPropertyChanged
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         return true;
+    }
+
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

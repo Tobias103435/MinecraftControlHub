@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nexoralauncher)
 
-An all-in-one Minecraft management suite for Windows. Launcher, server manager, mod browser, AI assistant, friend system, and tunnel manager — unified in a single desktop application built with .NET 8 and WPF.
+An all-in-one Minecraft management suite for Windows, Linux, and macOS (x64, ARM, and 32-bit). Launcher, server manager, mod browser, AI assistant, friend system, and tunnel manager — unified in a single desktop application built with .NET 8 and Avalonia UI.
 
 **[Download](https://nexoragames.nl/desktop/launcher/download.php)** · **[Documentation](https://nexoragames.nl/desktop/launcher/documentation.php)** · **[Website](https://nexoragames.nl/desktop/launcher/index.php)** · **[GitHub](https://github.com/Tobias103435/MinecraftControlHub)**
 
@@ -88,7 +88,7 @@ Dedicated browser for resource packs, shader packs, and world saves with drag-an
 
 | Layer            | Technology                                                      |
 | ---------------- | --------------------------------------------------------------- |
-| UI Framework     | WPF (.NET 8, Windows only)                                      |
+| UI Framework     | Avalonia UI (.NET 8, Windows/Linux/macOS, x64/ARM/32-bit)       |
 | DI Container     | `Microsoft.Extensions.DependencyInjection`                      |
 | HTTP             | `HttpClient` via DI with named factories                        |
 | JSON             | `System.Text.Json`                                              |
@@ -97,20 +97,21 @@ Dedicated browser for resource packs, shader packs, and world saves with drag-an
 | Authentication   | Microsoft/Xbox Live OAuth (device code flow)                    |
 | Backend Proxy    | PHP proxy for CurseForge API (ToS compliance)                   |
 
-The codebase follows strict separation between **Core** (pure business logic, no WPF dependencies) and **UI** (Pages, ViewModels, Windows), connected via dependency injection.
+The codebase follows strict separation between **Core** (pure business logic, no UI-framework dependencies) and **UI** (Pages, ViewModels, Windows), connected via dependency injection.
 
 ---
 
 ## Roadmap
 
+- **World screenshots** — a gallery view per world/installation, surfacing Minecraft's own `screenshots` folder in the content browser.
 - **Cloud sync** — syncing servers, friends, and modpacks across devices via the Nexora backend.
 
 ---
 
 ## Building from Source
 
-```powershell
-# Requirements: .NET 8 SDK, Windows
+```bash
+# Requirements: .NET 8 SDK — Windows, Linux, or macOS (x64, ARM, or 32-bit)
 cd MinecraftControlHub
 dotnet build
 dotnet run --project MinecraftControlHub
@@ -125,6 +126,23 @@ Nexora Launcher is open source and contributions are welcome — bug reports, fe
 ## Support
 
 Nexora Launcher is free, with no ads and no paid tiers — and it'll stay that way. If you'd like to support development, donations on [Ko-fi](https://ko-fi.com/nexoralauncher) go directly toward hosting costs for the website and backend. Nothing is gated behind a donation; it's entirely optional.
+
+## Acknowledgments
+
+Nexora Launcher leans on a handful of platforms and open-source projects that
+made this possible: [Modrinth](https://modrinth.com) and
+[CurseForge](https://www.curseforge.com) for mod/modpack data,
+[Prism Launcher](https://prismlauncher.org) for the `.mrpack` format this app
+interoperates with, [playit.gg](https://playit.gg), [ngrok](https://ngrok.com),
+[bore](https://github.com/ekzhang/bore), and OpenSSH (`serveo`) for tunneling,
+and Mojang/Microsoft for the game and authentication APIs this all sits on
+top of.
+
+Thanks also to everyone who tested early builds, reported what broke, and put
+up with a Tunnel page that spent a while being nothing but a placeholder.
+
+This started as a one-week solo build. It didn't stay that way by accident —
+thank you for using it.
 
 ## License
 

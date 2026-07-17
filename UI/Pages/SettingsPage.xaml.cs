@@ -1,8 +1,11 @@
-﻿using System.Windows;
-using Microsoft.Win32;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using MinecraftControlHub.UI.Helpers;
 using MinecraftControlHub.UI.ViewModels;
 using MinecraftControlHub.UI.Windows;
 
@@ -37,12 +40,12 @@ public partial class SettingsPage : UserControl
             _viewModel = serviceProvider.GetRequiredService<SettingsPageViewModel>();
             DataContext = _viewModel;
 
-            // Pre-fill the PasswordBox with the saved API key
+            // Pre-fill the API-key box with the saved key
             var savedKey = _viewModel.LoadedAiApiKey;
             if (!string.IsNullOrEmpty(savedKey))
             {
-                AiApiKeyBox.Password = savedKey;
-                _viewModel.AiApiKey  = savedKey;
+                AiApiKeyBox.Text    = savedKey;
+                _viewModel.AiApiKey = savedKey;
             }
 
             Loaded += async (_, _) =>
@@ -57,9 +60,9 @@ public partial class SettingsPage : UserControl
 
     // ── Page switching ──────────────────────────────────────────────────
 
-    private void NavRadio_Checked(object sender, RoutedEventArgs e)
+    private void NavRadio_Checked(object? sender, RoutedEventArgs e)
     {
-        if (sender is not RadioButton rb) return;
+        if (e.Source is not RadioButton { IsChecked: true } rb) return;
         var tag = rb.Tag as string;
         if (string.IsNullOrEmpty(tag) || _pages.Length == 0) return;
         ShowPage(tag);
@@ -69,20 +72,16 @@ public partial class SettingsPage : UserControl
     {
         foreach (var page in _pages)
         {
-            page.Visibility = page.Name == pageName
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            page.IsVisible = page.Name == pageName;
         }
     }
 
     // ── Search ──────────────────────────────────────────────────────────
 
-    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void SearchBox_TextChanged(object? sender, TextChangedEventArgs e)
     {
-        var query = SearchBox.Text.Trim().ToLowerInvariant();
-        SearchPlaceholder.Visibility = string.IsNullOrEmpty(query)
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        var query = (SearchBox.Text ?? string.Empty).Trim().ToLowerInvariant();
+        SearchPlaceholder.IsVisible = string.IsNullOrEmpty(query);
 
         // Get all nav radio buttons
         var navButtons = new RadioButton[] { NavAccount, NavJava, NavLaunch, NavMods, NavTunnel, NavAi, NavAppearance, NavStorage };
@@ -91,7 +90,7 @@ public partial class SettingsPage : UserControl
         {
             // Show all nav items
             foreach (var btn in navButtons)
-                btn.Visibility = Visibility.Visible;
+                btn.IsVisible = true;
             return;
         }
 
@@ -104,7 +103,7 @@ public partial class SettingsPage : UserControl
             bool matches = SearchKeywords[i].Any(kw => kw.Contains(query)) ||
                            (navButtons[i].Content?.ToString()?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false);
 
-            navButtons[i].Visibility = matches ? Visibility.Visible : Visibility.Collapsed;
+            navButtons[i].IsVisible = matches;
 
             if (matches && !anyMatch)
             {
@@ -122,29 +121,37 @@ public partial class SettingsPage : UserControl
 
     // ── Microsoft account ───────────────────────────────────────────────
 
-    private async void SignIn_Click(object sender, RoutedEventArgs e)
+    private async void SignIn_Click(object? sender, RoutedEventArgs e)
     {
         if (_viewModel != null)
             await _viewModel.SignInAsync();
     }
 
-    private void SignOut_Click(object sender, RoutedEventArgs e)
+    private void SignOut_Click(object? sender, RoutedEventArgs e)
     {
         _viewModel?.SignOut();
     }
 
-    private void CopyCode_Click(object sender, RoutedEventArgs e)
+    private async void CopyCode_Click(object? sender, RoutedEventArgs e)
     {
-        _viewModel?.CopyDeviceCode();
+        if (_viewModel == null || string.IsNullOrEmpty(_viewModel.DeviceCode)) return;
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard != null)
+            await clipboard.SetTextAsync(_viewModel.DeviceCode);
     }
 
     // ── Nexora account ──────────────────────────────────────────────────
 
-    private void NexoraLogin_Click(object sender, RoutedEventArgs e)
+    private async void NexoraLogin_Click(object? sender, RoutedEventArgs e)
     {
-        var window = Window.GetWindow(this);
-        var loginWindow = new NexoraLoginWindow { Owner = window };
-        loginWindow.ShowDialog();
+        var window = TopLevel.GetTopLevel(this) as Window;
+        var loginWindow = new NexoraLoginWindow();
+
+        if (window != null)
+            await loginWindow.ShowDialog(window);
+        else
+            loginWindow.Show();
+
         if (loginWindow.LoginSuccessful)
         {
             (window as MainWindow)?.OnNexoraLoginSuccessful();
@@ -152,32 +159,30 @@ public partial class SettingsPage : UserControl
         }
     }
 
-    private async void NexoraUnlink_Click(object sender, RoutedEventArgs e)
+    private async void NexoraUnlink_Click(object? sender, RoutedEventArgs e)
     {
         if (_viewModel == null) return;
-        var confirm = MessageBox.Show(
+        var window = TopLevel.GetTopLevel(this) as Window;
+        var confirm = await SimpleDialog.ConfirmAsync(window,
             "This will unlink your Minecraft account from Nexora.\n\nContinue?",
-            "Unlink Minecraft account",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-        if (confirm != MessageBoxResult.Yes) return;
+            "Unlink Minecraft account");
+        if (!confirm) return;
         await _viewModel.NexoraUnlinkMinecraftAsync();
     }
 
-    private void NexoraLogout_Click(object sender, RoutedEventArgs e)
+    private async void NexoraLogout_Click(object? sender, RoutedEventArgs e)
     {
         if (_viewModel == null) return;
-        var confirm = MessageBox.Show(
+        var window = TopLevel.GetTopLevel(this) as Window;
+        var confirm = await SimpleDialog.ConfirmAsync(window,
             "Log out of your Nexora account?\n\nSocial features will be unavailable until you log in again.",
-            "Log out of Nexora",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-        if (confirm != MessageBoxResult.Yes) return;
+            "Log out of Nexora");
+        if (!confirm) return;
         _viewModel.NexoraLogout();
-        (Window.GetWindow(this) as MainWindow)?.OnNexoraLogout();
+        (window as MainWindow)?.OnNexoraLogout();
     }
 
-    private void NexoraSettings_Click(object sender, RoutedEventArgs e)
+    private void NexoraSettings_Click(object? sender, RoutedEventArgs e)
     {
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
         {
@@ -188,7 +193,7 @@ public partial class SettingsPage : UserControl
 
     // ── Mod updates ─────────────────────────────────────────────────────
 
-    private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
+    private async void CheckUpdates_Click(object? sender, RoutedEventArgs e)
     {
         if (_viewModel != null)
             await _viewModel.CheckForUpdatesAsync();
@@ -196,27 +201,26 @@ public partial class SettingsPage : UserControl
 
     // ── Storage & Data ──────────────────────────────────────────────────
 
-    private void OpenDataFolder_Click(object sender, RoutedEventArgs e)
+    private void OpenDataFolder_Click(object? sender, RoutedEventArgs e)
     {
         _viewModel?.OpenDataFolder();
     }
 
-    private void OpenDiagnosticsLog_Click(object sender, RoutedEventArgs e)
+    private void OpenDiagnosticsLog_Click(object? sender, RoutedEventArgs e)
     {
         _viewModel?.OpenDiagnosticsLog();
     }
 
-    private void ClearCache_Click(object sender, RoutedEventArgs e)
+    private async void ClearCache_Click(object? sender, RoutedEventArgs e)
     {
         if (_viewModel == null) return;
 
-        var confirm = MessageBox.Show(
+        var window = TopLevel.GetTopLevel(this) as Window;
+        var confirm = await SimpleDialog.ConfirmAsync(window,
             "This deletes ALL Minecraft Control Hub data (settings, installations, installed mods, your account and every cached game file) and restarts the app.\n\nThis cannot be undone. Continue?",
-            "Reset Minecraft Control Hub",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            "Reset Minecraft Control Hub");
 
-        if (confirm != MessageBoxResult.Yes)
+        if (!confirm)
             return;
 
         _viewModel.ResetApp();
@@ -232,75 +236,82 @@ public partial class SettingsPage : UserControl
             System.Diagnostics.Debug.WriteLine($"Restart after reset failed: {ex.Message}");
         }
 
-        Application.Current.Shutdown();
+        (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
     }
 
     // ── Tunnel settings ─────────────────────────────────────────────────
 
-    private void NgrokApiKey_Changed(object sender, RoutedEventArgs e)
+    private void NgrokApiKey_Changed(object? sender, TextChangedEventArgs e)
     {
         if (_viewModel is null) return;
-        if (sender is PasswordBox pb)
-            _viewModel.NgrokApiKey = pb.Password;
+        if (sender is TextBox tb)
+            _viewModel.NgrokApiKey = tb.Text ?? string.Empty;
     }
 
-    private void FrpApiKey_Changed(object sender, RoutedEventArgs e)
+    private void FrpApiKey_Changed(object? sender, TextChangedEventArgs e)
     {
         if (_viewModel is null) return;
-        if (sender is PasswordBox pb)
-            _viewModel.FrpApiKey = pb.Password;
+        if (sender is TextBox tb)
+            _viewModel.FrpApiKey = tb.Text ?? string.Empty;
     }
 
-    private void BrowseExe_Click(object sender, RoutedEventArgs e)
+    private async void BrowseExe_Click(object? sender, RoutedEventArgs e)
     {
         var tag = (sender as Button)?.Tag as string ?? string.Empty;
 
-        var dlg = new OpenFileDialog
-        {
-            Title            = "Select exe",
-            Filter           = "Executable files (*.exe)|*.exe|All files (*.*)|*.*",
-            CheckFileExists  = true,
-            CheckPathExists  = true
-        };
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel?.StorageProvider == null || _viewModel is null) return;
 
-        if (dlg.ShowDialog() != true) return;
-        if (_viewModel is null) return;
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Select exe",
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("Executable files") { Patterns = new[] { "*.exe" } },
+                FilePickerFileTypes.All
+            }
+        });
+
+        if (files.Count == 0) return;
+        var path = files[0].TryGetLocalPath();
+        if (string.IsNullOrEmpty(path)) return;
 
         switch (tag)
         {
-            case "playit": _viewModel.PlayitExePath = dlg.FileName; break;
-            case "ngrok":  _viewModel.NgrokExePath  = dlg.FileName; break;
-            case "bore":   _viewModel.BoreExePath   = dlg.FileName; break;
-            case "frp":    _viewModel.FrpExePath    = dlg.FileName; break;
+            case "playit": _viewModel.PlayitExePath = path; break;
+            case "ngrok":  _viewModel.NgrokExePath  = path; break;
+            case "bore":   _viewModel.BoreExePath   = path; break;
+            case "frp":    _viewModel.FrpExePath    = path; break;
         }
     }
 
-    private void SaveTunnelSettings_Click(object sender, RoutedEventArgs e)
+    private async void SaveTunnelSettings_Click(object? sender, RoutedEventArgs e)
     {
         _viewModel?.SaveTunnelSettings();
-        MessageBox.Show("Tunnel settings saved.", "Saved",
-            MessageBoxButton.OK, MessageBoxImage.Information);
+        var window = TopLevel.GetTopLevel(this) as Window;
+        await SimpleDialog.InfoAsync(window, "Tunnel settings saved.", "Saved");
     }
 
     // ── AI settings ─────────────────────────────────────────────────────
 
-    private void AiApiKey_Changed(object sender, RoutedEventArgs e)
+    private void AiApiKey_Changed(object? sender, TextChangedEventArgs e)
     {
         if (_viewModel is null) return;
-        if (sender is PasswordBox pb)
-            _viewModel.AiApiKey = pb.Password;
+        if (sender is TextBox tb)
+            _viewModel.AiApiKey = tb.Text ?? string.Empty;
     }
 
-    private void SaveAiSettings_Click(object sender, RoutedEventArgs e)
+    private async void SaveAiSettings_Click(object? sender, RoutedEventArgs e)
     {
         _viewModel?.SaveAiSettings();
-        MessageBox.Show("AI settings saved.", "Saved",
-            MessageBoxButton.OK, MessageBoxImage.Information);
+        var window = TopLevel.GetTopLevel(this) as Window;
+        await SimpleDialog.InfoAsync(window, "AI settings saved.", "Saved");
     }
 
     // ── Appearance ──────────────────────────────────────────────────────
 
-    private async void ToggleTheme_Click(object sender, RoutedEventArgs e)
+    private async void ToggleTheme_Click(object? sender, RoutedEventArgs e)
     {
         if (_viewModel == null) return;
         await _viewModel.ToggleThemeAsync();
@@ -315,17 +326,25 @@ public partial class SettingsPage : UserControl
             : "Switch to Light mode";
     }
 
-    private void OpenLink_Click(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+    // Avalonia has no Hyperlink inline control — see AccountPage.xaml.cs for the
+    // same pattern (underlined TextBlock + Tag holding the URL).
+    private void OpenLink_Click(object? sender, PointerPressedEventArgs e)
     {
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        if (sender is not Control { Tag: string uri } || string.IsNullOrWhiteSpace(uri))
+            return;
+
+        try
         {
-            FileName = e.Uri.AbsoluteUri,
-            UseShellExecute = true
-        });
-        e.Handled = true;
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = uri,
+                UseShellExecute = true
+            });
+        }
+        catch { /* user can open it manually */ }
     }
 
-    private void KoFi_Click(object sender, RoutedEventArgs e)
+    private void KoFi_Click(object? sender, RoutedEventArgs e)
     {
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
         {

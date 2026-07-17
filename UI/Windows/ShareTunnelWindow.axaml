@@ -1,18 +1,12 @@
-﻿<Window x:Class="MinecraftControlHub.UI.Windows.ShareTunnelWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window x:Class="MinecraftControlHub.UI.Windows.ShareTunnelWindow"
+        xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Share Tunnel"
         Width="480" Height="600"
         MinWidth="420" MinHeight="480"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="CanResizeWithGrip"
         Background="{DynamicResource BrushAppBackground}"
-        WindowStyle="SingleBorderWindow"
         ShowInTaskbar="False">
-
-    <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-    </Window.Resources>
 
     <Grid Margin="28,24,28,24">
         <Grid.RowDefinitions>
@@ -68,13 +62,13 @@
                            FontFamily="{StaticResource FontBody}" FontSize="11"
                            Foreground="{DynamicResource BrushTextMuted}"
                            Margin="0,4,12,0" VerticalAlignment="Center"
-                           Visibility="{Binding HasServerName, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                           IsVisible="{Binding HasServerName, Converter={StaticResource BoolToVisibilityConverter}}"/>
                 <TextBlock Grid.Row="1" Grid.Column="1"
                            x:Name="ServerNameText"
                            FontFamily="{StaticResource FontBody}" FontSize="12"
                            Foreground="{DynamicResource BrushTextSecondary}"
                            Margin="0,4,0,0"
-                           Visibility="{Binding HasServerName, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                           IsVisible="{Binding HasServerName, Converter={StaticResource BoolToVisibilityConverter}}"/>
             </Grid>
         </Border>
 
@@ -82,7 +76,7 @@
         <Border Grid.Row="2"
                 Background="{DynamicResource BrushPanelElevated}"
                 CornerRadius="6" Padding="12,8" Margin="0,0,0,10"
-                Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVisibilityConverter}}">
+                IsVisible="{Binding HasStatusMessage, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock x:Name="StatusMessageText"
                        FontFamily="{StaticResource FontBody}" FontSize="12"
                        Foreground="{DynamicResource BrushTextSecondary}"
@@ -139,11 +133,11 @@
                            Foreground="{DynamicResource BrushTextMuted}"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            TextAlignment="Center" TextWrapping="Wrap"
-                           Margin="20" Visibility="Collapsed"/>
+                           Margin="20" IsVisible="False"/>
 
                 <!-- Friends scrollable list -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
-                              Visibility="Collapsed" x:Name="FriendsScrollViewer">
+                              IsVisible="False" x:Name="FriendsScrollViewer">
                     <ItemsControl x:Name="FriendsList" Margin="0">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -153,15 +147,7 @@
                                         BorderThickness="0,0,0,1"
                                         Padding="14,10"
                                         Cursor="Hand">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource BrushPanelElevated}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
+                                    <!-- Triggers removed - handled in code-behind -->
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -191,7 +177,7 @@
                                                        FontFamily="{StaticResource FontBody}"
                                                        FontSize="11"
                                                        Foreground="{DynamicResource BrushTextMuted}"
-                                                       Visibility="{Binding MinecraftUsername,
+                                                       IsVisible="{Binding MinecraftUsername,
                                                                     Converter={StaticResource NullToVisibilityConverter}}"/>
                                         </StackPanel>
 
@@ -200,8 +186,7 @@
                                                   x:Name="FriendCheckBox"
                                                   IsChecked="{Binding IsSelected}"
                                                   VerticalAlignment="Center"
-                                                  Checked="FriendCheckBox_Changed"
-                                                  Unchecked="FriendCheckBox_Changed"/>
+                                                  IsCheckedChanged="FriendCheckBox_Changed"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -216,7 +201,7 @@
                 Background="{DynamicResource BrushPanelBackground}"
                 BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                 CornerRadius="8" Padding="12,10" Margin="0,0,0,16"
-                Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisibilityConverter}}">
+                IsVisible="{Binding HasSelection, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock x:Name="SelectedSummaryText"
                        FontFamily="{StaticResource FontBody}" FontSize="12"
                        Foreground="{DynamicResource BrushTextSecondary}"
@@ -241,14 +226,14 @@
             <Button Grid.Column="1"
                     Content="Cancel"
                     Click="Cancel_Click"
-                    Style="{StaticResource SecondaryButtonStyle}"
+                    Theme="{StaticResource SecondaryButtonStyle}"
                     Padding="18,9" FontSize="13"/>
 
             <Button Grid.Column="3"
                     x:Name="ShareButton"
                     Content="Share with selected friends"
                     Click="Share_Click"
-                    Style="{StaticResource PrimaryButtonStyle}"
+                    Theme="{StaticResource PrimaryButtonStyle}"
                     Padding="18,9" FontSize="13"
                     IsEnabled="False"/>
         </Grid>

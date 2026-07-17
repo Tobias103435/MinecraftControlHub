@@ -3,13 +3,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Input;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Win32;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
+using Avalonia.Platform.Storage;
 
 namespace MinecraftControlHub.UI.Windows;
 
@@ -25,7 +27,7 @@ public partial class ServerPreviewWindow : Window
     private readonly INexoraApiService? _nexoraApiService;
     private readonly INexoraAccountService? _nexoraAccountService;
     private readonly ObservableCollection<ServerFriendRow> _serverFriends = new();
-    private System.Windows.Threading.DispatcherTimer? _healthTimer;
+    private Avalonia.Threading.DispatcherTimer? _healthTimer;
     private readonly List<double> _ramHistory = new();
     private const int RamHistoryMax = 40;
 
@@ -53,7 +55,7 @@ public partial class ServerPreviewWindow : Window
         _nexoraApiService = serviceProvider?.GetService<INexoraApiService>();
         _nexoraAccountService = serviceProvider?.GetService<INexoraAccountService>();
         ServerFriendsList.ItemsSource = _serverFriends;
-        _healthTimer = new System.Windows.Threading.DispatcherTimer
+        _healthTimer = new Avalonia.Threading.DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(5)
         };
@@ -133,35 +135,35 @@ public partial class ServerPreviewWindow : Window
         // Guard: during InitializeComponent, named elements may not exist yet
         if (TerminalSection == null) return;
 
-        TerminalSection.Visibility = Visibility.Collapsed;
-        HealthSection.Visibility   = Visibility.Collapsed;
-        FriendsSection.Visibility  = Visibility.Collapsed;
-        SettingsSection.Visibility = Visibility.Collapsed;
-        PluginsSection.Visibility  = Visibility.Collapsed;
-        AdvancedSection.Visibility = Visibility.Collapsed;
-        LogsSection.Visibility     = Visibility.Collapsed;
+        TerminalSection.IsVisible = false;
+        HealthSection.IsVisible   = false;
+        FriendsSection.IsVisible  = false;
+        SettingsSection.IsVisible = false;
+        PluginsSection.IsVisible  = false;
+        AdvancedSection.IsVisible = false;
+        LogsSection.IsVisible     = false;
 
         switch (sectionName)
         {
             case "Friends":
-                FriendsSection.Visibility = Visibility.Visible;
+                FriendsSection.IsVisible = true;
                 _ = LoadServerFriendsAsync();
                 break;
             case "Settings":
-                SettingsSection.Visibility = Visibility.Visible;
+                SettingsSection.IsVisible = true;
                 break;
             case "Plugins":
-                PluginsSection.Visibility = Visibility.Visible;
+                PluginsSection.IsVisible = true;
                 _ = RefreshPluginSectionAsync(runCompatibilityCheck: true);
                 break;
             case "Advanced":
-                AdvancedSection.Visibility = Visibility.Visible;
+                AdvancedSection.IsVisible = true;
                 break;
             case "Logs":
-                LogsSection.Visibility = Visibility.Visible;
+                LogsSection.IsVisible = true;
                 break;
             case "Health":
-                HealthSection.Visibility = Visibility.Visible;
+                HealthSection.IsVisible = true;
                 // start polling while the Health section is visible and the server is running
                 if (_healthTimer != null)
                 {
@@ -170,7 +172,7 @@ public partial class ServerPreviewWindow : Window
                 }
                 break;
             default:
-                TerminalSection.Visibility = Visibility.Visible;
+                TerminalSection.IsVisible = true;
                 break;
         }
 
@@ -183,9 +185,9 @@ public partial class ServerPreviewWindow : Window
     {
         if (ServerRamSparkline == null || ServerRamSparklineCanvas == null) return;
 
-        var points = new System.Windows.Media.PointCollection();
-        var width = ServerRamSparklineCanvas.ActualWidth;
-        var height = ServerRamSparklineCanvas.ActualHeight;
+        var points = new List<Avalonia.Point>();
+        var width = ServerRamSparklineCanvas.Bounds.Width;
+        var height = ServerRamSparklineCanvas.Bounds.Height;
         if (width <= 0) width = ServerRamSparklineCanvas.Width; // fallback
         if (height <= 0) height = ServerRamSparklineCanvas.Height;
 
@@ -196,13 +198,13 @@ public partial class ServerPreviewWindow : Window
             var val = Math.Max(0.0, Math.Min(100.0, _ramHistory[i]));
             // invert Y (0% at bottom)
             var y = height - (val / 100.0 * height);
-            points.Add(new System.Windows.Point(x, y));
+            points.Add(new Avalonia.Point(x, y));
         }
 
         // If there's only one point, add a zero at start so it's visible
         if (points.Count == 1)
         {
-            points.Insert(0, new System.Windows.Point(0, height));
+            points.Insert(0, new Avalonia.Point(0, height));
         }
 
         ServerRamSparkline.Points = points;
@@ -267,7 +269,7 @@ public partial class ServerPreviewWindow : Window
                 {
                     var content = File.ReadAllText(candidate);
                     TerminalOutputTextBox.Text = string.IsNullOrWhiteSpace(content) ? "No server output yet." : content;
-                    TerminalOutputTextBox.ScrollToEnd();
+                    TerminalOutputTextBox.CaretIndex = TerminalOutputTextBox.Text?.Length ?? 0;
                     return;
                 }
                 catch
@@ -286,7 +288,7 @@ public partial class ServerPreviewWindow : Window
         if (TerminalOutputTextBox == null)
             return;
 
-        Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+        Dispatcher.UIThread.Post(() =>
         {
             var timestamp = DateTime.Now.ToString("HH:mm:ss");
             var prefix = isError ? "[ERR]" : "[OUT]";
@@ -295,7 +297,7 @@ public partial class ServerPreviewWindow : Window
             if (string.IsNullOrEmpty(TerminalOutputTextBox.Text))
                 TerminalOutputTextBox.Text = formatted;
             else
-                TerminalOutputTextBox.AppendText(Environment.NewLine + formatted);
+                TerminalOutputTextBox.Text += Environment.NewLine + formatted;
 
             // Max 5000 lines to prevent memory issues
             var lines = TerminalOutputTextBox.Text.Split('\n');
@@ -304,8 +306,8 @@ public partial class ServerPreviewWindow : Window
                 TerminalOutputTextBox.Text = string.Join("\n", lines.Skip(lines.Length - 5000));
             }
 
-            TerminalOutputTextBox.ScrollToEnd();
-        }));
+            TerminalOutputTextBox.CaretIndex = TerminalOutputTextBox.Text?.Length ?? 0;
+        }, Avalonia.Threading.DispatcherPriority.Background);
     }
 
     private void RefreshServerHealth_Click(object sender, RoutedEventArgs e)
@@ -431,7 +433,7 @@ public partial class ServerPreviewWindow : Window
             if (_ramHistory.Count >= RamHistoryMax) _ramHistory.RemoveAt(0);
             _ramHistory.Add(usagePercent);
 
-            await Dispatcher.InvokeAsync(() =>
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 ServerOverallScoreText.Text = overall.ToString();
                 ServerOverallStatusText.Text = overall >= 75 ? "Healthy" : (overall >= 50 ? "Warning" : "Critical");
@@ -456,7 +458,7 @@ public partial class ServerPreviewWindow : Window
         if (e.ServerId != _server.Id)
             return;
 
-        Dispatcher.BeginInvoke(new Action(() => AppendTerminalLine(e.Line, e.IsError)));
+        Dispatcher.UIThread.Post(() => AppendTerminalLine(e.Line, e.IsError));
     }
  
     private void UpdateTerminalStartStopButton()
@@ -519,11 +521,11 @@ public partial class ServerPreviewWindow : Window
             await _serverService.UpdateServerAsync(_server);
             await _serverService.UpdateServerPropertiesAsync(_server);
             _previousMinecraftVersion = newVersion;
-            MessageBox.Show("Server settings have been saved.", "Settings saved", MessageBoxButton.OK, MessageBoxImage.Information);
+            _ = UI.Helpers.SimpleDialog.InfoAsync(this, "Server settings have been saved.", "Settings saved");
         }
         catch
         {
-            MessageBox.Show("Could not save server settings. Please try again.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _ = UI.Helpers.SimpleDialog.InfoAsync(this, "Could not save server settings. Please try again.", "Save failed");
             return;
         }
 
@@ -536,26 +538,24 @@ public partial class ServerPreviewWindow : Window
         }
     }
 
-    private void BrowseJavaPath_Click(object sender, RoutedEventArgs e)
+    private async void BrowseJavaPath_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog
+        var topLevel = TopLevel.GetTopLevel(this)!;
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = "Select Java executable",
-            Filter = "Java executable (*.exe)|*.exe|All files (*.*)|*.*",
-            FileName = _server.JavaPath
-        };
-
-        if (dialog.ShowDialog() != true)
-            return;
-
-        _server.JavaPath = dialog.FileName;
+            AllowMultiple = false,
+            FileTypeFilter = new[] { new FilePickerFileType("Java executable") { Patterns = new[] { "*.exe" } } }
+        });
+        if (files == null || files.Count == 0) return;
+        _server.JavaPath = files[0].TryGetLocalPath() ?? files[0].Path.LocalPath;
     }
 
     private void DetectJarFile_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(_server.ServerDirectory) || !Directory.Exists(_server.ServerDirectory))
         {
-            MessageBox.Show("Server directory is not available. Please save the server settings or create the server folder first.", "Cannot detect jar", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _ = UI.Helpers.SimpleDialog.InfoAsync(this, "Server directory is not available. Please save the server settings or create the server folder first.", "Cannot detect jar");
             return;
         }
 
@@ -567,12 +567,12 @@ public partial class ServerPreviewWindow : Window
 
         if (jarFiles.Count == 0)
         {
-            MessageBox.Show("No jar files were found in the server folder.", "Detect jar", MessageBoxButton.OK, MessageBoxImage.Information);
+            _ = UI.Helpers.SimpleDialog.InfoAsync(this, "No jar files were found in the server folder.", "Detect jar");
             return;
         }
 
         _server.JarFileName = jarFiles[0];
-        MessageBox.Show($"Selected '{jarFiles[0]}' as the preferred server jar.", "Detect jar", MessageBoxButton.OK, MessageBoxImage.Information);
+        _ = UI.Helpers.SimpleDialog.InfoAsync(this, $"Selected '{jarFiles[0]}' as the preferred server jar.", "Detect jar");
     }
 
     private async void SaveAdvancedSettings_Click(object sender, RoutedEventArgs e)
@@ -582,7 +582,7 @@ public partial class ServerPreviewWindow : Window
 
         if (!string.IsNullOrWhiteSpace(_server.JavaPath) && !File.Exists(_server.JavaPath))
         {
-            MessageBox.Show("The selected Java path does not exist. Please choose a valid java.exe file.", "Invalid Java path", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _ = UI.Helpers.SimpleDialog.InfoAsync(this, "The selected Java path does not exist. Please choose a valid java.exe file.", "Invalid Java path");
             return;
         }
 
@@ -594,11 +594,11 @@ public partial class ServerPreviewWindow : Window
             {
                 await _provisioningService.WriteStartScriptsAsync(_server);
             }
-            MessageBox.Show("Advanced server settings have been saved.", "Settings saved", MessageBoxButton.OK, MessageBoxImage.Information);
+            _ = UI.Helpers.SimpleDialog.InfoAsync(this, "Advanced server settings have been saved.", "Settings saved");
         }
         catch
         {
-            MessageBox.Show("Could not save advanced server settings. Please try again.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _ = UI.Helpers.SimpleDialog.InfoAsync(this, "Could not save advanced server settings. Please try again.", "Save failed");
         }
     }
 
@@ -606,28 +606,25 @@ public partial class ServerPreviewWindow : Window
     {
         if (_provisioningService == null)
         {
-            MessageBox.Show("Unable to regenerate start scripts because the provisioning service is unavailable.", "Action failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _ = UI.Helpers.SimpleDialog.InfoAsync(this, "Unable to regenerate start scripts because the provisioning service is unavailable.", "Action failed");
             return;
         }
 
         try
         {
             await _provisioningService.WriteStartScriptsAsync(_server);
-            MessageBox.Show("Start scripts have been regenerated.", "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+            _ = UI.Helpers.SimpleDialog.InfoAsync(this, "Start scripts have been regenerated.", "Done");
         }
         catch
         {
-            MessageBox.Show("Could not regenerate start scripts. Please try again.", "Action failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _ = UI.Helpers.SimpleDialog.InfoAsync(this, "Could not regenerate start scripts. Please try again.", "Action failed");
         }
     }
 
-    private void BrowseServerPlugins_Click(object sender, RoutedEventArgs e)
+    private async void BrowseServerPlugins_Click(object sender, RoutedEventArgs e)
     {
-        var window = new ServerPluginBrowserWindow(_server)
-        {
-            Owner = this
-        };
-        window.ShowDialog();
+        var window = new ServerPluginBrowserWindow(_server);
+        await window.ShowDialog(this);
         _ = RefreshPluginSectionAsync(runCompatibilityCheck: false);
     }
 
@@ -635,21 +632,22 @@ public partial class ServerPreviewWindow : Window
     {
         if (string.IsNullOrWhiteSpace(_server.ServerDirectory))
         {
-            MessageBox.Show("Server directory is not set. Cannot browse for plugins/mods.", "Unable to browse", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _ = UI.Helpers.SimpleDialog.InfoAsync(this, "Server directory is not set. Cannot browse for plugins/mods.", "Unable to browse");
             return;
         }
 
-        var dialog = new OpenFileDialog
+        var topLevel = TopLevel.GetTopLevel(this)!;
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = "Select plugin or mod files",
-            Filter = "Jar files (*.jar)|*.jar",
-            Multiselect = true
-        };
+            AllowMultiple = true,
+            FileTypeFilter = new[] { new FilePickerFileType("Jar files") { Patterns = new[] { "*.jar" } } }
+        });
+        if (files == null || files.Count == 0) return;
+        var filePaths = files.Select(f => f.TryGetLocalPath() ?? f.Path.LocalPath).Where(p => p != null).Select(p => p!).ToArray();
+        if (filePaths.Length == 0) return;
 
-        if (dialog.ShowDialog() != true || dialog.FileNames.Length == 0)
-            return;
-
-        await CopyPluginFilesAsync(dialog.FileNames);
+        await CopyPluginFilesAsync(filePaths);
         await RefreshPluginSectionAsync(runCompatibilityCheck: true);
     }
 
@@ -690,16 +688,17 @@ public partial class ServerPreviewWindow : Window
 
     private void PluginDropZone_DragOver(object sender, DragEventArgs e)
     {
-        e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+        e.DragEffects = e.Data.Contains(Avalonia.Input.DataFormats.Files) ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
 
     private async void PluginDropZone_Drop(object sender, DragEventArgs e)
     {
-        if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+        if (!e.Data.Contains(Avalonia.Input.DataFormats.Files))
             return;
 
-        var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+        var items = e.Data.GetFiles();
+        var files = items?.Select(f => f.TryGetLocalPath() ?? f.Path.LocalPath).Where(p => p != null).Select(p => p!).ToArray();
         if (files == null || files.Length == 0)
             return;
 
@@ -809,7 +808,7 @@ public partial class ServerPreviewWindow : Window
             }
             catch (Exception ex)
             {
-                _ = MessageBox.Show($"Could not add {Path.GetFileName(source)}: {ex.Message}", "Install failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _ = UI.Helpers.SimpleDialog.InfoAsync(this, $"Could not add {Path.GetFileName(source)}: {ex.Message}", "Install failed");
             }
         }
 
@@ -839,8 +838,8 @@ public partial class ServerPreviewWindow : Window
                 _pluginFiles.Add(new PluginFileRow(Path.GetFileName(file), file));
             }
 
-            PluginEmptyHintBorder.Visibility = _pluginFiles.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-            PluginHintTextBlock.Visibility = _pluginFiles.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            PluginEmptyHintBorder.IsVisible = _pluginFiles.Count == 0;
+            PluginHintTextBlock.IsVisible = _pluginFiles.Count > 0;
         }
 
         if (runCompatibilityCheck)
@@ -849,8 +848,8 @@ public partial class ServerPreviewWindow : Window
         }
         else
         {
-            PluginIssuesItemsControl.Visibility = Visibility.Collapsed;
-            PluginFixAllButton.Visibility = Visibility.Collapsed;
+            PluginIssuesItemsControl.IsVisible = false;
+            PluginFixAllButton.IsVisible = false;
             if (_pluginFiles.Count == 0)
                 UpdatePluginStatus("Drop a .jar file or click Browse to install a plugin or mod.", isError: false);
         }
@@ -868,8 +867,8 @@ public partial class ServerPreviewWindow : Window
         {
             UpdatePluginStatus("Automatic compatibility checks are only available for Fabric/Quilt/Forge/NeoForge servers. Plugins for Paper/Purpur are installed into the plugins folder but cannot be validated automatically here.", isError: false);
             _pluginIssues.Clear();
-            PluginIssuesItemsControl.Visibility = Visibility.Collapsed;
-            PluginFixAllButton.Visibility = Visibility.Collapsed;
+            PluginIssuesItemsControl.IsVisible = false;
+            PluginFixAllButton.IsVisible = false;
             return;
         }
 
@@ -878,8 +877,8 @@ public partial class ServerPreviewWindow : Window
         {
             UpdatePluginStatus("Server information is incomplete. Cannot check compatibility.", isError: true);
             _pluginIssues.Clear();
-            PluginIssuesItemsControl.Visibility = Visibility.Collapsed;
-            PluginFixAllButton.Visibility = Visibility.Collapsed;
+            PluginIssuesItemsControl.IsVisible = false;
+            PluginFixAllButton.IsVisible = false;
             return;
         }
 
@@ -891,15 +890,15 @@ public partial class ServerPreviewWindow : Window
             foreach (var issue in result.Issues)
                 _pluginIssues.Add(issue);
 
-            PluginIssuesItemsControl.Visibility = _pluginIssues.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-            PluginFixAllButton.Visibility = _pluginIssues.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            PluginIssuesItemsControl.IsVisible = _pluginIssues.Count > 0;
+            PluginFixAllButton.IsVisible = _pluginIssues.Count > 0;
         }
         catch (Exception ex)
         {
             UpdatePluginStatus($"Compatibility check failed: {ex.Message}", isError: true);
             _pluginIssues.Clear();
-            PluginIssuesItemsControl.Visibility = Visibility.Collapsed;
-            PluginFixAllButton.Visibility = Visibility.Collapsed;
+            PluginIssuesItemsControl.IsVisible = false;
+            PluginFixAllButton.IsVisible = false;
         }
     }
 
@@ -950,9 +949,11 @@ public partial class ServerPreviewWindow : Window
             return;
 
         PluginStatusTextBlock.Text = message;
+        this.TryFindResource("BrushDanger", out var bd);
+        this.TryFindResource("BrushTextSecondary", out var bs);
         PluginStatusTextBlock.Foreground = isError
-            ? (System.Windows.Media.Brush)FindResource("BrushDanger")
-            : (System.Windows.Media.Brush)FindResource("BrushTextSecondary");
+            ? bd as Avalonia.Media.IBrush
+            : bs as Avalonia.Media.IBrush;
     }
 
     private class PluginFileRow
@@ -1008,15 +1009,15 @@ public partial class ServerPreviewWindow : Window
 
     private async Task LoadServerFriendsAsync()
     {
-        FriendsLoadingText.Visibility = Visibility.Visible;
-        FriendsEmptyText.Visibility   = Visibility.Collapsed;
-        ServerFriendsList.Visibility   = Visibility.Collapsed;
+        FriendsLoadingText.IsVisible = true;
+        FriendsEmptyText.IsVisible   = false;
+        ServerFriendsList.IsVisible   = false;
 
         var token = _nexoraAccountService?.Current?.Token;
         if (string.IsNullOrEmpty(token) || _nexoraApiService == null)
         {
-            FriendsLoadingText.Visibility = Visibility.Collapsed;
-            FriendsEmptyText.Visibility   = Visibility.Visible;
+            FriendsLoadingText.IsVisible = false;
+            FriendsEmptyText.IsVisible   = true;
             FriendsEmptyText.Text         = "Log in to your Nexora account to manage your server whitelist.";
             return;
         }
@@ -1024,14 +1025,14 @@ public partial class ServerPreviewWindow : Window
         try
         {
             var result = await _nexoraApiService.GetFriendsAsync(token);
-            FriendsLoadingText.Visibility = Visibility.Collapsed;
+            FriendsLoadingText.IsVisible = false;
 
             if (!result.Success || result.Data == null || result.Data.Count == 0)
             {
                 FriendsEmptyText.Text       = result.Success
                     ? "No friends found. Add friends from the Social page first."
                     : (result.Error ?? "Could not load friends.");
-                FriendsEmptyText.Visibility = Visibility.Visible;
+                FriendsEmptyText.IsVisible = true;
                 return;
             }
 
@@ -1055,14 +1056,14 @@ public partial class ServerPreviewWindow : Window
                     isSelected));
             }
 
-            ServerFriendsList.Visibility = Visibility.Visible;
+            ServerFriendsList.IsVisible = true;
             UpdateWhitelistSelectionState();
         }
         catch (Exception ex)
         {
-            FriendsLoadingText.Visibility = Visibility.Collapsed;
+            FriendsLoadingText.IsVisible = false;
             FriendsEmptyText.Text       = $"Failed to load friends: {ex.Message}";
-            FriendsEmptyText.Visibility = Visibility.Visible;
+            FriendsEmptyText.IsVisible = true;
         }
     }
 
@@ -1103,12 +1104,14 @@ public partial class ServerPreviewWindow : Window
             await _serverService.UpdateServerAsync(_server);
             await _serverService.UpdateServerPropertiesAsync(_server);
             WhitelistStatusText.Text       = $"\u2713 Whitelist saved with {mcNames.Count} player(s).";
-            WhitelistStatusText.Foreground = (System.Windows.Media.Brush)FindResource("BrushSuccess");
+            this.TryFindResource("BrushSuccess", out var bSuc);
+            WhitelistStatusText.Foreground = bSuc as Avalonia.Media.IBrush;
         }
         catch (Exception ex)
         {
             WhitelistStatusText.Text       = $"Could not save whitelist: {ex.Message}";
-            WhitelistStatusText.Foreground = (System.Windows.Media.Brush)FindResource("BrushDanger");
+            this.TryFindResource("BrushDanger", out var bDan);
+            WhitelistStatusText.Foreground = bDan as Avalonia.Media.IBrush;
         }
     }
 
@@ -1171,22 +1174,15 @@ public partial class ServerPreviewWindow : Window
         var mods = await _modService.GetInstalledModsAsync(installation.Id);
         if (mods.Count == 0) return;
 
-        var answer = MessageBox.Show(
+        var confirmed = await UI.Helpers.SimpleDialog.ConfirmAsync(this,
             $"Minecraft version changed from {oldVersion} to {newVersion}.\n\n" +
             $"Would you like to check if your {mods.Count} plugin(s)/mod(s) are compatible?\n" +
             "Compatible ones will be auto-updated. For incompatible ones you can choose to disable or uninstall.",
-            "Plugin/Mod Compatibility Check",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
+            "Plugin/Mod Compatibility Check");
+        if (!confirmed) return;
 
-        if (answer != MessageBoxResult.Yes) return;
-
-        var window = new ModCompatibilityWindow(installation, _modService, oldVersion, newVersion)
-        {
-            Owner = this
-        };
-
-        var result = window.ShowDialog();
+        var window = new ModCompatibilityWindow(installation, _modService, oldVersion, newVersion);
+        var result = await window.ShowDialog<bool>(this);
 
         if (result == true && window.Result.Applied)
         {

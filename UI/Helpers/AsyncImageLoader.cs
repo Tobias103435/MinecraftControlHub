@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Http;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using SixLabors.ImageSharp.Formats.Png;
 using ISImage = SixLabors.ImageSharp.Image;
 
@@ -11,13 +11,14 @@ namespace MinecraftControlHub.UI.Helpers;
 
 /// <summary>
 /// Attached property that loads a remote image URL into an <see cref="Image"/> asynchronously.
-/// Modrinth serves icons/gallery images as WebP, which WPF cannot decode natively, so the bytes
-/// are decoded with ImageSharp and re-encoded to PNG before being handed to WPF.
+/// Modrinth serves icons/gallery images as WebP, which Avalonia's Bitmap cannot decode on all
+/// platforms, so the bytes are decoded with ImageSharp and re-encoded to PNG before being handed
+/// to Avalonia.
 /// </summary>
 public static class AsyncImageLoader
 {
     private static readonly HttpClient Http = CreateClient();
-    private static readonly ConcurrentDictionary<string, BitmapImage> Cache = new();
+    private static readonly ConcurrentDictionary<string, Bitmap> Cache = new();
 
     private static HttpClient CreateClient()
     {
@@ -26,24 +27,22 @@ public static class AsyncImageLoader
         return client;
     }
 
-    public static readonly DependencyProperty SourceUrlProperty =
-        DependencyProperty.RegisterAttached(
-            "SourceUrl",
-            typeof(string),
-            typeof(AsyncImageLoader),
-            new PropertyMetadata(null, OnSourceUrlChanged));
+    public static readonly AttachedProperty<string?> SourceUrlProperty =
+        AvaloniaProperty.RegisterAttached<Image, Image, string?>("SourceUrl");
 
-    public static void SetSourceUrl(DependencyObject element, string? value) =>
+    static AsyncImageLoader()
+    {
+        SourceUrlProperty.Changed.AddClassHandler<Image>(OnSourceUrlChanged);
+    }
+
+    public static void SetSourceUrl(Image element, string? value) =>
         element.SetValue(SourceUrlProperty, value);
 
-    public static string? GetSourceUrl(DependencyObject element) =>
-        (string?)element.GetValue(SourceUrlProperty);
+    public static string? GetSourceUrl(Image element) =>
+        element.GetValue(SourceUrlProperty);
 
-    private static async void OnSourceUrlChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static async void OnSourceUrlChanged(Image image, AvaloniaPropertyChangedEventArgs e)
     {
-        if (d is not Image image)
-            return;
-
         image.Source = null;
         var url = e.NewValue as string;
         if (string.IsNullOrWhiteSpace(url))
@@ -62,7 +61,7 @@ public static class AsyncImageLoader
         }
     }
 
-    private static async Task<BitmapImage?> LoadAsync(string url)
+    private static async Task<Bitmap?> LoadAsync(string url)
     {
         if (Cache.TryGetValue(url, out var cached))
             return cached;
@@ -78,12 +77,8 @@ public static class AsyncImageLoader
             pngBytes = output.ToArray();
         }
 
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.StreamSource = new MemoryStream(pngBytes);
-        bitmap.EndInit();
-        bitmap.Freeze();
+        using var pngStream = new MemoryStream(pngBytes);
+        var bitmap = new Bitmap(pngStream);
 
         Cache[url] = bitmap;
         return bitmap;

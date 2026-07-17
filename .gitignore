@@ -1,13 +1,6 @@
-# =============================================
-# Minecraft Control Hub / Nexora Launcher
-# .gitignore for .NET 8 WPF project
-# =============================================
-
-# ---- Build output ----
 bin/
 obj/
 
-# ---- Visual Studio / Rider IDE ----
 .vs/
 *.user
 *.suo
@@ -16,28 +9,22 @@ obj/
 .idea/
 *.DotSettings.user
 
-# ---- Compiled archives (don't commit binaries) ----
 *.zip
 *.tar.gz
 *.7z
 
-# ---- NuGet ----
 *.nupkg
 *.snupkg
 project.lock.json
 project.fragment.lock.json
 
-# ---- OS junk ----
 Thumbs.db
 .DS_Store
 desktop.ini
 ehthumbs.db
 
-# ---- Nexora backend (NOT part of public repo) ----
 Nexora/
 
-# ---- Node (if socket-server deps are installed locally) ----
 node_modules/
 
-# ---- Logs ----
 *.log

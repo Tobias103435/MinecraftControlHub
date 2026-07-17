@@ -196,10 +196,10 @@ public class FriendsPageViewModel : INotifyPropertyChanged
             StatusMessage = "Opening Microsoft sign-in… Please complete the browser step.";
             IsLoading = true;
 
-            var dispatcher = System.Windows.Application.Current.Dispatcher;
+            var dispatcher = Avalonia.Threading.Dispatcher.UIThread;
             var progress = new System.Progress<MinecraftControlHub.Core.Services.DeviceCodeInfo>(info =>
             {
-                dispatcher.Invoke(() =>
+                dispatcher.Post(() =>
                 {
                     StatusMessage = $"Open {info.VerificationUri} and enter: {info.UserCode}";
                 });

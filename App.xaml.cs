@@ -1,5 +1,10 @@
-using System.Windows;
-using System.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Layout;
+using Avalonia.Markup.Xaml;
+using Avalonia.Media;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using MinecraftControlHub.AI.Services;
 using MinecraftControlHub.Core.Services;
@@ -18,18 +23,22 @@ public partial class App : Application
         ServiceProvider = services.BuildServiceProvider();
     }
 
-    protected override void OnStartup(StartupEventArgs e)
+    public override void Initialize()
     {
-        base.OnStartup(e);
+        AvaloniaXamlLoader.Load(this);
+    }
 
+    public override void OnFrameworkInitializationCompleted()
+    {
         // Global unhandled exception handlers — log & show a dialog instead of crashing silently.
-        DispatcherUnhandledException += (_, ex) =>
+        // NOTE: Dispatcher.UIThread.UnhandledException only intercepts exceptions that flow
+        // through Avalonia's dispatcher (mirrors WPF's DispatcherUnhandledException, but with a
+        // narrower scope by design — see Avalonia docs on unhandled exceptions).
+        Dispatcher.UIThread.UnhandledException += (_, ex) =>
         {
             var log = ServiceProvider?.GetService<IAppLogService>();
             log?.LogError("App.Crash", $"Unhandled UI exception: {ex.Exception.GetType().Name}: {ex.Exception.Message}\n{ex.Exception.StackTrace}", ex.Exception);
-            System.Windows.MessageBox.Show(
-                $"An unexpected error occurred:\n\n{ex.Exception.Message}\n\nDetails have been logged to diagnostics.log.",
-                "Unexpected Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            ShowErrorDialog($"An unexpected error occurred:\n\n{ex.Exception.Message}\n\nDetails have been logged to diagnostics.log.");
             ex.Handled = true;   // prevent app from closing
         };
 
@@ -47,8 +56,13 @@ public partial class App : Application
                 log?.LogError("App.DomainCrash", $"AppDomain unhandled: {e2.Message}\n{e2.StackTrace}", e2);
         };
 
-        var mainWindow = new MainWindow();
-        mainWindow.Show();
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            var mainWindow = new MainWindow();
+            desktop.MainWindow = mainWindow;
+        }
+
+        base.OnFrameworkInitializationCompleted();
 
         // Apply saved theme (dark/light) before the window is shown
         var settingsService = ServiceProvider?.GetService<ISettingsService>();
@@ -67,9 +81,45 @@ public partial class App : Application
                     ? $"Server '{args.Server.Name}' crashed unexpectedly (no crash report found)."
                     : $"Server '{args.Server.Name}' crashed. Crash report:\n\n{args.CrashReport}";
 
-                Dispatcher.InvokeAsync(() => _ = aiVm.AskAiAboutErrorAsync(errorContext));
+                Dispatcher.UIThread.Post(() => _ = aiVm.AskAiAboutErrorAsync(errorContext));
             };
         }
+    }
+
+    /// <summary>
+    /// Avalonia has no built-in MessageBox (unlike WPF's System.Windows.MessageBox).
+    /// This is a minimal stand-in that preserves the "show the user something went
+    /// wrong" behavior without pulling in a dialog library.
+    /// </summary>
+    private static void ShowErrorDialog(string message)
+    {
+        try
+        {
+            var okButton = new Button { Content = "OK", HorizontalAlignment = HorizontalAlignment.Right };
+
+            var window = new Window
+            {
+                Title = "Unexpected Error",
+                Width = 480,
+                Height = 220,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                Content = new StackPanel
+                {
+                    Margin = new Avalonia.Thickness(20),
+                    Spacing = 16,
+                    Children =
+                    {
+                        new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
+                        okButton
+                    }
+                }
+            };
+
+            okButton.Click += (_, _) => window.Close();
+            window.Show();
+        }
+        catch { /* best effort — never let the error dialog itself crash the app */ }
     }
 
     private void ConfigureServices(IServiceCollection services)

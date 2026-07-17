@@ -1,18 +1,25 @@
 <Application x:Class="MinecraftControlHub.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:MinecraftControlHub.UI.Converters">
+             xmlns:converters="clr-namespace:MinecraftControlHub.UI.Converters"
+             RequestedThemeVariant="Dark">
+
+    <Application.Styles>
+        <FluentTheme/>
+    </Application.Styles>
+
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styles/Theme.xaml"/>
-                <ResourceDictionary Source="Styles/Controls.xaml"/>
-                <ResourceDictionary Source="Styles/CheckBox.xaml"/>
+                <ResourceInclude Source="avares://MinecraftControlHub/Styles/Theme.axaml"/>
+                <ResourceInclude Source="avares://MinecraftControlHub/Styles/Controls.axaml"/>
+                <ResourceInclude Source="avares://MinecraftControlHub/Styles/CheckBox.axaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
             <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <converters:SuccessToBrushConverter x:Key="SuccessToBrushConverter"/>
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <converters:MarkdownToPlainTextConverter x:Key="MarkdownToPlainTextConverter"/>
             <converters:LoaderNotVanillaToVisibilityConverter x:Key="LoaderNotVanillaToVisibilityConverter"/>

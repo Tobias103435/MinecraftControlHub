@@ -4,12 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Input;
+using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
+using MinecraftControlHub.UI.Helpers;
 
 namespace MinecraftControlHub.UI.Windows;
 
@@ -95,12 +98,12 @@ public partial class ServerPluginBrowserWindow : Window
             case ServerType.Paper:
             case ServerType.Purpur:
                 // Plugins + Datapacks only
-                TabPlugins.Visibility   = Visibility.Visible;
-                TabMods.Visibility      = Visibility.Collapsed;
-                TabDatapacks.Visibility = Visibility.Visible;
+                TabPlugins.IsVisible   = true;
+                TabMods.IsVisible      = false;
+                TabDatapacks.IsVisible = true;
                 _activeTab = "plugin";
-                TabPlugins.Style = (Style)FindResource("ActiveTabButtonStyle");
-                TabMods.Style    = (Style)FindResource("TabButtonStyle");
+                TabPlugins.Theme = this.TryFindResource("ActiveTabButtonStyle", out var a1) ? a1 as ControlTheme : null;
+                TabMods.Theme    = this.TryFindResource("TabButtonStyle", out var i1) ? i1 as ControlTheme : null;
                 break;
 
             case ServerType.Fabric:
@@ -108,29 +111,29 @@ public partial class ServerPluginBrowserWindow : Window
             case ServerType.NeoForge:
             case ServerType.Quilt:
                 // Mods + Datapacks only
-                TabPlugins.Visibility   = Visibility.Collapsed;
-                TabMods.Visibility      = Visibility.Visible;
-                TabDatapacks.Visibility = Visibility.Visible;
+                TabPlugins.IsVisible   = false;
+                TabMods.IsVisible      = true;
+                TabDatapacks.IsVisible = true;
                 _activeTab = "mod";
-                TabPlugins.Style = (Style)FindResource("TabButtonStyle");
-                TabMods.Style    = (Style)FindResource("ActiveTabButtonStyle");
-                TabDatapacks.Style = (Style)FindResource("TabButtonStyle");
+                TabPlugins.Theme   = this.TryFindResource("TabButtonStyle", out var i2) ? i2 as ControlTheme : null;
+                TabMods.Theme      = this.TryFindResource("ActiveTabButtonStyle", out var a2) ? a2 as ControlTheme : null;
+                TabDatapacks.Theme = this.TryFindResource("TabButtonStyle", out var i3) ? i3 as ControlTheme : null;
                 break;
 
             case ServerType.Vanilla:
                 // Datapacks only
-                TabPlugins.Visibility   = Visibility.Collapsed;
-                TabMods.Visibility      = Visibility.Collapsed;
-                TabDatapacks.Visibility = Visibility.Visible;
+                TabPlugins.IsVisible   = false;
+                TabMods.IsVisible      = false;
+                TabDatapacks.IsVisible = true;
                 _activeTab = "datapack";
-                TabDatapacks.Style = (Style)FindResource("ActiveTabButtonStyle");
+                TabDatapacks.Theme = this.TryFindResource("ActiveTabButtonStyle", out var a3) ? a3 as ControlTheme : null;
                 break;
 
             default:
                 // Show all tabs
-                TabPlugins.Visibility   = Visibility.Visible;
-                TabMods.Visibility      = Visibility.Visible;
-                TabDatapacks.Visibility = Visibility.Visible;
+                TabPlugins.IsVisible   = true;
+                TabMods.IsVisible      = true;
+                TabDatapacks.IsVisible = true;
                 break;
         }
     }
@@ -147,15 +150,15 @@ public partial class ServerPluginBrowserWindow : Window
         _currentPage  = 1;
 
         // Reset all tab styles, then activate the clicked one
-        TabPlugins.Style   = (Style)FindResource("TabButtonStyle");
-        TabMods.Style      = (Style)FindResource("TabButtonStyle");
-        TabDatapacks.Style = (Style)FindResource("TabButtonStyle");
+        TabPlugins.Theme   = this.TryFindResource("TabButtonStyle", out var r1) ? r1 as ControlTheme : null;
+        TabMods.Theme      = this.TryFindResource("TabButtonStyle", out var r2) ? r2 as ControlTheme : null;
+        TabDatapacks.Theme = this.TryFindResource("TabButtonStyle", out var r3) ? r3 as ControlTheme : null;
 
         switch (_activeTab)
         {
-            case "plugin":   TabPlugins.Style   = (Style)FindResource("ActiveTabButtonStyle"); break;
-            case "mod":      TabMods.Style       = (Style)FindResource("ActiveTabButtonStyle"); break;
-            case "datapack": TabDatapacks.Style  = (Style)FindResource("ActiveTabButtonStyle"); break;
+            case "plugin":   TabPlugins.Theme   = this.TryFindResource("ActiveTabButtonStyle", out var a1) ? a1 as ControlTheme : null; break;
+            case "mod":      TabMods.Theme       = this.TryFindResource("ActiveTabButtonStyle", out var a2) ? a2 as ControlTheme : null; break;
+            case "datapack": TabDatapacks.Theme  = this.TryFindResource("ActiveTabButtonStyle", out var a3) ? a3 as ControlTheme : null; break;
         }
 
         _ = SearchAsync();
@@ -277,8 +280,8 @@ public partial class ServerPluginBrowserWindow : Window
             return;
         }
 
-        EmptyState.Visibility          = Visibility.Collapsed;
-        ResultsScrollViewer.Visibility = Visibility.Visible;
+        EmptyState.IsVisible          = false;
+        ResultsScrollViewer.IsVisible = true;
 
         // Bind fresh list to the ItemsControl
         ResultsItemsControl.ItemsSource = null;
@@ -298,9 +301,9 @@ public partial class ServerPluginBrowserWindow : Window
 
         if (string.IsNullOrWhiteSpace(_server.ServerDirectory))
         {
-            MessageBox.Show(
+            await SimpleDialog.InfoAsync(this,
                 "Server directory is not set. Please configure the server first.",
-                "Cannot install", MessageBoxButton.OK, MessageBoxImage.Warning);
+                "Cannot install");
             return;
         }
 
@@ -338,9 +341,9 @@ public partial class ServerPluginBrowserWindow : Window
                 $"Install failed for {result.Name}: {ex.Message}", ex);
             btn.Content   = "Failed";
             btn.IsEnabled = true;
-            MessageBox.Show(
+            await SimpleDialog.InfoAsync(this,
                 $"Could not install {result.Name}:\n\n{ex.Message}",
-                "Install failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                "Install failed");
         }
     }
 
@@ -422,7 +425,7 @@ public partial class ServerPluginBrowserWindow : Window
         if (_currentPage <= 1) return;
         _currentPage--;
         _ = SearchAsync();
-        ResultsScrollViewer.ScrollToTop();
+        ResultsScrollViewer.ScrollToHome();
     }
 
     private void NextPage_Click(object sender, RoutedEventArgs e)
@@ -431,7 +434,7 @@ public partial class ServerPluginBrowserWindow : Window
         if (_currentPage >= totalPages) return;
         _currentPage++;
         _ = SearchAsync();
-        ResultsScrollViewer.ScrollToTop();
+        ResultsScrollViewer.ScrollToHome();
     }
 
     private void UpdatePagination()
@@ -448,17 +451,17 @@ public partial class ServerPluginBrowserWindow : Window
 
     private void ShowLoading(bool loading)
     {
-        LoadingOverlay.Visibility      = loading ? Visibility.Visible  : Visibility.Collapsed;
-        ResultsScrollViewer.Visibility = loading ? Visibility.Collapsed : Visibility.Visible;
-        EmptyState.Visibility          = Visibility.Collapsed;
+        LoadingOverlay.IsVisible      = loading;
+        ResultsScrollViewer.IsVisible = !loading;
+        EmptyState.IsVisible          = false;
     }
 
     private void ShowEmpty(string message)
     {
         EmptyStateText.Text            = message;
-        EmptyState.Visibility          = Visibility.Visible;
-        ResultsScrollViewer.Visibility = Visibility.Collapsed;
-        LoadingOverlay.Visibility      = Visibility.Collapsed;
+        EmptyState.IsVisible          = true;
+        ResultsScrollViewer.IsVisible = false;
+        LoadingOverlay.IsVisible      = false;
         StatusTextBlock.Text           = string.Empty;
         PageLabel.Text                 = string.Empty;
         PrevPageButton.IsEnabled       = false;
@@ -597,7 +600,7 @@ public partial class ServerPluginBrowserWindow : Window
 
         if (string.IsNullOrWhiteSpace(_server.ServerDirectory))
         {
-            MessageBox.Show("Server directory is not set.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            await SimpleDialog.InfoAsync(this, "Server directory is not set.", "Warning");
             return;
         }
 

@@ -1,11 +1,10 @@
-﻿<UserControl x:Class="MinecraftControlHub.UI.Pages.HomePage"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Class="MinecraftControlHub.UI.Pages.HomePage"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
-             d:DataContext="{d:DesignInstance viewmodels:HomePageViewModel}">
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600">
 
     <Grid>
         <!-- ========== Main installations list ========== -->
@@ -26,7 +25,7 @@
                                    Margin="0,2,0,0"/>
                     </StackPanel>
                     <Button Content="+ New Installation"
-                            Style="{StaticResource PrimaryButtonStyle}"
+                            Theme="{StaticResource PrimaryButtonStyle}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Padding="20,9"
@@ -35,7 +34,7 @@
 
                 <!-- Installations grid -->
                 <ItemsControl ItemsSource="{Binding InstallationCards}"
-                              Visibility="{Binding HasInstallations, Converter={StaticResource BoolToVisibilityConverter}}">
+                              IsVisible="{Binding HasInstallations}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel/>
@@ -44,7 +43,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <!-- Card wrapper — grows vertically when expanded -->
-                            <Border Style="{StaticResource InstallationCardStyle}"
+                            <Border Theme="{StaticResource InstallationCardStyle}"
                                     MinHeight="0" Width="270">
                                 <StackPanel>
 
@@ -63,7 +62,7 @@
                                                         Background="{StaticResource BrushAccent}"
                                                         CornerRadius="4"
                                                         Padding="6,2"
-                                                        Visibility="{Binding Loader, Converter={StaticResource LoaderNotVanillaToVisibilityConverter}}">
+                                                        IsVisible="{Binding Loader, Converter={StaticResource LoaderNotVanillaToVisibilityConverter}}">
                                                     <TextBlock Text="{Binding Loader}"
                                                                FontFamily="{StaticResource FontBody}"
                                                                FontSize="10"
@@ -89,69 +88,65 @@
 
                                             <!-- Health indicators (shown after background check completes) -->
                                             <StackPanel Margin="0,8,0,0"
-                                                        Visibility="{Binding HealthChecked, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        IsVisible="{Binding HealthChecked}">
                                                 <!-- Java status -->
                                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,3"
-                                                            Visibility="{Binding JavaHealth, Converter={StaticResource NullToVisibilityConverter}}">
+                                                            IsVisible="{Binding JavaHealth, Converter={StaticResource NullToVisibilityConverter}}">
                                                     <Ellipse Width="6" Height="6" Margin="0,0,6,0"
-                                                             VerticalAlignment="Center">
-                                                        <Ellipse.Style>
-                                                            <Style TargetType="Ellipse">
-                                                                <Setter Property="Fill" Value="{StaticResource BrushOnline}"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding JavaOk}" Value="False">
-                                                                        <Setter Property="Fill" Value="{StaticResource BrushDanger}"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
+                                                             VerticalAlignment="Center"
+                                                             Classes.ok="{Binding JavaOk}">
+                                                        <Ellipse.Styles>
+                                                            <Style Selector="Ellipse">
+                                                                <Setter Property="Fill" Value="{StaticResource BrushDanger}"/>
                                                             </Style>
-                                                        </Ellipse.Style>
+                                                            <Style Selector="Ellipse.ok">
+                                                                <Setter Property="Fill" Value="{StaticResource BrushOnline}"/>
+                                                            </Style>
+                                                        </Ellipse.Styles>
                                                     </Ellipse>
                                                     <TextBlock Text="{Binding JavaHealth}"
                                                                FontFamily="{StaticResource FontBody}"
                                                                FontSize="11"
-                                                               VerticalAlignment="Center">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Foreground" Value="{StaticResource BrushOnline}"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding JavaOk}" Value="False">
-                                                                        <Setter Property="Foreground" Value="{StaticResource BrushDanger}"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
+                                                               VerticalAlignment="Center"
+                                                               Classes.ok="{Binding JavaOk}">
+                                                        <TextBlock.Styles>
+                                                            <Style Selector="TextBlock">
+                                                                <Setter Property="Foreground" Value="{StaticResource BrushDanger}"/>
                                                             </Style>
-                                                        </TextBlock.Style>
+                                                            <Style Selector="TextBlock.ok">
+                                                                <Setter Property="Foreground" Value="{StaticResource BrushOnline}"/>
+                                                            </Style>
+                                                        </TextBlock.Styles>
                                                     </TextBlock>
                                                 </StackPanel>
                                                 <!-- Mods update status -->
                                                 <StackPanel Orientation="Horizontal"
-                                                            Visibility="{Binding ModsHealth, Converter={StaticResource NullToVisibilityConverter}}">
+                                                            IsVisible="{Binding ModsHealth, Converter={StaticResource NullToVisibilityConverter}}">
                                                     <Ellipse Width="6" Height="6" Margin="0,0,6,0"
-                                                             VerticalAlignment="Center">
-                                                        <Ellipse.Style>
-                                                            <Style TargetType="Ellipse">
-                                                                <Setter Property="Fill" Value="{StaticResource BrushOnline}"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding ModsUpToDate}" Value="False">
-                                                                        <Setter Property="Fill" Value="#F0A020"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
+                                                             VerticalAlignment="Center"
+                                                             Classes.upToDate="{Binding ModsUpToDate}">
+                                                        <Ellipse.Styles>
+                                                            <Style Selector="Ellipse">
+                                                                <Setter Property="Fill" Value="#F0A020"/>
                                                             </Style>
-                                                        </Ellipse.Style>
+                                                            <Style Selector="Ellipse.upToDate">
+                                                                <Setter Property="Fill" Value="{StaticResource BrushOnline}"/>
+                                                            </Style>
+                                                        </Ellipse.Styles>
                                                     </Ellipse>
                                                     <TextBlock Text="{Binding ModsHealth}"
                                                                FontFamily="{StaticResource FontBody}"
                                                                FontSize="11"
-                                                               VerticalAlignment="Center">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Foreground" Value="{StaticResource BrushOnline}"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding ModsUpToDate}" Value="False">
-                                                                        <Setter Property="Foreground" Value="#F0A020"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
+                                                               VerticalAlignment="Center"
+                                                               Classes.upToDate="{Binding ModsUpToDate}">
+                                                        <TextBlock.Styles>
+                                                            <Style Selector="TextBlock">
+                                                                <Setter Property="Foreground" Value="#F0A020"/>
                                                             </Style>
-                                                        </TextBlock.Style>
+                                                            <Style Selector="TextBlock.upToDate">
+                                                                <Setter Property="Foreground" Value="{StaticResource BrushOnline}"/>
+                                                            </Style>
+                                                        </TextBlock.Styles>
                                                     </TextBlock>
                                                 </StackPanel>
                                             </StackPanel>
@@ -162,27 +157,34 @@
                                     <!-- ══ ACTION BUTTONS (always visible) ══ -->
                                     <StackPanel>
                                         <!-- Row 1: Play -->
-                                        <Button Content="▶  Play"
-                                                Style="{StaticResource PrimaryButtonStyle}"
+                                        <Button Theme="{StaticResource PrimaryButtonStyle}"
                                                 Padding="16,8"
                                                 HorizontalAlignment="Stretch"
                                                 Margin="0,0,0,6"
-                                                Click="Play_Click"/>
+                                                Click="Play_Click">
+                                            <Button.Content>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Canvas Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center">
+                                                        <Polygon Points="3,2 12,7 3,12" Fill="White"/>
+                                                    </Canvas>
+                                                    <TextBlock Text="Play" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Button.Content>
+                                        </Button>
                                         <!-- Row 2: Settings / Share / Delete -->
                                         <StackPanel Orientation="Horizontal">
                                             <Button Content="Settings"
-                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Theme="{StaticResource SecondaryButtonStyle}"
                                                     Padding="12,7"
                                                     Margin="0,0,6,0"
                                                     Click="Settings_Click"/>
                                             <Button Content="Share"
-                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Theme="{StaticResource SecondaryButtonStyle}"
                                                     Padding="12,7"
                                                     Margin="0,0,6,0"
-                                                    ToolTip="Share this instance"
+                                                    ToolTip.Tip="Share this instance"
                                                     Click="ShareInstallation_Click"/>
-                                            <Button Content="✕ Delete"
-                                                    Padding="10,7"
+                                            <Button Padding="10,7"
                                                     FontFamily="{StaticResource FontBody}"
                                                     FontSize="12"
                                                     Foreground="{StaticResource BrushDanger}"
@@ -191,31 +193,38 @@
                                                     BorderThickness="1"
                                                     Cursor="Hand"
                                                     Click="DeleteInstallation_Click"
-                                                    ToolTip="Delete this installation">
-                                                <Button.Style>
-                                                    <Style TargetType="Button">
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="Button">
-                                                                    <Border x:Name="Bg"
-                                                                            Background="{TemplateBinding Background}"
-                                                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                                                            CornerRadius="6"
-                                                                            Padding="{TemplateBinding Padding}">
-                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                                    </Border>
-                                                                    <ControlTemplate.Triggers>
-                                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                                            <Setter TargetName="Bg" Property="Background" Value="{StaticResource BrushDanger}"/>
-                                                                            <Setter Property="Foreground" Value="White"/>
-                                                                        </Trigger>
-                                                                    </ControlTemplate.Triggers>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
+                                                    ToolTip.Tip="Delete this installation">
+                                                <Button.Content>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Canvas Width="12" Height="12" Margin="0,0,6,0" VerticalAlignment="Center">
+                                                            <Line StartPoint="2,2" EndPoint="10,10" Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2"/>
+                                                            <Line StartPoint="10,2" EndPoint="2,10" Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2"/>
+                                                        </Canvas>
+                                                        <TextBlock Text="Delete" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button.Content>
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover /template/ Border#Bg">
+                                                        <Setter Property="Background" Value="{StaticResource BrushDanger}"/>
                                                     </Style>
-                                                </Button.Style>
+                                                    <Style Selector="Button:pointerover">
+                                                        <Setter Property="Foreground" Value="White"/>
+                                                    </Style>
+                                                </Button.Styles>
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="Bg"
+                                                                Background="{TemplateBinding Background}"
+                                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                CornerRadius="6"
+                                                                Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter Content="{TemplateBinding Content}"
+                                                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Button.Template>
                                             </Button>
                                         </StackPanel>
                                     </StackPanel>
@@ -232,7 +241,7 @@
                         BorderThickness="1"
                         CornerRadius="16"
                         Padding="60,48"
-                        Visibility="{Binding HasInstallations, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                        IsVisible="{Binding !HasInstallations}">
                     <StackPanel HorizontalAlignment="Center">
                         <!-- Grass block icon (simple flat representation) -->
                         <Grid Width="48" Height="48" HorizontalAlignment="Center" Margin="0,0,0,16">
@@ -262,7 +271,7 @@
 
         <!-- ========== New installation dialog overlay ========== -->
         <Border Background="#CC000000"
-                Visibility="{Binding IsCreateVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                IsVisible="{Binding IsCreateVisible}">
             <Border Background="{StaticResource BrushPanelBackground}"
                     BorderBrush="{StaticResource BrushBorder}"
                     BorderThickness="1"
@@ -271,15 +280,7 @@
                     MaxHeight="580"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <!-- Header -->
-                        <RowDefinition Height="Auto"/>
-                        <!-- Scrollable form body -->
-                        <RowDefinition Height="*"/>
-                        <!-- Sticky footer buttons -->
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <Grid RowDefinitions="Auto,*,Auto">
 
                     <!-- Header -->
                     <StackPanel Grid.Row="0" Margin="24,20,24,12">
@@ -291,20 +292,19 @@
                                        VerticalAlignment="Center"/>
                             <!-- Import dropdown button -->
                             <Button x:Name="ImportBtn"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Theme="{StaticResource SecondaryButtonStyle}"
                                     HorizontalAlignment="Right"
                                     Padding="12,6"
                                     FontSize="12"
-                                    IsEnabled="{Binding IsCreateDialogBusy, Converter={StaticResource InverseBoolConverter}}"
-                                    Click="ImportBtn_Click">
+                                    IsEnabled="{Binding IsCreateDialogBusy, Converter={StaticResource InverseBoolConverter}}">
                                 <Button.Content>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Import" VerticalAlignment="Center"/>
                                         <TextBlock Text=" ▾" VerticalAlignment="Center" FontSize="10"/>
                                     </StackPanel>
                                 </Button.Content>
-                                <Button.ContextMenu>
-                                    <ContextMenu>
+                                <Button.Flyout>
+                                    <MenuFlyout>
                                         <MenuItem Header="Modrinth / .mrpack"
                                                   Click="ImportMrpack_Click"/>
                                         <MenuItem Header="Prism Launcher zip"
@@ -312,8 +312,8 @@
                                         <Separator/>
                                         <MenuItem Header="Import with code…"
                                                   Click="ImportWithCode_Click"/>
-                                    </ContextMenu>
-                                </Button.ContextMenu>
+                                    </MenuFlyout>
+                                </Button.Flyout>
                             </Button>
                         </Grid>
                         <TextBlock Text="Java is recommended automatically for the chosen Minecraft version."
@@ -339,7 +339,7 @@
                                        FontSize="12"
                                        Foreground="{DynamicResource BrushTextSecondary}"
                                        Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding NewInstallationName, UpdateSourceTrigger=PropertyChanged}"
+                            <TextBox Text="{Binding NewInstallationName}"
                                      Padding="10"
                                      Background="{StaticResource BrushPanelElevated}"
                                      BorderBrush="{StaticResource BrushBorder}"
@@ -361,13 +361,18 @@
                                            Foreground="{DynamicResource BrushTextSecondary}"/>
                             </DockPanel>
 
-                            <ComboBox x:Name="MinecraftVersionCombo"
-                                      IsEditable="True"
-                                      ItemsSource="{Binding FilteredMinecraftVersions}"
-                                      Text="{Binding NewMinecraftVersion, UpdateSourceTrigger=PropertyChanged}"
-                                      HorizontalAlignment="Stretch"
-                                      Margin="0,0,0,16"
-                                      TextBoxBase.TextChanged="MinecraftVersionCombo_TextChanged"/>
+                            <!-- Avalonia's ComboBox has no IsEditable/Text (unlike WPF's editable ComboBox),
+                                 so AutoCompleteBox is used instead — same free-text-entry-with-dropdown
+                                 behavior. FilterMode="None" because the item list is already filtered by
+                                 the ViewModel (FilteredMinecraftVersions), so no extra client-side filtering
+                                 should be applied on top of it. -->
+                            <AutoCompleteBox x:Name="MinecraftVersionCombo"
+                                             FilterMode="None"
+                                             ItemsSource="{Binding FilteredMinecraftVersions}"
+                                             Text="{Binding NewMinecraftVersion}"
+                                             HorizontalAlignment="Stretch"
+                                             Margin="0,0,0,16"
+                                             TextChanged="MinecraftVersionCombo_TextChanged"/>
 
                             <TextBlock Text="Loader"
                                        FontFamily="{StaticResource FontBody}"
@@ -385,13 +390,13 @@
                                        FontSize="12"
                                        Foreground="{DynamicResource BrushTextSecondary}"
                                        Margin="0,0,0,4"
-                                       Visibility="{Binding NewLoader, Converter={StaticResource LoaderNotVanillaToVisibilityConverter}}"/>
+                                       IsVisible="{Binding NewLoader, Converter={StaticResource LoaderNotVanillaToVisibilityConverter}}"/>
                             <ComboBox ItemsSource="{Binding AvailableLoaderVersions}"
                                       SelectedItem="{Binding NewLoaderVersion}"
                                       HorizontalAlignment="Left"
                                       MinWidth="200"
                                       Margin="0,0,0,16"
-                                      Visibility="{Binding NewLoader, Converter={StaticResource LoaderNotVanillaToVisibilityConverter}}"/>
+                                      IsVisible="{Binding NewLoader, Converter={StaticResource LoaderNotVanillaToVisibilityConverter}}"/>
 
                             <!-- Java advice -->
                             <Border Background="{StaticResource BrushPanelElevated}"
@@ -400,7 +405,7 @@
                                     CornerRadius="8"
                                     Padding="12,10"
                                     Margin="0,0,0,12"
-                                    Visibility="{Binding HasJavaAdvice, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    IsVisible="{Binding HasJavaAdvice}">
                                 <TextBlock Text="{Binding JavaAdvice}"
                                            FontFamily="{StaticResource FontBody}"
                                            FontSize="12"
@@ -415,7 +420,7 @@
                                        TextWrapping="Wrap"
                                        Foreground="{DynamicResource BrushTextSecondary}"
                                        Margin="0,0,0,12"
-                                       Visibility="{Binding HasCreateStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                       IsVisible="{Binding HasCreateStatus}"/>
 
                             <!-- Bottom padding inside scroll -->
                             <Border Height="8"/>
@@ -431,12 +436,12 @@
                             Padding="24,14">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Content="Cancel"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Theme="{StaticResource SecondaryButtonStyle}"
                                     Padding="18,8"
                                     Margin="0,0,10,0"
                                     Click="CancelCreate_Click"/>
                             <Button Content="Create"
-                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Theme="{StaticResource PrimaryButtonStyle}"
                                     Padding="22,8"
                                     IsEnabled="{Binding IsCreateDialogBusy, Converter={StaticResource InverseBoolConverter}}"
                                     Click="CreateInstallation_Click"/>
@@ -448,7 +453,7 @@
 
         <!-- ========== Sign-in / play overlay ========== -->
         <Border Background="#CC000000"
-                Visibility="{Binding IsLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                IsVisible="{Binding IsLoginVisible}">
             <Border Background="{StaticResource BrushPanelBackground}"
                     BorderBrush="{StaticResource BrushBorder}"
                     BorderThickness="1"
@@ -476,19 +481,22 @@
                             Height="46"
                             Cursor="Hand"
                             IsEnabled="{Binding IsSigningIn, Converter={StaticResource InverseBoolConverter}}">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover /template/ Border#Bd">
+                                <Setter Property="Background" Value="#8B5CF6"/>
+                            </Style>
+                            <Style Selector="Button:disabled /template/ Border#Bd">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Style>
+                        </Button.Styles>
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="Bd" Background="{DynamicResource BrushAccent}" CornerRadius="8">
                                     <StackPanel Orientation="Horizontal"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center">
-                                        <Grid Width="20" Height="20" Margin="0,0,12,0">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition/><RowDefinition/>
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition/><ColumnDefinition/>
-                                            </Grid.ColumnDefinitions>
+                                        <Grid Width="20" Height="20" Margin="0,0,12,0"
+                                              ColumnDefinitions="*,*" RowDefinitions="*,*">
                                             <Rectangle Grid.Row="0" Grid.Column="0" Fill="#F25022" Margin="0,0,1,1"/>
                                             <Rectangle Grid.Row="0" Grid.Column="1" Fill="#7FBA00" Margin="1,0,0,1"/>
                                             <Rectangle Grid.Row="1" Grid.Column="0" Fill="#00A4EF" Margin="0,1,1,0"/>
@@ -502,14 +510,6 @@
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Bd" Property="Background" Value="#8B5CF6"/>
-                                    </Trigger>
-                                    <Trigger Property="IsEnabled" Value="False">
-                                        <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
@@ -521,7 +521,7 @@
                             CornerRadius="8"
                             Padding="14"
                             Margin="0,14,0,0"
-                            Visibility="{Binding HasDeviceCode, Converter={StaticResource BoolToVisibilityConverter}}">
+                            IsVisible="{Binding HasDeviceCode}">
                         <StackPanel>
                             <TextBlock Text="Enter this code on the Microsoft sign-in page:"
                                        FontFamily="{StaticResource FontBody}"
@@ -535,7 +535,7 @@
                                            Foreground="{StaticResource BrushTextPrimary}"
                                            VerticalAlignment="Center"/>
                                 <Button Content="Copy"
-                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Theme="{StaticResource SecondaryButtonStyle}"
                                         Padding="12,5"
                                         FontSize="12"
                                         HorizontalAlignment="Right"
@@ -555,7 +555,7 @@
                                TextWrapping="Wrap"
                                Foreground="{StaticResource BrushTextSecondary}"
                                Margin="0,12,0,0"
-                               Visibility="{Binding HasLoginStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                               IsVisible="{Binding HasLoginStatus}"/>
 
                     <Border Height="1" Background="{StaticResource BrushBorder}" Margin="0,20,0,16"/>
 
@@ -571,7 +571,7 @@
                                FontSize="13"
                                Foreground="{StaticResource BrushTextSecondary}"
                                Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding OfflinePlayerName, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding OfflinePlayerName}"
                              Padding="10"
                              Background="{StaticResource BrushPanelElevated}"
                              BorderBrush="{StaticResource BrushBorder}"
@@ -582,12 +582,12 @@
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="Cancel"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="16,8"
                                 Margin="0,0,8,0"
                                 Click="CancelLogin_Click"/>
                         <Button Content="Play offline"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="16,8"
                                 Click="PlayOffline_Click"/>
                     </StackPanel>
@@ -597,7 +597,7 @@
 
         <!-- ========== Launch progress overlay ========== -->
         <Border Background="#CC000000"
-                Visibility="{Binding IsLaunchVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                IsVisible="{Binding IsLaunchVisible}">
             <Border Background="{StaticResource BrushPanelBackground}"
                     BorderBrush="{StaticResource BrushBorder}"
                     BorderThickness="1"
@@ -621,7 +621,7 @@
                                Margin="0,0,0,12"/>
 
                     <ProgressBar Height="10"
-                                 Style="{StaticResource ServerProgressBarStyle}"
+                                 Theme="{StaticResource ServerProgressBarStyle}"
                                  Minimum="0" Maximum="100"
                                  Value="{Binding LaunchPercent}"
                                  IsIndeterminate="{Binding LaunchIndeterminate}"
@@ -633,7 +633,7 @@
                             CornerRadius="6"
                             MaxHeight="200"
                             Margin="0,0,0,8"
-                            Visibility="{Binding HasLaunchMessage, Converter={StaticResource BoolToVisibilityConverter}}">
+                            IsVisible="{Binding HasLaunchMessage}">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
                             <TextBox Text="{Binding LaunchMessage, Mode=OneWay}"
                                      FontFamily="{StaticResource FontBody}"
@@ -642,21 +642,20 @@
                                      Background="Transparent"
                                      BorderThickness="0"
                                      TextWrapping="Wrap"
-                                     IsReadOnly="True"
-                                     IsReadOnlyCaretVisible="True"/>
+                                     IsReadOnly="True"/>
                         </ScrollViewer>
                     </Border>
 
                     <Button Content="Copy log"
-                            Style="{StaticResource SecondaryButtonStyle}"
+                            Theme="{StaticResource SecondaryButtonStyle}"
                             Padding="14,6"
                             HorizontalAlignment="Right"
                             Margin="0,0,0,16"
-                            Visibility="{Binding HasLaunchMessage, Converter={StaticResource BoolToVisibilityConverter}}"
+                            IsVisible="{Binding HasLaunchMessage}"
                             Click="CopyLaunchLog_Click"/>
 
                     <Button Content="Done"
-                            Style="{StaticResource PrimaryButtonStyle}"
+                            Theme="{StaticResource PrimaryButtonStyle}"
                             Padding="24,8"
                             HorizontalAlignment="Right"
                             IsEnabled="{Binding LaunchFinished}"
@@ -667,8 +666,8 @@
 
 
         <!-- ========== Share overlay ========== -->
-        <Border Visibility="{Binding IsShareVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                Background="#99000000" Panel.ZIndex="50">
+        <Border IsVisible="{Binding IsShareVisible}"
+                Background="#99000000" ZIndex="50">
             <Border Background="{StaticResource BrushPanelBackground}"
                     BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
                     CornerRadius="14" Padding="28,24" MaxWidth="500" MaxHeight="580"
@@ -677,37 +676,33 @@
                     <Grid Margin="0,0,0,16">
                         <TextBlock Text="Share Instance" FontFamily="{StaticResource FontDisplay}"
                                    FontSize="18" Foreground="{StaticResource BrushTextPrimary}"/>
-                        <Button Content="x" Style="{StaticResource SecondaryButtonStyle}"
+                        <Button Content="x" Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="8,4" HorizontalAlignment="Right" Click="CloseShare_Click"/>
                     </Grid>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <Button Content="Share with Friends" Padding="14,7" Margin="0,0,8,0" Click="ShareTabFriends_Click">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsFriendsTab}" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource BrushAccent}"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
+                        <Button Content="Share with Friends" Padding="14,7" Margin="0,0,8,0" Click="ShareTabFriends_Click"
+                                Theme="{StaticResource SecondaryButtonStyle}"
+                                Classes.active="{Binding IsFriendsTab}">
+                            <Button.Styles>
+                                <Style Selector="Button.active">
+                                    <Setter Property="Background" Value="{StaticResource BrushAccent}"/>
+                                    <Setter Property="Foreground" Value="White"/>
                                 </Style>
-                            </Button.Style>
+                            </Button.Styles>
                         </Button>
-                        <Button Content="Share Code" Padding="14,7" Click="ShareTabCode_Click">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsCodeTab}" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource BrushAccent}"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
+                        <Button Content="Share Code" Padding="14,7" Click="ShareTabCode_Click"
+                                Theme="{StaticResource SecondaryButtonStyle}"
+                                Classes.active="{Binding IsCodeTab}">
+                            <Button.Styles>
+                                <Style Selector="Button.active">
+                                    <Setter Property="Background" Value="{StaticResource BrushAccent}"/>
+                                    <Setter Property="Foreground" Value="White"/>
                                 </Style>
-                            </Button.Style>
+                            </Button.Styles>
                         </Button>
                     </StackPanel>
                     <!-- Friends tab -->
-                    <StackPanel Visibility="{Binding IsFriendsTab, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel IsVisible="{Binding IsFriendsTab}">
                         <TextBlock Text="Select friends to share with:"
                                    FontFamily="{StaticResource FontBody}" FontSize="13"
                                    Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,10"/>
@@ -723,28 +718,28 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </ScrollViewer>
-                        <Button Content="Send" Style="{StaticResource PrimaryButtonStyle}"
+                        <Button Content="Send" Theme="{StaticResource PrimaryButtonStyle}"
                                 Padding="20,9" HorizontalAlignment="Left"
                                 IsEnabled="{Binding IsShareBusy, Converter={StaticResource InverseBoolConverter}}"
                                 Click="ShareWithFriends_Click"/>
                     </StackPanel>
                     <!-- Code tab -->
-                    <StackPanel Visibility="{Binding IsCodeTab, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel IsVisible="{Binding IsCodeTab}">
                         <TextBlock Text="Generate a share code anyone can use to import this instance:"
                                    FontFamily="{StaticResource FontBody}" FontSize="13"
                                    Foreground="{StaticResource BrushTextSecondary}" TextWrapping="Wrap" Margin="0,0,0,10"/>
-                        <Button Content="Generate code" Style="{StaticResource SecondaryButtonStyle}"
+                        <Button Content="Generate code" Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="16,8" HorizontalAlignment="Left"
                                 IsEnabled="{Binding IsShareBusy, Converter={StaticResource InverseBoolConverter}}"
                                 Click="GenerateCode_Click"/>
                         <Border Background="{StaticResource BrushPanelElevated}"
                                 BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
                                 CornerRadius="8" Padding="14,10" Margin="0,12,0,0"
-                                Visibility="{Binding HasShareCode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                IsVisible="{Binding HasShareCode}">
                             <Grid>
                                 <TextBlock Text="{Binding ShareCode}" FontFamily="Consolas" FontSize="18"
                                            Foreground="{StaticResource BrushAccent}" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                <Button Content="Copy" Style="{StaticResource SecondaryButtonStyle}"
+                                <Button Content="Copy" Theme="{StaticResource SecondaryButtonStyle}"
                                         Padding="10,5" HorizontalAlignment="Right" Click="CopyShareCode_Click"/>
                             </Grid>
                         </Border>
@@ -752,12 +747,12 @@
                                    FontFamily="{StaticResource FontBody}" FontSize="13"
                                    Foreground="{StaticResource BrushTextSecondary}" Margin="0,20,0,8"/>
                         <StackPanel Orientation="Horizontal">
-                            <TextBox Text="{Binding ImportCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <TextBox Text="{Binding ImportCode, Mode=TwoWay}"
                                      Width="200" Padding="10,8" FontFamily="{StaticResource FontBody}" FontSize="13"
                                      Background="{StaticResource BrushPanelElevated}"
                                      Foreground="{StaticResource BrushTextPrimary}"
                                      BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"/>
-                            <Button Content="Import" Style="{StaticResource PrimaryButtonStyle}"
+                            <Button Content="Import" Theme="{StaticResource PrimaryButtonStyle}"
                                     Padding="16,8" Margin="8,0,0,0"
                                     IsEnabled="{Binding IsShareBusy, Converter={StaticResource InverseBoolConverter}}"
                                     Click="ImportFromCode_Click"/>
@@ -765,7 +760,7 @@
                     </StackPanel>
                     <TextBlock Text="{Binding ShareStatus}" FontFamily="{StaticResource FontBody}" FontSize="12"
                                Foreground="{StaticResource BrushAccent}" TextWrapping="Wrap" Margin="0,14,0,0"
-                               Visibility="{Binding HasShareStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                               IsVisible="{Binding HasShareStatus}"/>
                 </StackPanel>
             </Border>
         </Border>

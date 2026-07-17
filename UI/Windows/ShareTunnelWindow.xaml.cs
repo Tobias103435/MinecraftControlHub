@@ -1,8 +1,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Microsoft.Extensions.DependencyInjection;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
@@ -33,7 +34,7 @@ public partial class ShareTunnelWindow : Window, INotifyPropertyChanged
     private string _statusMessage = string.Empty;
 
     // ── INotifyPropertyChanged ────────────────────────────────────────────────
-    public event PropertyChangedEventHandler? PropertyChanged;
+    public new event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
@@ -70,7 +71,7 @@ public partial class ShareTunnelWindow : Window, INotifyPropertyChanged
         _port = parts.Length > 1 && int.TryParse(parts[1].Trim(), out var p) ? p : 25565;
         _serverName = serverName;
 
-        var app = (App)Application.Current;
+        var app = (App)Application.Current!;
         _api           = app.ServiceProvider!.GetRequiredService<INexoraApiService>();
         _nexoraService = app.ServiceProvider!.GetRequiredService<INexoraAccountService>();
         _shareService  = app.ServiceProvider!.GetRequiredService<ITunnelShareService>();
@@ -89,25 +90,25 @@ public partial class ShareTunnelWindow : Window, INotifyPropertyChanged
 
     private async Task LoadFriendsAsync()
     {
-        LoadingText.Visibility       = Visibility.Visible;
-        FriendsScrollViewer.Visibility = Visibility.Collapsed;
-        EmptyText.Visibility         = Visibility.Collapsed;
+        LoadingText.IsVisible       = true;
+        FriendsScrollViewer.IsVisible = false;
+        EmptyText.IsVisible         = false;
 
         var token = _nexoraService.Current?.Token;
         if (string.IsNullOrEmpty(token))
         {
             ShowStatus("You must be logged in to Nexora to share tunnels.");
-            LoadingText.Visibility = Visibility.Collapsed;
+            LoadingText.IsVisible = false;
             return;
         }
 
         var result = await _api.GetFriendsAsync(token);
 
-        LoadingText.Visibility = Visibility.Collapsed;
+        LoadingText.IsVisible = false;
 
         if (!result.Success || result.Data == null || result.Data.Count == 0)
         {
-            EmptyText.Visibility = Visibility.Visible;
+            EmptyText.IsVisible = true;
             return;
         }
 
@@ -115,7 +116,7 @@ public partial class ShareTunnelWindow : Window, INotifyPropertyChanged
         foreach (var f in result.Data)
             _friends.Add(new SelectableFriend(f));
 
-        FriendsScrollViewer.Visibility = Visibility.Visible;
+        FriendsScrollViewer.IsVisible = true;
         UpdateSelectionState();
     }
 

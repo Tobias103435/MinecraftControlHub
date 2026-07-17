@@ -1,0 +1,62 @@
+<Window x:Class="MinecraftControlHub.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:components="clr-namespace:MinecraftControlHub.UI.Components"
+        Title="Nexora Launcher"
+        Height="800" Width="1280"
+        MinHeight="600" MinWidth="960"
+        WindowStartupLocation="CenterScreen"
+        Icon="/app.ico"
+        Background="{DynamicResource BrushAppBackground}"
+        CanResize="True"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1">
+
+    <!-- RootBorder's margin gets padded out when maximized so content
+         doesn't get clipped under the taskbar/screen edges - a known
+         quirk carried over from the WPF WindowChrome implementation.
+         See MainWindow.OnPropertyChanged (WindowStateProperty). -->
+    <Border x:Name="RootBorder">
+        <Grid RowDefinitions="40,*">
+
+            <!-- ===================== Custom title bar ===================== -->
+            <!-- The whole row acts as the draggable "chrome" (like WPF's
+                 WindowChrome caption), except the button StackPanel below,
+                 which handles its own PointerPressed and stops the event
+                 from bubbling up into TitleBar_PointerPressed. -->
+            <Grid Grid.Row="0"
+                  Background="{DynamicResource BrushSidebarBackground}"
+                  ColumnDefinitions="*,Auto"
+                  PointerPressed="TitleBar_PointerPressed">
+
+                <StackPanel Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center"
+                            IsHitTestVisible="False">
+                    <TextBlock Text="Nexora Launcher"
+                               FontFamily="{StaticResource FontDisplay}" FontSize="12.5"
+                               Foreground="{DynamicResource BrushTextSecondary}" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="&#x2500;" Theme="{StaticResource WindowControlButtonStyle}" Click="MinimizeButton_Click"/>
+                    <Button x:Name="RestoreButton" Content="&#x25A1;" Theme="{StaticResource WindowControlButtonStyle}" Click="MaximizeRestoreButton_Click"/>
+                    <Button Content="&#x2715;" Theme="{StaticResource CloseWindowControlButtonStyle}" Click="CloseButton_Click"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- ===================== App body ===================== -->
+            <Grid Grid.Row="1" ColumnDefinitions="230,*">
+
+                <components:Sidebar x:Name="SidebarControl" Grid.Column="0"/>
+
+                <Grid Grid.Column="1" RowDefinitions="Auto,*">
+
+                    <components:TopBar Grid.Row="0"/>
+
+                    <!-- Swapped based on Sidebar.PageSelected - see MainWindow.xaml.cs -->
+                    <ContentControl x:Name="MainContent" Grid.Row="1" Background="{DynamicResource BrushAppBackground}"/>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

@@ -1,4 +1,5 @@
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls;
 using MinecraftControlHub.UI.Pages;
 using MinecraftControlHub.UI.ViewModels;
 

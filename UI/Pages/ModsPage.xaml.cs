@@ -1,5 +1,7 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.UI.ViewModels;
@@ -35,7 +37,7 @@ public partial class ModsPage : UserControl
             {
                 HideInstallationSelectorOnNext = false;
                 if (InstallationSelectorPanel != null)
-                    InstallationSelectorPanel.Visibility = System.Windows.Visibility.Collapsed;
+                    InstallationSelectorPanel.IsVisible = false;
             }
             // Apply any initial tab requested by the caller
             if (!string.IsNullOrWhiteSpace(InitialTabOnNext))
@@ -68,9 +70,9 @@ public partial class ModsPage : UserControl
         }
     }
 
-    private async void SearchBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private async void SearchBox_KeyDown(object sender, Avalonia.Input.KeyEventArgs e)
     {
-        if (e.Key == System.Windows.Input.Key.Enter && _viewModel != null)
+        if (e.Key == Avalonia.Input.Key.Enter && _viewModel != null)
         {
             await _viewModel.SearchModsAsync();
         }
@@ -106,7 +108,7 @@ public partial class ModsPage : UserControl
     {
         if (!string.IsNullOrEmpty(_viewModel?.InstallOverlayMessage))
         {
-            try { Clipboard.SetText(_viewModel.InstallOverlayMessage); } catch { /* clipboard can be locked by another app - not worth failing over */ }
+            try { _ = TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(_viewModel.InstallOverlayMessage); } catch { /* clipboard can be locked by another app - not worth failing over */ }
         }
     }
 
@@ -122,12 +124,12 @@ public partial class ModsPage : UserControl
 
     // Ensures the page scrolls even when the mouse is over inner content
     // (cards, images, etc.) that would otherwise swallow the wheel event.
-    private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    private void ScrollViewer_PreviewMouseWheel(object sender, Avalonia.Input.PointerWheelEventArgs e)
     {
         if (e.Handled || sender is not ScrollViewer scrollViewer)
             return;
 
-        scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
+        scrollViewer.Offset = new Avalonia.Vector(scrollViewer.Offset.X, scrollViewer.Offset.Y - e.Delta.Y);
         e.Handled = true;
     }
 
@@ -181,17 +183,19 @@ public partial class ModsPage : UserControl
             // obvious symptom until the game (or that other mod) crashes on next launch.
             if (mod.IsDependency)
             {
-                var confirm = MessageBox.Show(
-                    $"\"{mod.Name}\" was installed automatically as a dependency of another mod.\n\n" +
-                    "Updating it can break whatever mod relies on it (e.g. if it needs an exact " +
-                    "or older version). Only continue if you're sure the mod that needs it also " +
-                    "supports this newer version.\n\nUpdate anyway?",
-                    "This mod is a dependency",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
+                var owner = TopLevel.GetTopLevel(this) as Window;
+                if (owner != null)
+                {
+                    var confirm = await UI.Helpers.SimpleDialog.ConfirmAsync(owner,
+                        $"\"{mod.Name}\" was installed automatically as a dependency of another mod.\n\n" +
+                        "Updating it can break whatever mod relies on it (e.g. if it needs an exact " +
+                        "or older version). Only continue if you're sure the mod that needs it also " +
+                        "supports this newer version.\n\nUpdate anyway?",
+                        "This mod is a dependency");
 
-                if (confirm != MessageBoxResult.Yes)
-                    return;
+                    if (!confirm)
+                        return;
+                }
             }
 
             await _viewModel.UpdateModAsync(mod);
@@ -223,22 +227,22 @@ public partial class ModsPage : UserControl
 
     private void SearchTabButton_Click(object sender, RoutedEventArgs e)
     {
-        SearchTabContent.Visibility = Visibility.Visible;
-        InstalledTabContent.Visibility = Visibility.Collapsed;
-        ModpacksTabContent.Visibility = Visibility.Collapsed;
-        SearchTabButton.Style = (Style)FindResource("PrimaryButtonStyle");
-        InstalledTabButton.Style = (Style)FindResource("SecondaryButtonStyle");
-        ModpacksTabButton.Style = (Style)FindResource("SecondaryButtonStyle");
+        SearchTabContent.IsVisible = true;
+        InstalledTabContent.IsVisible = false;
+        ModpacksTabContent.IsVisible = false;
+        SearchTabButton.Theme = this.TryFindResource("PrimaryButtonStyle", out var st1) ? st1 as ControlTheme : null;
+        InstalledTabButton.Theme = this.TryFindResource("SecondaryButtonStyle", out var st2) ? st2 as ControlTheme : null;
+        ModpacksTabButton.Theme = this.TryFindResource("SecondaryButtonStyle", out var st3) ? st3 as ControlTheme : null;
     }
 
     private void InstalledTabButton_Click(object sender, RoutedEventArgs e)
     {
-        SearchTabContent.Visibility = Visibility.Collapsed;
-        InstalledTabContent.Visibility = Visibility.Visible;
-        ModpacksTabContent.Visibility = Visibility.Collapsed;
-        InstalledTabButton.Style = (Style)FindResource("PrimaryButtonStyle");
-        SearchTabButton.Style = (Style)FindResource("SecondaryButtonStyle");
-        ModpacksTabButton.Style = (Style)FindResource("SecondaryButtonStyle");
+        SearchTabContent.IsVisible = false;
+        InstalledTabContent.IsVisible = true;
+        ModpacksTabContent.IsVisible = false;
+        InstalledTabButton.Theme = this.TryFindResource("PrimaryButtonStyle", out var st1) ? st1 as ControlTheme : null;
+        SearchTabButton.Theme = this.TryFindResource("SecondaryButtonStyle", out var st2) ? st2 as ControlTheme : null;
+        ModpacksTabButton.Theme = this.TryFindResource("SecondaryButtonStyle", out var st3) ? st3 as ControlTheme : null;
 
         if (_viewModel != null)
         {
@@ -248,12 +252,12 @@ public partial class ModsPage : UserControl
 
     private void ModpacksTabButton_Click(object sender, RoutedEventArgs e)
     {
-        SearchTabContent.Visibility = Visibility.Collapsed;
-        InstalledTabContent.Visibility = Visibility.Collapsed;
-        ModpacksTabContent.Visibility = Visibility.Visible;
-        ModpacksTabButton.Style = (Style)FindResource("PrimaryButtonStyle");
-        SearchTabButton.Style = (Style)FindResource("SecondaryButtonStyle");
-        InstalledTabButton.Style = (Style)FindResource("SecondaryButtonStyle");
+        SearchTabContent.IsVisible = false;
+        InstalledTabContent.IsVisible = false;
+        ModpacksTabContent.IsVisible = true;
+        ModpacksTabButton.Theme = this.TryFindResource("PrimaryButtonStyle", out var st1) ? st1 as ControlTheme : null;
+        SearchTabButton.Theme = this.TryFindResource("SecondaryButtonStyle", out var st2) ? st2 as ControlTheme : null;
+        InstalledTabButton.Theme = this.TryFindResource("SecondaryButtonStyle", out var st3) ? st3 as ControlTheme : null;
 
         // Auto-search when switching to modpacks tab if no results are loaded yet
         if (_viewModel != null && !_viewModel.HasModpackResults)
@@ -285,7 +289,7 @@ public partial class ModsPage : UserControl
     private async void BrowseModpacks_Click(object sender, RoutedEventArgs e)
     {
         if (_viewModel?.SelectedInstallation == null) return;
-        var sp = (System.Windows.Application.Current as App)?.ServiceProvider;
+        var sp = (Avalonia.Application.Current as App)?.ServiceProvider;
         if (sp == null) return;
 
         var contentSvc = sp.GetRequiredService<MinecraftControlHub.Core.Services.IContentService>();
@@ -295,30 +299,31 @@ public partial class ModsPage : UserControl
         var vm = new MinecraftControlHub.UI.ViewModels.ContentBrowserViewModel(
             contentSvc, installation.Id, installation.MinecraftVersion, installation.Loader,
             MinecraftControlHub.Core.Models.ContentType.Modpack, installed, modSvc);
-        var win = new MinecraftControlHub.UI.Windows.ContentBrowserWindow(vm)
-        {
-            Owner = System.Windows.Window.GetWindow(this)
-        };
-        win.ShowDialog();
+        var win = new MinecraftControlHub.UI.Windows.ContentBrowserWindow(vm);
+        var owner = TopLevel.GetTopLevel(this) as Window;
+        if (owner != null)
+            await win.ShowDialog(owner);
+        else
+            win.Show();
     }
-    private void ModpackSearchBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void ModpackSearchBox_KeyDown(object sender, Avalonia.Input.KeyEventArgs e)
     {
-        if (e.Key == System.Windows.Input.Key.Enter)
+        if (e.Key == Avalonia.Input.Key.Enter)
         {
             e.Handled = true;
             _ = _viewModel?.SearchModpacksAsync();
         }
     }
 
-    private void ModpackSearch_Click(object sender, System.Windows.RoutedEventArgs e)
+    private void ModpackSearch_Click(object sender, RoutedEventArgs e)
     {
         _ = _viewModel?.SearchModpacksAsync();
     }
 
-    private async void InstallModpack_Click(object sender, System.Windows.RoutedEventArgs e)
+    private async void InstallModpack_Click(object sender, RoutedEventArgs e)
     {
         if (_viewModel == null) return;
-        if ((sender as System.Windows.Controls.Button)?.Tag is MinecraftControlHub.Core.Models.ContentSearchResult modpack)
+        if ((sender as Avalonia.Controls.Button)?.Tag is MinecraftControlHub.Core.Models.ContentSearchResult modpack)
         {
             await _viewModel.InstallModpackAsync(modpack);
         }
@@ -356,7 +361,7 @@ public partial class ModsPage : UserControl
 
     private async void ModpackModToggle_Click(object sender, RoutedEventArgs e)
     {
-        if ((sender as System.Windows.Controls.Primitives.ToggleButton)?.DataContext is ModRowViewModel row)
+        if ((sender as Avalonia.Controls.Primitives.ToggleButton)?.DataContext is ModRowViewModel row)
             await row.ToggleAsync();
     }
 

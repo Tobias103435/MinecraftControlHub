@@ -1,5 +1,7 @@
-using System.Windows;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.UI.ViewModels;
 
@@ -30,7 +32,7 @@ public partial class ModVersionPickerWindow : Window
 
     private async Task LoadVersionsAsync()
     {
-        LoadingText.Visibility  = Visibility.Visible;
+        LoadingText.IsVisible  = true;
         VersionList.ItemsSource = null;
         CountLabel.Text         = string.Empty;
 
@@ -41,13 +43,13 @@ public partial class ModVersionPickerWindow : Window
         }
         catch (Exception ex)
         {
-            LoadingText.Visibility = Visibility.Collapsed;
+            LoadingText.IsVisible = false;
             StatusLabel.Text = $"Could not load versions: {ex.Message}";
             CountLabel.Text  = "0 versions";
             return;
         }
 
-        LoadingText.Visibility = Visibility.Collapsed;
+        LoadingText.IsVisible = false;
 
         if (_allVersions.Count == 0)
         {
@@ -76,9 +78,9 @@ public partial class ModVersionPickerWindow : Window
 
     private void FilterChanged(object sender, RoutedEventArgs e) => ApplyFilter();
 
-    private async void VersionRow_Click(object sender, MouseButtonEventArgs e)
+    private async void VersionRow_Click(object sender, PointerPressedEventArgs e)
     {
-        if (sender is not System.Windows.FrameworkElement { Tag: ModVersion version }) return;
+        if (sender is not Control { Tag: ModVersion version }) return;
 
         // 1. Tell the user what's happening.
         StatusLabel.Text = $"Switching to {version.VersionNumber}...";
@@ -105,13 +107,11 @@ public partial class ModVersionPickerWindow : Window
 
         // 4. Only close once the swap actually succeeded.
         ChosenVersion = version;
-        DialogResult  = true;
-        Close();
+        Close(true);
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
-        DialogResult = false;
-        Close();
+        Close(false);
     }
 }

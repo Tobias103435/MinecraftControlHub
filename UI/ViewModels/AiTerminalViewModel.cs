@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Text;
+using Avalonia.Threading;
 using MinecraftControlHub.AI.Models;
 using MinecraftControlHub.AI.Services;
 
@@ -205,8 +206,7 @@ public class AiTerminalViewModel : ViewModelBase
                     if (!string.IsNullOrWhiteSpace(textWithoutJson))
                         aiMessage.Text = textWithoutJson;
                     else
-                        _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(
-                            () => Messages.Remove(aiMessage));
+                        Dispatcher.UIThread.Post(() => Messages.Remove(aiMessage));
 
                     var planMsg = new TerminalMessage
                     {
@@ -359,7 +359,7 @@ public class AiTerminalViewModel : ViewModelBase
     // ─────────────────────────────────────────────────────────────────────────
 
     private void AddMessage(TerminalMessage msg)
-        => System.Windows.Application.Current.Dispatcher.InvokeAsync(() => Messages.Add(msg));
+        => Dispatcher.UIThread.Post(() => Messages.Add(msg));
 
     /// <summary>Minimum number of commands before the compact summary view is used.</summary>
     private const int CompactViewThreshold = 4;

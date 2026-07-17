@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
@@ -25,7 +27,7 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
     private bool   _isOnFriendsTab = true;
     private bool   _isOnCodeTab;
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    public new event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
@@ -61,7 +63,7 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
         _installation = installation;
         _homeVm       = homeVm;
 
-        var app = (App)Application.Current;
+        var app = (App)Application.Current!;
         _api           = app.ServiceProvider!.GetRequiredService<INexoraApiService>();
         _nexoraService = app.ServiceProvider!.GetRequiredService<INexoraAccountService>();
         _shareService  = app.ServiceProvider!.GetRequiredService<IInstanceShareService>();
@@ -83,10 +85,10 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
     {
         IsOnFriendsTab = friends;
         IsOnCodeTab    = !friends;
-        FriendsTabPanel.Visibility     = friends ? Visibility.Visible   : Visibility.Collapsed;
-        CodeTabPanel.Visibility        = friends ? Visibility.Collapsed : Visibility.Visible;
-        SelectedSummaryBorder.Visibility = friends && HasSelection ? Visibility.Visible : Visibility.Collapsed;
-        ShareButton.Visibility         = friends ? Visibility.Visible   : Visibility.Collapsed;
+        FriendsTabPanel.IsVisible     = friends;
+        CodeTabPanel.IsVisible        = !friends;
+        SelectedSummaryBorder.IsVisible = friends && HasSelection;
+        ShareButton.IsVisible         = friends;
         SendStatusText.Text            = string.Empty;
     }
 
@@ -94,24 +96,24 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
 
     private async Task LoadFriendsAsync()
     {
-        LoadingText.Visibility         = Visibility.Visible;
-        FriendsScrollViewer.Visibility = Visibility.Collapsed;
-        EmptyText.Visibility           = Visibility.Collapsed;
+        LoadingText.IsVisible         = true;
+        FriendsScrollViewer.IsVisible = false;
+        EmptyText.IsVisible           = false;
 
         var token = _nexoraService.Current?.Token;
         if (string.IsNullOrEmpty(token))
         {
             ShowStatus("You must be signed in to your Nexora account to share instances.");
-            LoadingText.Visibility = Visibility.Collapsed;
+            LoadingText.IsVisible = false;
             return;
         }
 
         var result = await _api.GetFriendsAsync(token);
-        LoadingText.Visibility = Visibility.Collapsed;
+        LoadingText.IsVisible = false;
 
         if (!result.Success || result.Data == null || result.Data.Count == 0)
         {
-            EmptyText.Visibility = Visibility.Visible;
+            EmptyText.IsVisible = true;
             return;
         }
 
@@ -119,7 +121,7 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
         foreach (var f in result.Data)
             _friends.Add(new SelectableFriend(f));
 
-        FriendsScrollViewer.Visibility = Visibility.Visible;
+        FriendsScrollViewer.IsVisible = true;
         UpdateSelectionState();
     }
 
@@ -140,12 +142,12 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
         if (count == 0)
         {
             SelectedSummaryText.Text         = string.Empty;
-            SelectedSummaryBorder.Visibility = Visibility.Collapsed;
+            SelectedSummaryBorder.IsVisible = false;
         }
         else
         {
             SelectedSummaryText.Text = $"Sharing with: {string.Join(", ", selected.Select(f => f.WebsiteUsername))}";
-            SelectedSummaryBorder.Visibility = Visibility.Visible;
+            SelectedSummaryBorder.IsVisible = true;
         }
     }
 
@@ -163,7 +165,7 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
         var senderName = _nexoraService.Current?.Username ?? string.Empty;
         var recipients = selected.Select(f => f.WebsiteUsername);
 
-        var progress = new Progress<string>(msg => Dispatcher.Invoke(() => SendStatusText.Text = msg));
+        var progress = new Progress<string>(msg => Dispatcher.UIThread.Post(() => SendStatusText.Text = msg));
         var result   = await _shareService.ShareWithFriendsAsync(token, senderName, _installation, recipients, progress);
 
         if (result.Success)
@@ -188,13 +190,13 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
         SendStatusText.Text       = "Generating code…";
 
         var token    = _nexoraService.Current?.Token ?? string.Empty;
-        var progress = new Progress<string>(msg => Dispatcher.Invoke(() => SendStatusText.Text = msg));
+        var progress = new Progress<string>(msg => Dispatcher.UIThread.Post(() => SendStatusText.Text = msg));
         var result   = await _shareService.GenerateShareCodeAsync(token, _installation, progress);
 
         if (result.Success && !string.IsNullOrWhiteSpace(result.Data))
         {
             ShareCodeText.Text          = result.Data;
-            CodeDisplayBorder.Visibility = Visibility.Visible;
+            CodeDisplayBorder.IsVisible = true;
             SendStatusText.Text         = "Code ready — share it with anyone!";
         }
         else
@@ -205,9 +207,14 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
         }
     }
 
-    private void CopyCode_Click(object sender, RoutedEventArgs e)
+    private async void CopyCode_Click(object sender, RoutedEventArgs e)
     {
-        try { Clipboard.SetText(ShareCodeText.Text); }
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard != null)
+                await clipboard.SetTextAsync(ShareCodeText.Text);
+        }
         catch { }
         SendStatusText.Text = "Copied!";
     }
@@ -216,7 +223,7 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
 
     private async void ImportFromCode_Click(object sender, RoutedEventArgs e)
     {
-        var code = ImportCodeBox.Text.Trim();
+        var code = (ImportCodeBox.Text ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(code)) return;
 
         SendStatusText.Text = "Downloading…";

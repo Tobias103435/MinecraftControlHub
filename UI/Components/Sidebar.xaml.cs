@@ -1,5 +1,8 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using MinecraftControlHub.Core.Services;
 using MinecraftControlHub.UI.Windows;
@@ -8,17 +11,21 @@ namespace MinecraftControlHub.UI.Components;
 
 public partial class Sidebar : UserControl
 {
-    public static readonly DependencyProperty IsNexoraLoggedInProperty =
-        DependencyProperty.Register(nameof(IsNexoraLoggedIn), typeof(bool), typeof(Sidebar),
-            new PropertyMetadata(false, OnLoginStateChanged));
+    public static readonly StyledProperty<bool> IsNexoraLoggedInProperty =
+        AvaloniaProperty.Register<Sidebar, bool>(nameof(IsNexoraLoggedIn));
 
     public bool IsNexoraLoggedIn
     {
-        get => (bool)GetValue(IsNexoraLoggedInProperty);
+        get => GetValue(IsNexoraLoggedInProperty);
         set => SetValue(IsNexoraLoggedInProperty, value);
     }
 
     public event EventHandler<AppPage>? PageSelected;
+
+    static Sidebar()
+    {
+        IsNexoraLoggedInProperty.Changed.AddClassHandler<Sidebar>((sidebar, e) => sidebar.OnLoginStateChanged(e));
+    }
 
     public Sidebar()
     {
@@ -50,25 +57,24 @@ public partial class Sidebar : UserControl
 
     private void ShowServerBadge(string tooltip)
     {
-        Dispatcher.InvokeAsync(() =>
+        Dispatcher.UIThread.Post(() =>
         {
-            ServerNotifBadge.Tag        = tooltip;
-            ServerNotifBadge.Visibility = Visibility.Visible;
+            ServerNotifBadge.Tag       = tooltip;
+            ServerNotifBadge.IsVisible = true;
         });
     }
 
     // Clear the badge when the user navigates to the Servers page
     public void ClearServerBadge()
     {
-        ServerNotifBadge.Visibility = Visibility.Collapsed;
-        ServerNotifBadge.Tag        = null;
+        ServerNotifBadge.IsVisible = false;
+        ServerNotifBadge.Tag       = null;
     }
 
-    private static void OnLoginStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private void OnLoginStateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        if (d is not Sidebar sidebar) return;
-        if ((bool)e.NewValue)
-            sidebar.RefreshNexoraProfile();
+        if (e.GetNewValue<bool>())
+            RefreshNexoraProfile();
     }
 
     /// <summary>Updates the avatar initial + username in the bottom strip.</summary>
@@ -85,9 +91,9 @@ public partial class Sidebar : UserControl
             : username[0].ToString().ToUpper();
     }
 
-    private void NavItem_Checked(object sender, RoutedEventArgs e)
+    private void NavItem_Checked(object? sender, RoutedEventArgs e)
     {
-        if (e.OriginalSource is RadioButton { Tag: string tag } &&
+        if (e.Source is RadioButton { IsChecked: true, Tag: string tag } &&
             Enum.TryParse<AppPage>(tag, out var page))
         {
             if (page == AppPage.Servers)
@@ -97,11 +103,15 @@ public partial class Sidebar : UserControl
         }
     }
 
-    private void SidebarLogin_Click(object sender, RoutedEventArgs e)
+    private async void SidebarLogin_Click(object? sender, RoutedEventArgs e)
     {
-        var window = Window.GetWindow(this);
-        var loginWindow = new NexoraLoginWindow { Owner = window };
-        loginWindow.ShowDialog();
+        var window = TopLevel.GetTopLevel(this) as Window;
+        var loginWindow = new NexoraLoginWindow();
+
+        if (window != null)
+            await loginWindow.ShowDialog(window);
+        else
+            loginWindow.Show();
 
         if (loginWindow.LoginSuccessful)
         {

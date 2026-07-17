@@ -1,11 +1,10 @@
-﻿<UserControl x:Class="MinecraftControlHub.UI.Pages.FriendsPage"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Class="MinecraftControlHub.UI.Pages.FriendsPage"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
-             d:DataContext="{d:DesignInstance viewmodels:FriendsPageViewModel}">
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600">
 
     <!-- Root Grid: content + optional overlay -->
     <Grid>
@@ -26,13 +25,8 @@
                 <Border Background="{DynamicResource BrushPanelBackground}"
                         BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                         CornerRadius="10" Padding="20" Margin="0,0,0,16"
-                        Visibility="{Binding IsNotLoggedIn, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                        IsVisible="{Binding !IsNotLoggedIn}">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
 
                         <!-- Avatar circle -->
                         <Border Grid.Column="0" Width="56" Height="56" CornerRadius="28"
@@ -51,35 +45,33 @@
                                        Foreground="{DynamicResource BrushTextPrimary}"/>
                             <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="12"
                                        Foreground="{DynamicResource BrushTextSecondary}" Margin="0,3,0,0"
-                                       Visibility="{Binding IsMinecraftLinked, Converter={StaticResource BoolToVisibilityConverter}}">
+                                       IsVisible="{Binding IsMinecraftLinked}">
                                 <Run Text="🎮  "/><Run Text="{Binding CurrentProfile.MinecraftUsername, Mode=OneWay}"/>
                             </TextBlock>
                             <TextBlock Text="No Minecraft account linked"
                                        FontFamily="{DynamicResource FontBody}" FontSize="12"
                                        Foreground="{DynamicResource BrushTextMuted}" Margin="0,3,0,0"
-                                       Visibility="{Binding IsMinecraftLinked, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                       IsVisible="{Binding !IsMinecraftLinked}"/>
                         </StackPanel>
 
                         <!-- Link / Linked badge -->
                         <Button Grid.Column="2"
                                 Content="Link Minecraft Account"
                                 Command="{Binding LinkMinecraftCommand}"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="14,8" VerticalAlignment="Center"
-                                Visibility="{Binding IsMinecraftLinked, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                            <Button.ToolTip>
-                                <ToolTip>
-                                    <TextBlock TextWrapping="Wrap" MaxWidth="260"
-                                               Text="{Binding LinkButtonTooltip}"/>
-                                </ToolTip>
-                            </Button.ToolTip>
+                                IsVisible="{Binding !IsMinecraftLinked}">
+                            <ToolTip.Tip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="260"
+                                           Text="{Binding LinkButtonTooltip}"/>
+                            </ToolTip.Tip>
                         </Button>
                         <Button Grid.Column="2"
                                 Content="Unlink Minecraft"
                                 Command="{Binding UnlinkMinecraftCommand}"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="14,8" VerticalAlignment="Center"
-                                Visibility="{Binding IsMinecraftLinked, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                IsVisible="{Binding IsMinecraftLinked}"/>
                     </Grid>
                 </Border>
 
@@ -87,7 +79,7 @@
                 <Border Background="{DynamicResource BrushPanelBackground}"
                         BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                         CornerRadius="8" Padding="12,10" Margin="0,0,0,12"
-                        Visibility="{Binding IsNoMicrosoftAccount, Converter={StaticResource BoolToVisibilityConverter}}">
+                        IsVisible="{Binding IsNoMicrosoftAccount}">
                     <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="12"
                                Foreground="{DynamicResource BrushTextSecondary}"
                                TextWrapping="Wrap">
@@ -100,22 +92,17 @@
                            FontFamily="{DynamicResource FontBody}" FontSize="12"
                            Foreground="{DynamicResource BrushTextSecondary}"
                            TextWrapping="Wrap" Margin="0,0,0,12"
-                           Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                           IsVisible="{Binding HasStatusMessage}"/>
 
                 <!-- Loading -->
                 <TextBlock Text="Loading…"
                            FontFamily="{DynamicResource FontBody}" FontSize="13"
                            Foreground="{DynamicResource BrushTextMuted}"
                            HorizontalAlignment="Center" Margin="0,8,0,8"
-                           Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                           IsVisible="{Binding IsLoading}"/>
 
                 <!-- Two-column layout -->
-                <Grid Visibility="{Binding IsNotLoggedIn, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="16"/>
-                        <ColumnDefinition Width="300"/>
-                    </Grid.ColumnDefinitions>
+                <Grid IsVisible="{Binding !IsNotLoggedIn}" ColumnDefinitions="*,16,300">
 
                     <!-- Left: friends -->
                     <Border Grid.Column="0"
@@ -127,17 +114,13 @@
                                        FontFamily="{DynamicResource FontDisplay}" FontSize="15"
                                        Foreground="{DynamicResource BrushTextPrimary}" Margin="0,0,0,14"/>
 
-                            <Grid Margin="0,0,0,14">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                            <Grid Margin="0,0,0,14" ColumnDefinitions="*,Auto">
                                 <TextBox Grid.Column="0"
-                                         Text="{Binding NewFriendUsername, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{StaticResource InputTextBoxStyle}"/>
+                                         Text="{Binding NewFriendUsername}"
+                                         Theme="{StaticResource InputTextBoxStyle}"/>
                                 <Button Grid.Column="1" Content="+ Add"
                                         Command="{Binding AddFriendCommand}"
-                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Theme="{StaticResource PrimaryButtonStyle}"
                                         Padding="16,8" Margin="8,0,0,0"/>
                             </Grid>
 
@@ -145,7 +128,7 @@
                                        FontFamily="{DynamicResource FontBody}" FontSize="12"
                                        Foreground="{DynamicResource BrushTextMuted}"
                                        HorizontalAlignment="Center" Margin="0,12,0,12"
-                                       Visibility="{Binding HasNoFriends, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                       IsVisible="{Binding HasNoFriends}"/>
 
                             <ItemsControl ItemsSource="{Binding Friends}">
                                 <ItemsControl.ItemTemplate>
@@ -153,11 +136,7 @@
                                         <Border Background="{DynamicResource BrushPanelElevated}"
                                                 BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                                                 CornerRadius="8" Padding="12,10" Margin="0,0,0,6">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
+                                            <Grid ColumnDefinitions="Auto,*">
                                                 <Border Grid.Column="0" Width="38" Height="38" CornerRadius="19"
                                                         Background="{DynamicResource BrushAccent}" Margin="0,0,12,0">
                                                     <TextBlock Text="{Binding Initial}"
@@ -173,7 +152,7 @@
                                                     <TextBlock FontFamily="{DynamicResource FontBody}" FontSize="11"
                                                                Foreground="{DynamicResource BrushTextSecondary}"
                                                                Margin="0,2,0,0"
-                                                               Visibility="{Binding MinecraftUsername, Converter={StaticResource NullToVisibilityConverter}}">
+                                                               IsVisible="{Binding MinecraftUsername, Converter={StaticResource NullToVisibilityConverter}}">
                                                         <Run Text="🎮  "/><Run Text="{Binding MinecraftUsername, Mode=OneWay}"/>
                                                     </TextBlock>
                                                 </StackPanel>
@@ -199,7 +178,7 @@
                                        FontFamily="{DynamicResource FontBody}" FontSize="12"
                                        Foreground="{DynamicResource BrushTextMuted}"
                                        HorizontalAlignment="Center" Margin="0,12,0,0"
-                                       Visibility="{Binding HasFriendRequests, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                       IsVisible="{Binding !HasFriendRequests}"/>
 
                             <ItemsControl ItemsSource="{Binding FriendRequests}">
                                 <ItemsControl.ItemTemplate>
@@ -207,12 +186,7 @@
                                         <Border Background="{DynamicResource BrushPanelElevated}"
                                                 BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                                                 CornerRadius="8" Padding="12,10" Margin="0,0,0,6">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
                                                 <Border Grid.Column="0" Width="34" Height="34" CornerRadius="17"
                                                         Background="{DynamicResource BrushAccent}" Margin="0,0,10,0">
                                                     <TextBlock Text="{Binding Initial}"
@@ -227,15 +201,15 @@
                                                            VerticalAlignment="Center"/>
                                                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                                                     <Button Content="✓"
-                                                            Command="{Binding DataContext.AcceptFriendCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            Command="{Binding $parent[UserControl].DataContext.AcceptFriendCommand}"
                                                             CommandParameter="{Binding Id}"
-                                                            Style="{StaticResource PrimaryButtonStyle}"
-                                                            Padding="10,5" Margin="0,0,6,0" ToolTip="Accept"/>
+                                                            Theme="{StaticResource PrimaryButtonStyle}"
+                                                            Padding="10,5" Margin="0,0,6,0" ToolTip.Tip="Accept"/>
                                                     <Button Content="✕"
-                                                            Command="{Binding DataContext.DeclineFriendCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            Command="{Binding $parent[UserControl].DataContext.DeclineFriendCommand}"
                                                             CommandParameter="{Binding Id}"
-                                                            Style="{StaticResource DangerButtonStyle}"
-                                                            Padding="10,5" ToolTip="Decline"/>
+                                                            Theme="{StaticResource DangerButtonStyle}"
+                                                            Padding="10,5" ToolTip.Tip="Decline"/>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
@@ -245,7 +219,7 @@
 
                             <Button Content="↻ Refresh"
                                     Command="{Binding RefreshCommand}"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Theme="{StaticResource SecondaryButtonStyle}"
                                     Padding="14,7" Margin="0,16,0,0"
                                     HorizontalAlignment="Center"/>
                         </StackPanel>
@@ -256,7 +230,7 @@
         </ScrollViewer>
 
         <!-- ══ Overlay: niet ingelogd ══════════════════════════════════════ -->
-        <Grid Visibility="{Binding IsNotLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}">
+        <Grid IsVisible="{Binding IsNotLoggedIn}">
             <!-- Frosted / blurred feel via semi-transparent layer -->
             <Rectangle Fill="{DynamicResource BrushAppBackground}" Opacity="0.82"/>
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -286,7 +260,7 @@
                                    HorizontalAlignment="Center" TextAlignment="Center"
                                    Margin="0,0,0,24"/>
                         <Button Content="Log in"
-                                Style="{StaticResource PrimaryButtonStyle}"
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 Padding="32,10"
                                 HorizontalAlignment="Center"
                                 Click="OverlayLogin_Click"/>

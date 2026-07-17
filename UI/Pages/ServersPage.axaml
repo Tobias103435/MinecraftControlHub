@@ -1,18 +1,16 @@
-﻿<UserControl x:Class="MinecraftControlHub.UI.Pages.ServersPage"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Class="MinecraftControlHub.UI.Pages.ServersPage"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
-             d:DataContext="{d:DesignInstance viewmodels:ServersPageViewModel}">
+             xmlns:converters="clr-namespace:MinecraftControlHub.UI.Converters">
+
     <UserControl.Resources>
-        <Style x:Key="ServerCardStyle" TargetType="Border" BasedOn="{StaticResource InstallationCardStyle}">
-            <Setter Property="Width" Value="Auto"/>
+        <ControlTheme x:Key="ServerCardStyle" TargetType="Border" BasedOn="{StaticResource InstallationCardStyle}">
+            <Setter Property="Width" Value="NaN"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="MinWidth" Value="0"/>
             <Setter Property="Margin" Value="0,0,0,16"/>
-        </Style>
+        </ControlTheme>
     </UserControl.Resources>
 
     <Grid>
@@ -24,7 +22,7 @@
                                FontSize="24"
                                Foreground="{DynamicResource BrushTextPrimary}"/>
                     <Button Content="+ New Server"
-                            Style="{StaticResource PrimaryButtonStyle}"
+                            Theme="{StaticResource PrimaryButtonStyle}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Padding="20,8"
@@ -38,7 +36,7 @@
                         CornerRadius="12"
                         Padding="24"
                         Margin="0,0,0,24"
-                        Visibility="{Binding IsWizardVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                        IsVisible="{Binding IsWizardVisible}">
                     <StackPanel>
                         <TextBlock Text="{Binding WizardStepTitle}"
                                    FontFamily="{DynamicResource FontDisplay}"
@@ -47,13 +45,13 @@
                                    Margin="0,0,0,20"/>
 
                         <!-- Step 1: Name -->
-                        <StackPanel Visibility="{Binding IsWizardStep1, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel IsVisible="{Binding IsWizardStep1}">
                             <TextBlock Text="Choose a name for your server."
                                        FontFamily="{DynamicResource FontBody}"
                                        FontSize="13"
                                        Foreground="{DynamicResource BrushTextSecondary}"
                                        Margin="0,0,0,12"/>
-                            <TextBox Text="{Binding NewServerName, UpdateSourceTrigger=PropertyChanged}"
+                            <TextBox Text="{Binding NewServerName, Mode=TwoWay}"
                                      Padding="12"
                                      FontSize="14"
                                      Background="{DynamicResource BrushAppBackground}"
@@ -63,7 +61,7 @@
                         </StackPanel>
 
                         <!-- Step 2: Type -->
-                        <StackPanel Visibility="{Binding IsWizardStep2, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel IsVisible="{Binding IsWizardStep2}">
                             <TextBlock Text="Select the server software type."
                                        FontFamily="{DynamicResource FontBody}"
                                        FontSize="13"
@@ -71,40 +69,29 @@
                                        Margin="0,0,0,12"/>
                             <ComboBox ItemsSource="{Binding ServerTypes}"
                                       SelectedItem="{Binding NewServerType}"
-                                      Padding="12"
-                                      Background="{DynamicResource BrushAppBackground}"
-                                      BorderBrush="{DynamicResource BrushBorder}"
-                                      BorderThickness="1"
-                                      Foreground="{DynamicResource BrushTextPrimary}"/>
+                                      Padding="12"/>
                         </StackPanel>
 
                         <!-- Step 3: Version -->
-                        <StackPanel Visibility="{Binding IsWizardStep3, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel IsVisible="{Binding IsWizardStep3}">
                             <TextBlock Text="Select the Minecraft version."
                                        FontFamily="{DynamicResource FontBody}"
                                        FontSize="13"
                                        Foreground="{DynamicResource BrushTextSecondary}"
                                        Margin="0,0,0,12"/>
-                            <ComboBox
-                                ItemsSource="{Binding AvailableServerVersions}"
-                                SelectedItem="{Binding NewServerVersion, Mode=TwoWay}"
-                                Text="{Binding NewServerVersion, UpdateSourceTrigger=PropertyChanged}"
-                                IsEditable="True"
-                                Padding="12"
-                                FontSize="14"
-                                Background="{DynamicResource BrushAppBackground}"
-                                BorderBrush="{DynamicResource BrushBorder}"
-                                BorderThickness="1"
-                                Foreground="{DynamicResource BrushTextPrimary}"
-                                Margin="0,0,0,12"/>
+                            <AutoCompleteBox ItemsSource="{Binding AvailableServerVersions}"
+                                             Text="{Binding NewServerVersion, Mode=TwoWay}"
+                                             Padding="12"
+                                             FontSize="14"
+                                             Margin="0,0,0,12"/>
 
-                            <!-- Java version advice (auto-updates when version changes) -->
+                            <!-- Java version advice -->
                             <Border Background="{DynamicResource BrushPanelElevated}"
                                     BorderBrush="{DynamicResource BrushBorder}"
                                     BorderThickness="1"
                                     CornerRadius="8"
                                     Padding="12,10"
-                                    Visibility="{Binding HasJavaAdvice, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    IsVisible="{Binding HasJavaAdvice}">
                                 <StackPanel>
                                     <TextBlock Text="Java requirement"
                                                FontFamily="{DynamicResource FontBody}"
@@ -121,13 +108,13 @@
                         </StackPanel>
 
                         <!-- Step 4: RAM -->
-                        <StackPanel Visibility="{Binding IsWizardStep4, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel IsVisible="{Binding IsWizardStep4}">
                             <TextBlock Text="How much RAM should the server use? (MB)"
                                        FontFamily="{DynamicResource FontBody}"
                                        FontSize="13"
                                        Foreground="{DynamicResource BrushTextSecondary}"
                                        Margin="0,0,0,12"/>
-                            <TextBox Text="{Binding NewServerMaxMemory, UpdateSourceTrigger=PropertyChanged}"
+                            <TextBox Text="{Binding NewServerMaxMemory, Mode=TwoWay}"
                                      Padding="12"
                                      FontSize="14"
                                      Background="{DynamicResource BrushAppBackground}"
@@ -140,11 +127,11 @@
                                        FontSize="12"
                                        Foreground="{DynamicResource BrushTextSecondary}"
                                        TextWrapping="Wrap"
-                                       Visibility="{Binding HasRamSuggestion, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                       IsVisible="{Binding HasRamSuggestion}"/>
                         </StackPanel>
 
                         <!-- Step 5: Account mode -->
-                        <StackPanel Visibility="{Binding IsWizardStep5, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel IsVisible="{Binding IsWizardStep5}">
                             <TextBlock Text="Choose how players can connect."
                                        FontFamily="{DynamicResource FontBody}"
                                        FontSize="13"
@@ -152,11 +139,7 @@
                                        Margin="0,0,0,12"/>
                             <ComboBox ItemsSource="{Binding ServerAccountModes}"
                                       SelectedItem="{Binding NewServerAccountMode}"
-                                      Padding="12"
-                                      Background="{DynamicResource BrushAppBackground}"
-                                      BorderBrush="{DynamicResource BrushBorder}"
-                                      BorderThickness="1"
-                                      Foreground="{DynamicResource BrushTextPrimary}"/>
+                                      Padding="12"/>
                             <TextBlock Text="The server folder, EULA, settings and start files will be automatically set up afterwards."
                                        FontFamily="{DynamicResource FontBody}"
                                        FontSize="12"
@@ -166,7 +149,7 @@
                         </StackPanel>
 
                         <!-- Step 6: Review & Create -->
-                        <StackPanel Visibility="{Binding IsWizardStep6, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel IsVisible="{Binding IsWizardStep6}">
                             <TextBlock Text="Review your settings and create the server."
                                        FontFamily="{DynamicResource FontBody}"
                                        FontSize="13"
@@ -209,7 +192,7 @@
                                     CornerRadius="8"
                                     Padding="12,10"
                                     Margin="0,12,0,0"
-                                    Visibility="{Binding HasJavaAdvice, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    IsVisible="{Binding HasJavaAdvice}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Java required: "
                                                FontFamily="{DynamicResource FontBody}"
@@ -231,29 +214,29 @@
                                    Foreground="{DynamicResource BrushDanger}"
                                    Margin="0,16,0,0"
                                    TextWrapping="Wrap"
-                                   Visibility="{Binding CreationError, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                   IsVisible="{Binding CreationError, Converter={StaticResource NullToVisibilityConverter}}"/>
 
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Right"
                                     Margin="0,24,0,0">
                             <Button Content="Cancel"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Theme="{StaticResource SecondaryButtonStyle}"
                                     Margin="0,0,8,0"
                                     Click="CancelWizard_Click"/>
                             <Button Content="Back"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Theme="{StaticResource SecondaryButtonStyle}"
                                     Margin="0,0,8,0"
                                     IsEnabled="{Binding CanGoBack}"
                                     Click="BackWizard_Click"/>
                             <Button Content="Next"
-                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Theme="{StaticResource PrimaryButtonStyle}"
                                     Margin="0,0,8,0"
                                     IsEnabled="{Binding CanGoNext}"
-                                    Visibility="{Binding IsWizardStep6, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+                                    IsVisible="{Binding IsWizardStep6, Converter={StaticResource InverseBoolToVisibilityConverter}}"
                                     Click="NextWizard_Click"/>
                             <Button Content="Create Server"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    Visibility="{Binding IsWizardStep6, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Theme="{StaticResource PrimaryButtonStyle}"
+                                    IsVisible="{Binding IsWizardStep6}"
                                     IsEnabled="{Binding IsCreatingServer, Converter={StaticResource InverseBoolConverter}}"
                                     Click="CreateServer_Click"/>
                         </StackPanel>
@@ -267,7 +250,7 @@
                         CornerRadius="12"
                         Padding="48"
                         Margin="0,0,0,24"
-                        Visibility="{Binding HasServers, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                        IsVisible="{Binding HasServers, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                     <StackPanel HorizontalAlignment="Center">
                         <TextBlock Text="No servers yet"
                                    FontFamily="{DynamicResource FontDisplay}"
@@ -285,36 +268,14 @@
 
                 <!-- Servers List -->
                 <ItemsControl ItemsSource="{Binding Servers}"
-                              Visibility="{Binding HasServers, Converter={StaticResource BoolToVisibilityConverter}}"
-                              HorizontalContentAlignment="Stretch">
-                    <ItemsControl.ItemContainerStyle>
-                        <Style TargetType="ContentPresenter">
-                            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                        </Style>
-                    </ItemsControl.ItemContainerStyle>
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel HorizontalAlignment="Stretch"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
+                              IsVisible="{Binding HasServers}">
+                    <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource ServerCardStyle}">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
+                            <Border Theme="{StaticResource ServerCardStyle}">
+                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 
                                     <!-- Header row: name + status badge -->
-                                    <Grid Grid.Row="0" Margin="0,0,0,10">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
+                                    <Grid Grid.Row="0" Margin="0,0,0,10" ColumnDefinitions="*,Auto">
                                         <TextBlock Grid.Column="0"
                                                    Text="{Binding Name}"
                                                    FontFamily="{DynamicResource FontDisplay}"
@@ -324,22 +285,19 @@
                                                    VerticalAlignment="Center"/>
                                         <!-- Status pill badge -->
                                         <Border Grid.Column="1"
-                                                x:Name="StatusBadge"
                                                 CornerRadius="10"
                                                 Padding="10,3"
                                                 Background="{DynamicResource BrushPanelElevated}"
                                                 VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal">
-                                                <Ellipse x:Name="StatusDot"
-                                                         Width="7" Height="7"
-                                                         Fill="{DynamicResource BrushOffline}"
+                                                <Ellipse Width="7" Height="7"
+                                                         Fill="{Binding StatusDotBrush}"
                                                          VerticalAlignment="Center"
                                                          Margin="0,0,6,0"/>
-                                                <TextBlock x:Name="StatusLabel"
-                                                           Text="{Binding Status}"
+                                                <TextBlock Text="{Binding Status}"
                                                            FontFamily="{DynamicResource FontBody}"
                                                            FontSize="11"
-                                                           Foreground="{DynamicResource BrushTextMuted}"
+                                                           Foreground="{Binding StatusTextBrush}"
                                                            VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Border>
@@ -374,11 +332,9 @@
 
                                     <!-- Provisioning progress (jar download in background) -->
                                     <StackPanel Grid.Row="2"
-                                                x:Name="ProvisioningPanel"
                                                 Margin="0,0,0,10"
-                                                Visibility="Collapsed">
-                                        <TextBlock x:Name="ProvisioningLabel"
-                                                   Text="Downloading server files…"
+                                                IsVisible="{Binding ProvisioningPanelVisible}">
+                                        <TextBlock Text="Downloading server files…"
                                                    FontFamily="{DynamicResource FontBody}"
                                                    FontSize="11"
                                                    Foreground="{DynamicResource BrushAccent}"
@@ -392,80 +348,43 @@
 
                                     <!-- Progress bar (server load while running) -->
                                     <ProgressBar Grid.Row="3"
-                                                 Style="{StaticResource ServerProgressBarStyle}"
+                                                 Theme="{StaticResource ServerProgressBarStyle}"
                                                  Value="{Binding LoadPercent}"
                                                  Maximum="100"
                                                  Margin="0,0,0,14"/>
 
                                     <!-- Action buttons -->
                                     <WrapPanel Grid.Row="4">
-                                        <Button x:Name="StartBtn" Content="▶  Start"
-                                                Style="{StaticResource PrimaryButtonStyle}"
+                                        <Button Content="{Binding StartButtonContent}"
+                                                Theme="{StaticResource PrimaryButtonStyle}"
                                                 Padding="16,7" Margin="0,0,8,0"
+                                                IsVisible="{Binding StartButtonVisible}"
+                                                IsEnabled="{Binding StartButtonEnabled}"
                                                 Click="StartServer_Click"/>
-                                        <Button x:Name="StopBtn" Content="■  Stop"
-                                                Style="{StaticResource SecondaryButtonStyle}"
+                                        <Button Content="{Binding StopButtonContent}"
+                                                Theme="{StaticResource SecondaryButtonStyle}"
                                                 Padding="16,7" Margin="0,0,8,0"
-                                                Visibility="Collapsed"
+                                                IsVisible="{Binding StopButtonVisible}"
+                                                IsEnabled="{Binding StopButtonEnabled}"
                                                 Click="StopServer_Click"/>
-                                        <Button x:Name="RestartBtn" Content="↺  Restart"
-                                                Style="{StaticResource SecondaryButtonStyle}"
+                                        <Button Content="↺  Restart"
+                                                Theme="{StaticResource SecondaryButtonStyle}"
                                                 Padding="16,7" Margin="0,0,8,0"
-                                                Visibility="Collapsed"
-                                                IsEnabled="False"
+                                                IsVisible="{Binding RestartButtonVisible}"
+                                                IsEnabled="{Binding RestartButtonEnabled}"
                                                 Click="RestartServer_Click"/>
                                         <Button Content="Open"
-                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Theme="{StaticResource SecondaryButtonStyle}"
                                                 Padding="16,7" Margin="0,0,8,0"
-                                                ToolTip="Open server (console, logs, settings)"
+                                                ToolTip.Tip="Open server (console, logs, settings)"
                                                 Click="PreviewServer_Click"/>
                                         <Button Content="Delete"
-                                                Style="{StaticResource DangerButtonStyle}"
+                                                Theme="{StaticResource DangerButtonStyle}"
                                                 Padding="16,7"
                                                 Click="DeleteServer_Click"/>
                                     </WrapPanel>
                                 </Grid>
                             </Border>
-                            <DataTemplate.Triggers>
-                                <!-- Running state -->
-                                <DataTrigger Binding="{Binding Status}" Value="Running">
-                                    <Setter TargetName="StartBtn"   Property="Visibility" Value="Collapsed"/>
-                                    <Setter TargetName="StopBtn"    Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="RestartBtn" Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="RestartBtn" Property="IsEnabled"  Value="True"/>
-                                    <Setter TargetName="StatusDot"  Property="Fill"       Value="{DynamicResource BrushOnline}"/>
-                                    <Setter TargetName="StatusLabel" Property="Foreground" Value="{DynamicResource BrushOnline}"/>
-                                </DataTrigger>
-                                <!-- Stopped state -->
-                                <DataTrigger Binding="{Binding Status}" Value="Stopped">
-                                    <Setter TargetName="StartBtn"   Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="StopBtn"    Property="Visibility" Value="Collapsed"/>
-                                    <Setter TargetName="RestartBtn" Property="Visibility" Value="Collapsed"/>
-                                    <Setter TargetName="StatusDot"  Property="Fill"       Value="{DynamicResource BrushOffline}"/>
-                                </DataTrigger>
-                                <!-- Starting state -->
-                                <DataTrigger Binding="{Binding Status}" Value="Starting">
-                                    <Setter TargetName="StartBtn"   Property="IsEnabled"  Value="False"/>
-                                    <Setter TargetName="StartBtn"   Property="Content"    Value="Starting…"/>
-                                    <Setter TargetName="StatusDot"  Property="Fill"       Value="#F0A020"/>
-                                    <Setter TargetName="StatusLabel" Property="Foreground" Value="#F0A020"/>
-                                </DataTrigger>
-                                <!-- Stopping state -->
-                                <DataTrigger Binding="{Binding Status}" Value="Stopping">
-                                    <Setter TargetName="StopBtn"    Property="IsEnabled"  Value="False"/>
-                                    <Setter TargetName="StopBtn"    Property="Content"    Value="Stopping…"/>
-                                    <Setter TargetName="StatusDot"  Property="Fill"       Value="#F0A020"/>
-                                    <Setter TargetName="StatusLabel" Property="Foreground" Value="#F0A020"/>
-                                </DataTrigger>
-                                <!-- Provisioning state (jar download in background) -->
-                                <DataTrigger Binding="{Binding Status}" Value="Provisioning">
-                                    <Setter TargetName="StartBtn"        Property="IsEnabled"  Value="False"/>
-                                    <Setter TargetName="StartBtn"        Property="Content"    Value="Downloading…"/>
-                                    <Setter TargetName="StatusDot"       Property="Fill"       Value="{DynamicResource BrushAccent}"/>
-                                    <Setter TargetName="StatusLabel"     Property="Foreground" Value="{DynamicResource BrushAccent}"/>
-                                    <Setter TargetName="ProvisioningPanel" Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

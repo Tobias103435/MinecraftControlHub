@@ -1,7 +1,8 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Data;
+using Avalonia.Controls;
+using Avalonia.Data.Converters;
+using Avalonia.Media;
 
 namespace MinecraftControlHub.UI.Converters;
 
@@ -70,12 +71,12 @@ public class BoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is true ? Visibility.Visible : Visibility.Collapsed;
+        return value is true;
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is Visibility.Visible;
+        return value is true;
     }
 }
 
@@ -83,12 +84,12 @@ public class InverseBoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is true ? Visibility.Collapsed : Visibility.Visible;
+        return value is not true;
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is Visibility.Collapsed;
+        return value is not true;
     }
 }
 
@@ -105,11 +106,23 @@ public class InverseBoolConverter : IValueConverter
     }
 }
 
+/// <summary>Maps IsSuccess (bool) to a green/red brush for execution result borders and text.</summary>
+public class SuccessToBrushConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is true
+            ? new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50))
+            : new SolidColorBrush(Color.FromRgb(0xE5, 0x39, 0x35));
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
 public class NullToVisibilityConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is null or "" ? Visibility.Collapsed : Visibility.Visible;
+        return value is not (null or "");
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -123,7 +136,7 @@ public class LoaderNotVanillaToVisibilityConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is MinecraftControlHub.Core.Models.LoaderType.Vanilla ? Visibility.Collapsed : Visibility.Visible;
+        return value is not MinecraftControlHub.Core.Models.LoaderType.Vanilla;
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -165,11 +178,11 @@ public class BoolToEnabledLabelConverter : IValueConverter
 /// Used for highlighting the active pagination button without using Binding on DataTrigger.Value.
 /// Usage: &lt;MultiBinding Converter="{StaticResource EqualityConverter}"&gt; ... &lt;/MultiBinding&gt;
 /// </summary>
-public class EqualityConverter : System.Windows.Data.IMultiValueConverter
+public class EqualityConverter : IMultiValueConverter
 {
-    public object Convert(object?[] values, Type targetType, object? parameter, CultureInfo culture)
+    public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (values == null || values.Length < 2) return false;
+        if (values == null || values.Count < 2) return false;
         return Equals(values[0], values[1]);
     }
 
@@ -189,13 +202,13 @@ public class TierToBadgeBrushConverter : IValueConverter
         {
             return tier switch
             {
-                MinecraftControlHub.Core.Models.TunnelProviderTier.Free             => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2D, 0x7A, 0x46)),
-                MinecraftControlHub.Core.Models.TunnelProviderTier.FreemiumLimited  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x7A, 0x5C, 0x1E)),
-                MinecraftControlHub.Core.Models.TunnelProviderTier.Premium          => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4A, 0x3A, 0x7A)),
-                _                                                                   => System.Windows.Media.Brushes.Transparent
+                MinecraftControlHub.Core.Models.TunnelProviderTier.Free             => new SolidColorBrush(Color.FromRgb(0x2D, 0x7A, 0x46)),
+                MinecraftControlHub.Core.Models.TunnelProviderTier.FreemiumLimited  => new SolidColorBrush(Color.FromRgb(0x7A, 0x5C, 0x1E)),
+                MinecraftControlHub.Core.Models.TunnelProviderTier.Premium          => new SolidColorBrush(Color.FromRgb(0x4A, 0x3A, 0x7A)),
+                _                                                                   => Brushes.Transparent
             };
         }
-        return System.Windows.Media.Brushes.Transparent;
+        return Brushes.Transparent;
     }
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => throw new NotSupportedException();
@@ -212,13 +225,13 @@ public class TierToTextBrushConverter : IValueConverter
         {
             return tier switch
             {
-                MinecraftControlHub.Core.Models.TunnelProviderTier.Free             => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6E, 0xE8, 0x9A)),
-                MinecraftControlHub.Core.Models.TunnelProviderTier.FreemiumLimited  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF0, 0xC0, 0x60)),
-                MinecraftControlHub.Core.Models.TunnelProviderTier.Premium          => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xB0, 0x9A, 0xF0)),
-                _                                                                   => System.Windows.Media.Brushes.White
+                MinecraftControlHub.Core.Models.TunnelProviderTier.Free             => new SolidColorBrush(Color.FromRgb(0x6E, 0xE8, 0x9A)),
+                MinecraftControlHub.Core.Models.TunnelProviderTier.FreemiumLimited  => new SolidColorBrush(Color.FromRgb(0xF0, 0xC0, 0x60)),
+                MinecraftControlHub.Core.Models.TunnelProviderTier.Premium          => new SolidColorBrush(Color.FromRgb(0xB0, 0x9A, 0xF0)),
+                _                                                                   => Brushes.White
             };
         }
-        return System.Windows.Media.Brushes.White;
+        return Brushes.White;
     }
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => throw new NotSupportedException();

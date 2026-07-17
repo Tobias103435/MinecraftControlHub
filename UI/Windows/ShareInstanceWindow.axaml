@@ -1,18 +1,12 @@
-﻿<Window x:Class="MinecraftControlHub.UI.Windows.ShareInstanceWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window x:Class="MinecraftControlHub.UI.Windows.ShareInstanceWindow"
+        xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Share Instance"
         Width="480" Height="640"
         MinWidth="420" MinHeight="500"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="CanResizeWithGrip"
         Background="{DynamicResource BrushAppBackground}"
-        WindowStyle="SingleBorderWindow"
         ShowInTaskbar="False">
-
-    <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-    </Window.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
     <Grid Margin="28,24,28,24">
@@ -80,7 +74,7 @@
         <Border Grid.Row="2"
                 Background="{DynamicResource BrushPanelElevated}"
                 CornerRadius="6" Padding="12,8" Margin="0,0,0,10"
-                Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVisibilityConverter}}">
+                IsVisible="{Binding HasStatusMessage, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock x:Name="StatusMessageText"
                        FontFamily="{DynamicResource FontBody}" FontSize="12"
                        Foreground="{DynamicResource BrushTextSecondary}"
@@ -92,33 +86,13 @@
             <Button x:Name="TabFriendsBtn"
                     Content="Share with Friends"
                     Padding="14,7" Margin="0,0,8,0"
-                    Click="TabFriends_Click">
-                <Button.Style>
-                    <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsOnFriendsTab}" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource BrushAccent}"/>
-                                <Setter Property="Foreground" Value="White"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
+                    Theme="{StaticResource SecondaryButtonStyle}"
+                    Click="TabFriends_Click"/>
             <Button x:Name="TabCodeBtn"
                     Content="Share Code"
                     Padding="14,7"
-                    Click="TabCode_Click">
-                <Button.Style>
-                    <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsOnCodeTab}" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource BrushAccent}"/>
-                                <Setter Property="Foreground" Value="White"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
+                    Theme="{StaticResource SecondaryButtonStyle}"
+                    Click="TabCode_Click"/>
         </StackPanel>
 
         <!-- ── Friends tab ── -->
@@ -172,13 +146,13 @@
                            Foreground="{DynamicResource BrushTextMuted}"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            TextAlignment="Center" TextWrapping="Wrap"
-                           Margin="20" Visibility="Collapsed"/>
+                           Margin="20" IsVisible="False"/>
 
                 <!-- Friends list -->
                 <ScrollViewer Grid.Row="1"
                               x:Name="FriendsScrollViewer"
                               VerticalScrollBarVisibility="Auto"
-                              Visibility="Collapsed">
+                              IsVisible="False">
                     <ItemsControl x:Name="FriendsList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -186,15 +160,6 @@
                                         BorderThickness="0,0,0,1"
                                         Padding="14,10"
                                         Cursor="Hand">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource BrushPanelElevated}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -245,7 +210,7 @@
         <!-- ── Code tab ── -->
         <StackPanel Grid.Row="4"
                     x:Name="CodeTabPanel"
-                    Visibility="Collapsed"
+                    IsVisible="False"
                     Margin="0,0,0,12">
 
             <!-- Generate code -->
@@ -262,7 +227,7 @@
                                TextWrapping="Wrap" Margin="0,0,0,14"/>
                     <Button x:Name="GenerateCodeBtn"
                             Content="Generate code"
-                            Style="{StaticResource SecondaryButtonStyle}"
+                            Theme="{StaticResource SecondaryButtonStyle}"
                             Padding="16,8" HorizontalAlignment="Left"
                             Click="GenerateCode_Click"/>
 
@@ -271,7 +236,7 @@
                             Background="{DynamicResource BrushAppBackground}"
                             BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                             CornerRadius="8" Padding="16,12" Margin="0,14,0,0"
-                            Visibility="Collapsed">
+                            IsVisible="False">
                         <Grid>
                             <TextBlock x:Name="ShareCodeText"
                                        FontFamily="Consolas" FontSize="22"
@@ -279,7 +244,7 @@
                                        VerticalAlignment="Center"
                                        TextWrapping="Wrap"/>
                             <Button Content="Copy"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Theme="{StaticResource SecondaryButtonStyle}"
                                     Padding="12,6" HorizontalAlignment="Right"
                                     Click="CopyCode_Click"/>
                         </Grid>
@@ -307,7 +272,7 @@
                                  Foreground="{DynamicResource BrushTextPrimary}"
                                  BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"/>
                         <Button Content="Import"
-                                Style="{StaticResource PrimaryButtonStyle}"
+                                Theme="{StaticResource PrimaryButtonStyle}"
                                 Padding="16,8" Margin="8,0,0,0"
                                 Click="ImportFromCode_Click"/>
                     </StackPanel>
@@ -321,7 +286,7 @@
                 Background="{DynamicResource BrushPanelBackground}"
                 BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1"
                 CornerRadius="8" Padding="12,10" Margin="0,0,0,16"
-                Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisibilityConverter}}">
+                IsVisible="{Binding HasSelection, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock x:Name="SelectedSummaryText"
                        FontFamily="{DynamicResource FontBody}" FontSize="12"
                        Foreground="{DynamicResource BrushTextSecondary}"
@@ -346,14 +311,14 @@
             <Button Grid.Column="1"
                     Content="Cancel"
                     Click="Cancel_Click"
-                    Style="{StaticResource SecondaryButtonStyle}"
+                    Theme="{StaticResource SecondaryButtonStyle}"
                     Padding="18,9" FontSize="13"/>
 
             <Button Grid.Column="3"
                     x:Name="ShareButton"
                     Content="Share with selected"
                     Click="Share_Click"
-                    Style="{StaticResource PrimaryButtonStyle}"
+                    Theme="{StaticResource PrimaryButtonStyle}"
                     Padding="18,9" FontSize="13"
                     IsEnabled="False"/>
         </Grid>

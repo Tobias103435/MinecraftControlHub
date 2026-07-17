@@ -1,12 +1,13 @@
-using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media;
 
 namespace MinecraftControlHub.Core.Services;
 
 /// <summary>
 /// Switches the app theme between Dark and Light.
 ///
-/// Controls.xaml and the structural XAML (Sidebar, MainWindow) use {DynamicResource}
+/// Controls.axaml and the structural XAML (Sidebar, MainWindow) use {DynamicResource}
 /// for all brush keys, so mutating the brush objects in Application.Resources is
 /// sufficient — every bound element repaints automatically without any layout tricks.
 /// </summary>
@@ -88,38 +89,40 @@ public static class ThemeService
     private static void Apply(bool light)
     {
         var palette = light ? Light : Dark;
-        var res     = Application.Current.Resources;
+        var res     = Application.Current!.Resources;
 
         // 1. Update Color resources (for any remaining {DynamicResource ColorXxx} users)
         foreach (var kv in palette)
             res[kv.Key] = kv.Value;
 
         // 2. Mutate or replace the SolidColorBrush objects.
-        //    Because Controls.xaml/Sidebar/MainWindow now use {DynamicResource BrushXxx},
-        //    WPF's DynamicResource infrastructure detects the resource change and
+        //    Because Controls.axaml/Sidebar/MainWindow now use {DynamicResource BrushXxx},
+        //    Avalonia's DynamicResource infrastructure detects the resource change and
         //    automatically re-evaluates every binding to that key — no layout nudge needed.
+        //    Unlike WPF, Avalonia brushes are never "frozen", so they can always be mutated
+        //    in place.
         foreach (var kv in BrushToColor)
         {
             if (!palette.TryGetValue(kv.Value, out var color)) continue;
 
-            if (res[kv.Key] is SolidColorBrush brush && !brush.IsFrozen)
+            if (res.TryGetResource(kv.Key, null, out var existing) && existing is SolidColorBrush brush)
             {
                 brush.Color = color;
             }
             else
             {
-                // Frozen brushes (created by the XAML parser) must be replaced
-                var newBrush = new SolidColorBrush(color);
-                newBrush.Freeze();
-                res[kv.Key] = newBrush;
+                res[kv.Key] = new SolidColorBrush(color);
             }
         }
 
         // 3. Update any open window backgrounds that are set directly in C#
-        foreach (Window w in Application.Current.Windows)
+        if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            if (res["BrushAppBackground"] is SolidColorBrush bg)
-                w.Background = bg;
+            if (res.TryGetResource("BrushAppBackground", null, out var bgObj) && bgObj is SolidColorBrush bg)
+            {
+                foreach (var w in desktop.Windows)
+                    w.Background = bg;
+            }
         }
     }
 }

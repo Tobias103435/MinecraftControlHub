@@ -1,18 +1,19 @@
-﻿<UserControl x:Class="MinecraftControlHub.UI.Pages.AiPage"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Class="MinecraftControlHub.UI.Pages.AiPage"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewmodels="clr-namespace:MinecraftControlHub.UI.ViewModels"
              xmlns:models="clr-namespace:MinecraftControlHub.AI.Models"
              xmlns:helpers="clr-namespace:MinecraftControlHub.UI.Helpers"
-             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
-             d:DataContext="{d:DesignInstance viewmodels:AiTerminalViewModel}">
+             xmlns:local="clr-namespace:MinecraftControlHub.UI.Pages"
+             d:DesignWidth="900" d:DesignHeight="700"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
 
     <UserControl.Resources>
 
         <!-- ── User message template ── -->
-        <DataTemplate x:Key="UserMessageTemplate" DataType="{x:Type models:TerminalMessage}">
+        <DataTemplate x:Key="UserMessageTemplate" DataType="models:TerminalMessage">
             <Grid Margin="0,4,0,4">
                 <Border HorizontalAlignment="Right"
                         MaxWidth="600"
@@ -29,7 +30,7 @@
         </DataTemplate>
 
         <!-- ── AI message template ── -->
-        <DataTemplate x:Key="AIMessageTemplate" DataType="{x:Type models:TerminalMessage}">
+        <DataTemplate x:Key="AIMessageTemplate" DataType="models:TerminalMessage">
             <Grid Margin="0,4,0,4">
                 <Grid HorizontalAlignment="Left" MaxWidth="680">
                     <Grid.ColumnDefinitions>
@@ -65,7 +66,7 @@
         </DataTemplate>
 
         <!-- ── Action plan template ── -->
-        <DataTemplate x:Key="ActionPlanTemplate" DataType="{x:Type models:TerminalMessage}">
+        <DataTemplate x:Key="ActionPlanTemplate" DataType="models:TerminalMessage">
             <Grid Margin="0,8,0,8">
                 <Border Background="{DynamicResource BrushPanelElevated}"
                         BorderBrush="{DynamicResource BrushAccent}"
@@ -87,7 +88,7 @@
 
                         <!-- Compact summary (shown when HasPlanSummary is true) -->
                         <Border Margin="0,0,0,8"
-                                Visibility="{Binding HasPlanSummary, Converter={StaticResource BoolToVisibilityConverter}}">
+                                IsVisible="{Binding HasPlanSummary}">
                             <StackPanel>
                                 <!-- Summary line with expand/collapse toggle -->
                                 <Button Click="ToggleExpand_Click"
@@ -96,37 +97,21 @@
                                         HorizontalContentAlignment="Left"
                                         Background="Transparent"
                                         BorderThickness="0"
-                                        Padding="0">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="Transparent" Padding="6,6">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <!-- Chevron icon that rotates -->
-                                                    <TextBlock FontSize="11" Margin="0,0,8,0"
-                                                               VerticalAlignment="Center"
-                                                               Foreground="{DynamicResource BrushTextMuted}">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Text" Value="▶"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsExpanded}" Value="True">
-                                                                        <Setter Property="Text" Value="▼"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
-                                                    <!-- Summary text -->
-                                                    <TextBlock Text="{Binding PlanSummary}"
-                                                               FontFamily="{DynamicResource FontBody}"
-                                                               FontSize="13"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="{DynamicResource BrushTextPrimary}"
-                                                               VerticalAlignment="Center"/>
-                                                </StackPanel>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Button.Template>
+                                        Padding="6,6">
+                                    <StackPanel Orientation="Horizontal">
+                                        <!-- Chevron icon -->
+                                        <TextBlock FontSize="11" Margin="0,0,8,0"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource BrushTextMuted}"
+                                                   Text="{Binding ExpandChevron}"/>
+                                        <!-- Summary text -->
+                                        <TextBlock Text="{Binding PlanSummary}"
+                                                   FontFamily="{DynamicResource FontBody}"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource BrushTextPrimary}"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
                                 </Button>
 
                                 <!-- Expanded details -->
@@ -136,7 +121,7 @@
                                            Foreground="{DynamicResource BrushTextMuted}"
                                            TextWrapping="Wrap"
                                            Margin="20,6,0,0"
-                                           Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                           IsVisible="{Binding IsExpanded}"/>
                             </StackPanel>
                         </Border>
 
@@ -147,42 +132,29 @@
                                    Foreground="{DynamicResource BrushTextPrimary}"
                                    TextWrapping="Wrap"
                                    Margin="0,0,0,14"
-                                   Visibility="{Binding HasPlanSummary, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                   IsVisible="{Binding HasPlanSummary, Converter={StaticResource InverseBoolConverter}}"/>
 
                         <!-- Confirmation buttons -->
                         <StackPanel Orientation="Horizontal"
-                                    Visibility="{Binding IsAwaitingConfirmation, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    IsVisible="{Binding IsAwaitingConfirmation}">
                             <Button x:Name="CancelBtn"
                                     Content="Cancel"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Theme="{StaticResource SecondaryButtonStyle}"
                                     Padding="16,8"
                                     Margin="0,0,10,0"
                                     Tag="{Binding}"
                                     Click="CancelAction_Click"/>
                             <Button x:Name="ExecuteBtn"
                                     Content="Execute"
-                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Theme="{StaticResource PrimaryButtonStyle}"
                                     Padding="16,8"
                                     Tag="{Binding}"
                                     Click="ExecuteAction_Click"/>
                         </StackPanel>
 
                         <!-- Executing indicator — hidden once IsDone is set -->
-                        <StackPanel Orientation="Horizontal">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <MultiDataTrigger>
-                                            <MultiDataTrigger.Conditions>
-                                                <Condition Binding="{Binding IsExecuting}" Value="True"/>
-                                                <Condition Binding="{Binding IsDone}" Value="False"/>
-                                            </MultiDataTrigger.Conditions>
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </MultiDataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
+                        <StackPanel Orientation="Horizontal"
+                                    IsVisible="{Binding IsExecutingActive}">
                             <TextBlock Text="Executing…"
                                        FontFamily="{DynamicResource FontBody}"
                                        FontSize="13"
@@ -194,46 +166,22 @@
         </DataTemplate>
 
         <!-- ── Execution result template ── -->
-        <DataTemplate x:Key="ExecutionResultTemplate" DataType="{x:Type models:TerminalMessage}">
+        <DataTemplate x:Key="ExecutionResultTemplate" DataType="models:TerminalMessage">
             <Grid Margin="0,4,0,4">
                 <Border Background="{DynamicResource BrushPanelBackground}"
                         CornerRadius="8"
+                        BorderThickness="1"
+                        BorderBrush="{Binding IsSuccess, Converter={StaticResource SuccessToBrushConverter}}"
                         Padding="14,10">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="BorderThickness" Value="1"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsSuccess}" Value="True">
-                                    <Setter Property="BorderBrush" Value="{DynamicResource BrushOnline}"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsSuccess}" Value="False">
-                                    <Setter Property="BorderBrush" Value="{DynamicResource BrushDanger}"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
                     <StackPanel>
                         <TextBlock helpers:TextLinkHelper.TextWithLinks="{Binding Text}"
                                    helpers:TextLinkHelper.LinkBrush="{DynamicResource BrushAccent}"
                                    FontFamily="{DynamicResource FontBody}"
                                    FontSize="13"
-                                   TextWrapping="Wrap">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsSuccess}" Value="True">
-                                            <Setter Property="Foreground" Value="{DynamicResource BrushOnline}"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsSuccess}" Value="False">
-                                            <Setter Property="Foreground" Value="{DynamicResource BrushDanger}"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                                   Foreground="{Binding IsSuccess, Converter={StaticResource SuccessToBrushConverter}}"
+                                   TextWrapping="Wrap"/>
                         <!-- Fix with AI button — only visible on failure -->
                         <Button x:Name="FixWithAiBtn"
-                                Content="⟳  Fix with AI"
                                 Click="FixWithAi_Click"
                                 Margin="0,10,0,2"
                                 Padding="14,8"
@@ -242,39 +190,26 @@
                                 FontSize="12"
                                 FontWeight="SemiBold"
                                 Cursor="Hand"
-                                Visibility="Collapsed"
+                                IsVisible="{Binding IsSuccess, Converter={StaticResource InverseBoolConverter}}"
                                 Background="{DynamicResource BrushAccent}"
                                 Foreground="White"
                                 BorderThickness="0">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border x:Name="bd"
-                                                        Background="{TemplateBinding Background}"
-                                                        CornerRadius="6"
-                                                        Padding="{TemplateBinding Padding}">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="bd" Property="Background" Value="{DynamicResource BrushAccentHover}"/>
-                                                    </Trigger>
-                                                    <Trigger Property="IsEnabled" Value="False">
-                                                        <Setter TargetName="bd" Property="Opacity" Value="0.5"/>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsSuccess}" Value="False">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
+                            <Button.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <Canvas Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center">
+                                        <Path Data="M12,4A6,6,0,1,0,18,10"
+                                              Stroke="White"
+                                              StrokeThickness="2"
+                                              Fill="None"
+                                              StrokeLineCap="Round"/>
+                                        <Path Data="M18,4V10H12"
+                                              Stroke="White"
+                                              StrokeThickness="2"
+                                              StrokeLineCap="Round"/>
+                                    </Canvas>
+                                    <TextBlock Text="Fix with AI" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button.Content>
                         </Button>
                     </StackPanel>
                 </Border>
@@ -316,7 +251,7 @@
 
                 <Button Grid.Column="1"
                         Content="Clear history"
-                        Style="{StaticResource SecondaryButtonStyle}"
+                        Theme="{StaticResource SecondaryButtonStyle}"
                         Padding="14,7"
                         VerticalAlignment="Center"
                         Click="ClearHistory_Click"/>
@@ -325,7 +260,7 @@
 
         <!-- ── Not configured notice with Gemini key setup ── -->
         <Border Grid.Row="1"
-                Visibility="{Binding IsConfigured, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+                IsVisible="{Binding IsConfigured, Converter={StaticResource InverseBoolConverter}}"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
                 Background="{DynamicResource BrushPanelBackground}"
@@ -353,12 +288,8 @@
                           BorderThickness="1"
                           Padding="16,12"
                           Margin="0,0,0,16"
+                          Foreground="{DynamicResource BrushTextPrimary}"
                           IsExpanded="True">
-                    <Expander.Style>
-                        <Style TargetType="Expander">
-                            <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}"/>
-                        </Style>
-                    </Expander.Style>
                     <StackPanel Margin="0,12,0,0">
                         <TextBlock Text="Follow these steps to get a free Gemini API key:"
                                    FontFamily="{DynamicResource FontDisplay}"
@@ -366,18 +297,18 @@
                                    Foreground="{DynamicResource BrushTextPrimary}"
                                    Margin="0,0,0,10"/>
                         <StackPanel Margin="0,0,0,8">
-                            <TextBlock FontFamily="{DynamicResource FontBody}"
-                                       FontSize="12"
-                                       Foreground="{DynamicResource BrushTextSecondary}"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,0,4">
-                                <Run Text="1. Go to "/>
-                                <Hyperlink NavigateUri="https://aistudio.google.com/app/apikey"
-                                           RequestNavigate="Hyperlink_RequestNavigate"
-                                           Foreground="{DynamicResource BrushAccent}">
-                                    <Run Text="Google AI Studio"/>
-                                </Hyperlink>
-                            </TextBlock>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                <TextBlock Text="1. Go to "
+                                           FontFamily="{DynamicResource FontBody}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource BrushTextSecondary}"
+                                           VerticalAlignment="Center"/>
+                                <HyperlinkButton Content="Google AI Studio"
+                                                 NavigateUri="https://aistudio.google.com/app/apikey"
+                                                 Foreground="{DynamicResource BrushAccent}"
+                                                 Padding="0"
+                                                 VerticalAlignment="Center"/>
+                            </StackPanel>
                             <TextBlock Text="2. Sign in with your Google account"
                                        FontFamily="{DynamicResource FontBody}"
                                        FontSize="12"
@@ -440,7 +371,7 @@
                     </Border>
                     <Button Grid.Column="1"
                             Content="Save"
-                            Style="{StaticResource PrimaryButtonStyle}"
+                            Theme="{StaticResource PrimaryButtonStyle}"
                             Padding="16,8"
                             Margin="8,0,0,0"
                             Click="SaveGeminiKey_Click"/>
@@ -451,7 +382,7 @@
                            Foreground="{DynamicResource BrushTextMuted}"
                            Margin="0,8,0,0"
                            TextWrapping="Wrap"
-                           Visibility="Collapsed"/>
+                           IsVisible="False"/>
             </StackPanel>
         </Border>
 
@@ -459,18 +390,17 @@
         <ScrollViewer x:Name="MessageScroller"
                       Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      Visibility="{Binding IsConfigured, Converter={StaticResource BoolToVisibilityConverter}}"
+                      IsVisible="{Binding IsConfigured}"
                       Padding="24,16,24,8">
             <ItemsControl x:Name="MessageList"
                           ItemsSource="{Binding Messages}">
-                <ItemsControl.ItemTemplateSelector>
+                <ItemsControl.ItemTemplate>
                     <local:TerminalMessageTemplateSelector
-                        xmlns:local="clr-namespace:MinecraftControlHub.UI.Pages"
                         UserTemplate="{StaticResource UserMessageTemplate}"
                         AITemplate="{StaticResource AIMessageTemplate}"
                         ActionPlanTemplate="{StaticResource ActionPlanTemplate}"
                         ExecutionResultTemplate="{StaticResource ExecutionResultTemplate}"/>
-                </ItemsControl.ItemTemplateSelector>
+                </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
 
@@ -491,10 +421,10 @@
                 <!-- Import mod from file button -->
                 <Button Grid.Column="0"
                         Content="📎"
-                        Style="{StaticResource SecondaryButtonStyle}"
+                        Theme="{StaticResource SecondaryButtonStyle}"
                         Padding="12,10"
                         Margin="0,0,8,0"
-                        ToolTip="Import a mod .jar from file (for CurseForge mods)"
+                        ToolTip.Tip="Import a mod .jar from file (for CurseForge mods)"
                         Click="ImportModFromFile_Click"/>
 
                 <Border Grid.Column="1"
@@ -504,7 +434,8 @@
                         CornerRadius="8"
                         Margin="0,0,10,0">
                     <TextBox x:Name="InputBox"
-                             Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                             Text="{Binding InputText, Mode=TwoWay}"
+                             Watermark="Ask anything — 'Create a horror instance', 'Start my server', …"
                              FontFamily="{DynamicResource FontBody}"
                              FontSize="13.5"
                              Background="Transparent"
@@ -517,41 +448,20 @@
                              CaretBrush="{DynamicResource BrushTextPrimary}"
                              SelectionBrush="{DynamicResource BrushAccent}"
                              KeyDown="InputBox_KeyDown"
-                             TextChanged="InputBox_TextChanged">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox">
-                                <Style.Resources>
-                                    <VisualBrush x:Key="PlaceholderBrush" TileMode="None" Stretch="None" AlignmentX="Left">
-                                        <VisualBrush.Visual>
-                                            <TextBlock Text="Ask anything — 'Create a horror instance', 'Start my server', …"
-                                                       FontFamily="Segoe UI" FontSize="13.5"
-                                                       Foreground="{DynamicResource BrushTextMuted}"
-                                                       Margin="14,0,0,0"
-                                                       VerticalAlignment="Center"/>
-                                        </VisualBrush.Visual>
-                                    </VisualBrush>
-                                </Style.Resources>
-                                <Style.Triggers>
-                                    <Trigger Property="Text" Value="">
-                                        <Setter Property="Background" Value="{StaticResource PlaceholderBrush}"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
+                             TextChanged="InputBox_TextChanged"/>
                 </Border>
 
                 <Button Grid.Column="2"
                         Content="Cancel"
-                        Style="{StaticResource SecondaryButtonStyle}"
+                        Theme="{StaticResource SecondaryButtonStyle}"
                         Padding="14,10"
                         Margin="0,0,8,0"
-                        Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"
+                        IsVisible="{Binding IsBusy}"
                         Click="Cancel_Click"/>
 
                 <Button Grid.Column="3"
                         Content="Send"
-                        Style="{StaticResource PrimaryButtonStyle}"
+                        Theme="{StaticResource PrimaryButtonStyle}"
                         Padding="20,10"
                         IsEnabled="{Binding CanSend}"
                         Click="Send_Click"/>

@@ -1,0 +1,65 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ================================================================
+         Global default CheckBox theme — dark-themed, no white box ever.
+         Keyed by {x:Type CheckBox} so it becomes the default theme for
+         every CheckBox in the app (equivalent to WPF's unkeyed
+         <Style TargetType="CheckBox">).
+         ================================================================ -->
+    <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
+        <Setter Property="Foreground"      Value="{DynamicResource BrushTextPrimary}"/>
+        <Setter Property="Background"      Value="Transparent"/>
+        <Setter Property="BorderBrush"     Value="{DynamicResource BrushTextSecondary}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontFamily"      Value="{StaticResource FontBody}"/>
+        <Setter Property="FontSize"        Value="13"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Cursor"          Value="Hand"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="CheckBox">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- The box -->
+                    <Border x:Name="Box"
+                            Width="18" Height="18"
+                            CornerRadius="4"
+                            Background="Transparent"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="1.5"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0">
+                        <Path x:Name="Check"
+                              Data="M 2 8 L 6 12 L 13 3"
+                              Stroke="White"
+                              StrokeThickness="1.8"
+                              StrokeLineCap="Round"
+                              StrokeJoin="Round"
+                              Opacity="0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Stretch="Uniform"
+                              Width="10" Height="10"/>
+                    </Border>
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      VerticalAlignment="Center"/>
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover /template/ Border#Box">
+            <Setter Property="BorderBrush" Value="{DynamicResource BrushAccent}"/>
+        </Style>
+        <Style Selector="^:checked /template/ Border#Box">
+            <Setter Property="Background"  Value="{DynamicResource BrushAccent}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BrushAccent}"/>
+        </Style>
+        <Style Selector="^:checked /template/ Path#Check">
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="^:disabled /template/ Border#Box">
+            <Setter Property="Opacity" Value="0.4"/>
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

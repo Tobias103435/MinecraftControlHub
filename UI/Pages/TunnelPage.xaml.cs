@@ -1,7 +1,12 @@
 using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
@@ -22,21 +27,25 @@ public partial class TunnelPage : UserControl
     public TunnelPage()
     {
         InitializeComponent();
-        DataContext = ((App)Application.Current).ServiceProvider?.GetService(typeof(TunnelPageViewModel));
+        DataContext = ((App)Application.Current!).ServiceProvider?.GetService(typeof(TunnelPageViewModel));
 
-        var nexoraService = ((App)Application.Current).ServiceProvider?.GetService<INexoraAccountService>();
+        var nexoraService = ((App)Application.Current!).ServiceProvider?.GetService<INexoraAccountService>();
         if (nexoraService != null)
         {
             IsNexoraLoggedIn = nexoraService.Current != null;
             nexoraService.AccountChanged += (_, _) =>
             {
                 IsNexoraLoggedIn = nexoraService.Current != null;
-                Dispatcher.Invoke(() => OnPropertyChanged(nameof(IsNexoraLoggedIn)));
+                Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(IsNexoraLoggedIn)));
             };
         }
     }
 
-    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+    // 'new' because AvaloniaObject already declares a PropertyChanged event for its
+    // own AvaloniaProperty system; this one is specifically for the plain
+    // IsNexoraLoggedIn CLR property below, used by the $parent[UserControl] binding
+    // in TunnelPage.axaml.
+    public new event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged(string name)
         => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
 
@@ -44,10 +53,10 @@ public partial class TunnelPage : UserControl
     // Custom-port actions
     // -----------------------------------------------------------------------
 
-    private void AddCustomPort_Click(object sender, RoutedEventArgs e)
+    private void AddCustomPort_Click(object? sender, RoutedEventArgs e)
         => ViewModel?.AddCustomPort();
 
-    private void RemovePort_Click(object sender, RoutedEventArgs e)
+    private void RemovePort_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is PortInfo port)
             ViewModel?.RemovePort(port);
@@ -57,7 +66,7 @@ public partial class TunnelPage : UserControl
     // Inline provider picker injected into each port row's ContentControl
     // -----------------------------------------------------------------------
 
-    private void PortRow_Loaded(object sender, RoutedEventArgs e)
+    private void PortRow_Loaded(object? sender, RoutedEventArgs e)
     {
         if (sender is not ContentControl cc) return;
         if (cc.Tag is not PortInfo portInfo) return;
@@ -95,28 +104,33 @@ public partial class TunnelPage : UserControl
             Height       = 34,
             FontSize     = 12,
             ItemsSource  = compatible,
-            SelectedItem = assignment.SelectedProvider
+            SelectedItem = assignment.SelectedProvider,
+            ItemTemplate = new FuncDataTemplate<TunnelProvider>((_, _) =>
+            {
+                var panel = new StackPanel { Orientation = Orientation.Horizontal };
+
+                var nameText = new TextBlock
+                {
+                    FontSize          = 12,
+                    Foreground        = TryFindBrush("BrushTextPrimary"),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                nameText.Bind(TextBlock.TextProperty, new Binding("DisplayName"));
+
+                var priceText = new TextBlock
+                {
+                    FontSize          = 10,
+                    Foreground        = TryFindBrush("BrushTextMuted"),
+                    Margin            = new Thickness(6, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                priceText.Bind(TextBlock.TextProperty, new Binding("PriceLabel"));
+
+                panel.Children.Add(nameText);
+                panel.Children.Add(priceText);
+                return panel;
+            })
         };
-
-        var itemFactory = new FrameworkElementFactory(typeof(StackPanel));
-        itemFactory.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
-
-        var nameFactory = new FrameworkElementFactory(typeof(TextBlock));
-        nameFactory.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding("DisplayName"));
-        nameFactory.SetValue(TextBlock.FontSizeProperty, 12.0);
-        nameFactory.SetValue(TextBlock.ForegroundProperty, TryFindBrush("BrushTextPrimary"));
-        nameFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
-
-        var priceFactory = new FrameworkElementFactory(typeof(TextBlock));
-        priceFactory.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding("PriceLabel"));
-        priceFactory.SetValue(TextBlock.FontSizeProperty, 10.0);
-        priceFactory.SetValue(TextBlock.ForegroundProperty, TryFindBrush("BrushTextMuted"));
-        priceFactory.SetValue(TextBlock.MarginProperty, new Thickness(6, 0, 0, 0));
-        priceFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
-
-        itemFactory.AppendChild(nameFactory);
-        itemFactory.AppendChild(priceFactory);
-        cb.ItemTemplate = new DataTemplate { VisualTree = itemFactory };
 
         cb.SelectionChanged += (_, _) =>
         {
@@ -138,7 +152,7 @@ public partial class TunnelPage : UserControl
     // playit.gg claim URL
     // -----------------------------------------------------------------------
 
-    private void OpenClaimUrl_Click(object sender, RoutedEventArgs e)
+    private void OpenClaimUrl_Click(object? sender, RoutedEventArgs e)
     {
         var url = (sender as Button)?.Tag as string;
         if (string.IsNullOrEmpty(url)) return;
@@ -147,15 +161,35 @@ public partial class TunnelPage : UserControl
     }
 
     // -----------------------------------------------------------------------
-    // Log copy
+    // Log / address copy
     // -----------------------------------------------------------------------
 
-    private void CopyLog_Click(object sender, RoutedEventArgs e)
+    private async void CopyLog_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is string log && !string.IsNullOrEmpty(log))
         {
-            try { System.Windows.Clipboard.SetText(log); }
-            catch { }
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard != null)
+            {
+                try { await clipboard.SetTextAsync(log); }
+                catch { }
+            }
+        }
+    }
+
+    // NOTE: this used to be a Command bound to TunnelSessionViewModel.CopyAddressCommand,
+    // but Avalonia's clipboard is per-TopLevel/window, not a static class the ViewModel
+    // could reach — so, like Copy log above, it's a plain view-level click handler now.
+    private async void CopyAddress_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: TunnelSessionViewModel svm } && svm.HasAddress)
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard != null)
+            {
+                try { await clipboard.SetTextAsync(svm.PublicAddress!); }
+                catch { }
+            }
         }
     }
 
@@ -163,7 +197,7 @@ public partial class TunnelPage : UserControl
     // Share Tunnel — opens friend-selection dialog
     // -----------------------------------------------------------------------
 
-    private void ShareTunnel_Click(object sender, RoutedEventArgs e)
+    private async void ShareTunnel_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button btn) return;
 
@@ -172,16 +206,21 @@ public partial class TunnelPage : UserControl
         if (string.IsNullOrEmpty(session.PublicAddress)) return;
 
         var serverName = ViewModel?.SelectedServer?.Name;
+        var owner = TopLevel.GetTopLevel(this) as Window;
 
-        var win = new ShareTunnelWindow(session.PublicAddress, serverName)
-        {
-            Owner = Window.GetWindow(this)
-        };
-        win.ShowDialog();
+        var win = new ShareTunnelWindow(session.PublicAddress, serverName);
+        if (owner != null)
+            await win.ShowDialog(owner);
+        else
+            win.Show();
     }
 
     // -----------------------------------------------------------------------
 
-    private Brush TryFindBrush(string key)
-        => TryFindResource(key) as Brush ?? Brushes.Transparent;
+    private IBrush TryFindBrush(string key)
+    {
+        if (this.TryFindResource(key, out var value) && value is IBrush brush)
+            return brush;
+        return Brushes.Transparent;
+    }
 }

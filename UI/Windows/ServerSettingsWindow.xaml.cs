@@ -1,13 +1,16 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Input;
+using Avalonia.Platform.Storage;
+using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Win32;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
+using MinecraftControlHub.UI.Helpers;
 using MinecraftControlHub.UI.ViewModels;
 
 namespace MinecraftControlHub.UI.Windows;
@@ -62,9 +65,9 @@ public partial class ServerSettingsWindow : Window
 
         foreach (var b in _navButtons)
         {
-            b.Style = b.Name == btn.Name
-                ? (Style)FindResource("SideNavActiveButtonStyle")
-                : (Style)FindResource("SideNavButtonStyle");
+            b.Theme = b.Name == btn.Name
+                ? (this.TryFindResource("SideNavActiveButtonStyle", out var activeTheme) ? activeTheme as ControlTheme : null)
+                : (this.TryFindResource("SideNavButtonStyle", out var inactiveTheme) ? inactiveTheme as ControlTheme : null);
         }
 
         if (tag == "Mods")
@@ -77,8 +80,8 @@ public partial class ServerSettingsWindow : Window
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
-        _viewModel.Server.Name         = NameBox.Text;
-        _viewModel.Server.Motd         = MotdBox.Text;
+        _viewModel.Server.Name         = NameBox.Text ?? string.Empty;
+        _viewModel.Server.Motd         = MotdBox.Text ?? string.Empty;
         _viewModel.Server.MaxPlayers   = int.TryParse(MaxPlayersBox.Text, out var mp) ? mp : _viewModel.Server.MaxPlayers;
         _viewModel.Server.AllowCheats      = CheatsBox.IsChecked == true;
         _viewModel.Server.WhiteListEnabled = WhitelistBox.IsChecked == true;
@@ -92,14 +95,12 @@ public partial class ServerSettingsWindow : Window
             _viewModel.Server.Difficulty = diff.Content?.ToString() ?? _viewModel.Server.Difficulty;
 
         await _viewModel.SaveAsync();
-        DialogResult = true;
-        Close();
+        Close(true);
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
-        DialogResult = false;
-        Close();
+        Close(false);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -108,8 +109,8 @@ public partial class ServerSettingsWindow : Window
 
     private async void BrowseMods_Click(object sender, RoutedEventArgs e)
     {
-        var win = new ServerPluginBrowserWindow(_viewModel.Server) { Owner = this };
-        win.ShowDialog();
+        var win = new ServerPluginBrowserWindow(_viewModel.Server);
+        await win.ShowDialog(this);
         await _viewModel.LoadModsAsync();
     }
 
@@ -136,7 +137,7 @@ public partial class ServerSettingsWindow : Window
 
     private async void ModToggle_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is System.Windows.Controls.Primitives.ToggleButton tb
+        if (sender is Avalonia.Controls.Primitives.ToggleButton tb
             && tb.DataContext is InstalledModRowViewModel rowVm)
             await rowVm.ToggleEnabledAsync();
     }
@@ -147,13 +148,13 @@ public partial class ServerSettingsWindow : Window
 
         if (string.IsNullOrWhiteSpace(rowVm.Mod?.ModrinthId))
         {
-            MessageBox.Show("This mod was not installed from Modrinth — version history is unavailable.",
-                "Version picker", MessageBoxButton.OK, MessageBoxImage.Information);
+            _ = SimpleDialog.InfoAsync(this, "This mod was not installed from Modrinth — version history is unavailable.",
+                "Version picker");
             return;
         }
 
-        var picker = new ModVersionPickerWindow(rowVm) { Owner = this };
-        picker.ShowDialog();
+        var picker = new ModVersionPickerWindow(rowVm);
+        await picker.ShowDialog(this);
         await _viewModel.LoadModsAsync();
     }
 
@@ -163,9 +164,9 @@ public partial class ServerSettingsWindow : Window
             await _viewModel.UpdateModRowAsync(row);
     }
 
-    private void ModLink_Click(object sender, MouseButtonEventArgs e)
+    private void ModLink_Click(object sender, PointerPressedEventArgs e)
     {
-        var id = ((sender as FrameworkElement)?.DataContext as InstalledModRowViewModel)?.Mod?.ModrinthId;
+        var id = ((sender as Control)?.DataContext as InstalledModRowViewModel)?.Mod?.ModrinthId;
         if (!string.IsNullOrWhiteSpace(id))
         {
             try { System.Diagnostics.Process.Start(
@@ -184,15 +185,15 @@ public partial class ServerSettingsWindow : Window
     // Drag & drop
     private void ModsDropZone_DragOver(object sender, DragEventArgs e)
     {
-        e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
+        e.DragEffects = e.Data.Contains(Avalonia.Input.DataFormats.Files)
             ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
 
     private async void ModsDropZone_Drop(object sender, DragEventArgs e)
     {
-        if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-        var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+        if (!e.Data.Contains(Avalonia.Input.DataFormats.Files)) return;
+        var files = e.Data.GetFiles()?.Select(f => f.TryGetLocalPath() ?? f.Path.LocalPath).Where(p => p != null).Select(p => p!).ToArray();
         if (files == null) return;
 
         var folder = _viewModel.GetServerPluginFolder();
@@ -229,8 +230,9 @@ public partial class ServerSettingsWindow : Window
     private static void SelectComboItem(ComboBox box, string? value)
     {
         if (string.IsNullOrWhiteSpace(value)) return;
-        foreach (ComboBoxItem item in box.Items)
+        foreach (var obj in box.Items)
         {
+            if (obj is not ComboBoxItem item) continue;
             if (item.Content?.ToString()?.Equals(value, StringComparison.OrdinalIgnoreCase) == true)
             {
                 box.SelectedItem = item;

@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Windows;
 using System.Windows.Input;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
@@ -175,8 +174,18 @@ public partial class TunnelPageViewModel
     public bool IsLaunching
     {
         get => _isLaunching;
-        set => SetProperty(ref _isLaunching, value);
+        set
+        {
+            if (SetProperty(ref _isLaunching, value))
+                OnPropertyChanged(nameof(LaunchButtonLabel));
+        }
     }
+
+    /// <summary>
+    /// Avalonia has no DataTrigger to swap a Button's Content based on a bound
+    /// bool, so the label is computed here instead.
+    /// </summary>
+    public string LaunchButtonLabel => IsLaunching ? "Starting…" : "▶  Launch All Tunnels";
 
     public bool HasActiveSessions => _sessionViewModels.Count > 0 &&
         _sessionViewModels.Any(s => s.IsRunning || s.IsStarting);
@@ -190,7 +199,6 @@ public partial class TunnelPageViewModel
     public ICommand? LaunchAllTunnelsCommand { get; private set; }
     public ICommand? StopAllTunnelsCommand   { get; private set; }
     public ICommand? StopOneTunnelCommand    { get; private set; }
-    public ICommand? CopyAddressCommand      { get; private set; }
 
     // -----------------------------------------------------------------------
     // Init (called from the partial constructor hook)
@@ -213,12 +221,6 @@ public partial class TunnelPageViewModel
         {
             if (obj is TunnelSessionViewModel svm)
                 StopOne(svm.Port);
-        });
-
-        CopyAddressCommand = new RelayCommand(obj =>
-        {
-            if (obj is TunnelSessionViewModel svm && svm.HasAddress)
-                Clipboard.SetText(svm.PublicAddress!);
         });
 
         tunnelService.SessionChanged += OnSessionChanged;
@@ -286,7 +288,7 @@ public partial class TunnelPageViewModel
     private void OnSessionChanged(object? sender, TunnelSessionChangedEventArgs e)
     {
         // Marshal to UI thread
-        Application.Current.Dispatcher.InvokeAsync(() =>
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
             var svm = _sessionViewModels.FirstOrDefault(
                 s => s.Port == e.Session.Assignment.Port.Port);

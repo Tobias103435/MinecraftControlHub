@@ -1,9 +1,12 @@
 using System.IO;
 using System.Security.Cryptography;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using MinecraftControlHub.Core.Models;
@@ -58,7 +61,7 @@ public partial class InstallationSettingsWindow : Window
 
     private void DetailNav_Checked(object sender, RoutedEventArgs e)
     {
-        if (e.OriginalSource is RadioButton { Tag: string tag })
+        if (e.Source is RadioButton { Tag: string tag })
         {
             _viewModel.DetailSection = tag;
             if (tag == "Content")
@@ -117,7 +120,7 @@ public partial class InstallationSettingsWindow : Window
         try
         {
 
-            if (sender is System.Windows.Controls.Primitives.ToggleButton tb
+            if (sender is Avalonia.Controls.Primitives.ToggleButton tb
                 && tb.DataContext is InstalledModRowViewModel rowVm)
             {
                 await rowVm.ToggleEnabledAsync();
@@ -135,31 +138,29 @@ public partial class InstallationSettingsWindow : Window
         try
         {
 
-            if (sender is not System.Windows.Controls.Button btn) return;
+            if (sender is not Avalonia.Controls.Button btn) return;
             if (btn.DataContext is not InstalledModRowViewModel rowVm) return;
 
             if (string.IsNullOrWhiteSpace(rowVm.Mod?.ModrinthId))
             {
-                System.Windows.MessageBox.Show(
+                _ = MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this,
                     "This mod was not installed from Modrinth — version history is unavailable.",
-                    "Version picker",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Information);
+                    "Version picker");
                 return;
             }
 
             try
             {
-                var picker = new ModVersionPickerWindow(rowVm) { Owner = this };
-                picker.ShowDialog();
+                var picker = new ModVersionPickerWindow(rowVm);
+                await picker.ShowDialog(this);
                 await _viewModel.RefreshDetailModsPublicAsync();
             }
             catch (Exception ex)
             {
                 _log.LogError("ChangeVersion", $"ChangeVersion_Click failed for mod={rowVm.Mod?.Name} — {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}", ex);
-                System.Windows.MessageBox.Show(
+                _ = MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this,
                     $"Could not open version picker: {ex.Message}",
-                    "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    "Error");
             }
     
         }
@@ -185,9 +186,9 @@ public partial class InstallationSettingsWindow : Window
     }
 
     
-    private void ModLink_Click(object sender, MouseButtonEventArgs e)
+    private void ModLink_Click(object sender, PointerPressedEventArgs e)
     {
-        var modrinthId = ((sender as FrameworkElement)?.DataContext as InstalledModRowViewModel)?.Mod?.ModrinthId;
+        var modrinthId = ((sender as Control)?.DataContext as InstalledModRowViewModel)?.Mod?.ModrinthId;
         if (!string.IsNullOrWhiteSpace(modrinthId))
         {
             try
@@ -223,7 +224,7 @@ public partial class InstallationSettingsWindow : Window
 
     private async Task UninstallDetailModAsync(object sender)
     {
-        if ((sender as System.Windows.Controls.Button)?.DataContext is Mod mod)
+        if ((sender as Avalonia.Controls.Button)?.DataContext is Mod mod)
             await _viewModel.UninstallDetailModAsync(mod);
     }
 
@@ -247,8 +248,8 @@ public partial class InstallationSettingsWindow : Window
             // Tell ModsPage to hide the installation selector — it is already chosen
             MinecraftControlHub.UI.Pages.ModsPage.HideInstallationSelectorOnNext = true;
 
-            var win = new BrowseModsWindow(modsVm) { Owner = this };
-            win.ShowDialog();
+            var win = new BrowseModsWindow(modsVm);
+            await win.ShowDialog(this);
             await _viewModel.RefreshDetailModsPublicAsync();
     
         }
@@ -261,7 +262,7 @@ public partial class InstallationSettingsWindow : Window
     // Drag & drop for the mods list
     private void ModsDropZone_DragOver(object sender, DragEventArgs e)
     {
-        e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+        e.DragEffects = e.Data.Contains(Avalonia.Input.DataFormats.Files) ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
 
@@ -271,8 +272,8 @@ public partial class InstallationSettingsWindow : Window
         {
 
             if (_viewModel.DetailInstallation == null) return;
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (!e.Data.Contains(Avalonia.Input.DataFormats.Files)) return;
+            var files = e.Data.GetFiles()?.Select(f => f.TryGetLocalPath() ?? f.Path.LocalPath).Where(p => p != null).Select(p => p!).ToArray();
             if (files == null) return;
 
             var destDir = Path.Combine(AppPaths.InstanceDir(_viewModel.DetailInstallation.Id), "mods");
@@ -310,14 +311,18 @@ public partial class InstallationSettingsWindow : Window
             if (_viewModel.DetailInstallation == null) return;
             var safeName = string.Concat(_viewModel.DetailInstallation.Name.Select(c => char.IsLetterOrDigit(c) ? c : '-'));
             if (string.IsNullOrWhiteSpace(safeName)) safeName = "installation";
-            var dialog = new SaveFileDialog
+            var file = await this.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                Filter = "Modrinth pack (*.mrpack)|*.mrpack",
-                FileName = $"{safeName}.mrpack",
-                Title = "Export installation to .mrpack"
-            };
-            if (dialog.ShowDialog() == true)
-                await _viewModel.ExportInstallationDetailAsync(dialog.FileName);
+                Title = "Export installation to .mrpack",
+                SuggestedFileName = $"{safeName}.mrpack",
+                FileTypeChoices = new[] { new FilePickerFileType("Modrinth pack") { Patterns = new[] { "*.mrpack" } } }
+            });
+            if (file != null)
+            {
+                var path = file.TryGetLocalPath();
+                if (path != null)
+                    await _viewModel.ExportInstallationDetailAsync(path);
+            }
     
         }
         catch (Exception __ex)
@@ -334,14 +339,18 @@ public partial class InstallationSettingsWindow : Window
             if (_viewModel.DetailInstallation == null) return;
             var safeName = string.Concat(_viewModel.DetailInstallation.Name.Select(c => char.IsLetterOrDigit(c) ? c : '-'));
             if (string.IsNullOrWhiteSpace(safeName)) safeName = "installation";
-            var dialog = new SaveFileDialog
+            var file = await this.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                Filter = "Prism Launcher instance zip (*.zip)|*.zip",
-                FileName = $"{safeName}.zip",
-                Title = "Export as Prism Launcher instance zip"
-            };
-            if (dialog.ShowDialog() == true)
-                await _viewModel.ExportInstallationDetailPrismAsync(dialog.FileName);
+                Title = "Export as Prism Launcher instance zip",
+                SuggestedFileName = $"{safeName}.zip",
+                FileTypeChoices = new[] { new FilePickerFileType("Prism Launcher instance zip") { Patterns = new[] { "*.zip" } } }
+            });
+            if (file != null)
+            {
+                var path = file.TryGetLocalPath();
+                if (path != null)
+                    await _viewModel.ExportInstallationDetailPrismAsync(path);
+            }
     
         }
         catch (Exception __ex)
@@ -392,7 +401,7 @@ public partial class InstallationSettingsWindow : Window
 
     private void ContentSubNav_Checked(object sender, RoutedEventArgs e)
     {
-        if (e.OriginalSource is RadioButton { Tag: string tag })
+        if (e.Source is RadioButton { Tag: string tag })
             ShowContentSubSection(tag);
     }
 
@@ -400,11 +409,11 @@ public partial class InstallationSettingsWindow : Window
     {
         _contentSubSection = section;
         if (ModsContentPanel == null) return;
-        ModsContentPanel.Visibility    = section == "Mods"          ? Visibility.Visible : Visibility.Collapsed;
-        ResourcePacksPanel.Visibility  = section == "ResourcePacks" ? Visibility.Visible : Visibility.Collapsed;
-        ShaderPacksPanel.Visibility    = section == "ShaderPacks"   ? Visibility.Visible : Visibility.Collapsed;
+        ModsContentPanel.IsVisible    = section == "Mods";
+        ResourcePacksPanel.IsVisible  = section == "ResourcePacks";
+        ShaderPacksPanel.IsVisible    = section == "ShaderPacks";
         if (MapsPanel != null)
-            MapsPanel.Visibility       = section == "Maps"          ? Visibility.Visible : Visibility.Collapsed;
+            MapsPanel.IsVisible       = section == "Maps";
     }
 
     private async void BrowseResourcePacks_Click(object sender, RoutedEventArgs e)
@@ -417,8 +426,7 @@ public partial class InstallationSettingsWindow : Window
         catch (Exception ex)
         {
             _log.LogError("Browse", "BrowseResourcePacks_Click failed", ex);
-            System.Windows.MessageBox.Show($"Error opening resource pack browser: {ex.Message}", "Error",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            _ = MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this, $"Error opening resource pack browser: {ex.Message}", "Error");
         }
     }
 
@@ -432,12 +440,11 @@ public partial class InstallationSettingsWindow : Window
         catch (Exception ex)
         {
             _log.LogError("Browse", "BrowseShaderPacks_Click failed", ex);
-            System.Windows.MessageBox.Show($"Error opening shader pack browser: {ex.Message}", "Error",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            _ = MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this, $"Error opening shader pack browser: {ex.Message}", "Error");
         }
     }
 
-    private void BrowseModpacks_Click(object sender, RoutedEventArgs e)
+    private async void BrowseModpacks_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -457,8 +464,8 @@ public partial class InstallationSettingsWindow : Window
             // Request that the ModsPage open the Modpacks tab initially
             MinecraftControlHub.UI.Pages.ModsPage.InitialTabOnNext = "Modpacks";
 
-            var win = new BrowseModsWindow(modsVm) { Owner = this };
-            win.ShowDialog();
+            var win = new BrowseModsWindow(modsVm);
+            await win.ShowDialog(this);
         }
         catch (Exception ex)
         {
@@ -481,8 +488,8 @@ public partial class InstallationSettingsWindow : Window
                 type,
                 tab.InstalledItems,
                 modSvc);
-            var win = new ContentBrowserWindow(vm) { Owner = this };
-            win.ShowDialog();
+            var win = new ContentBrowserWindow(vm);
+            await win.ShowDialog(this);
             _log.Log("ContentBrowser", $"ContentBrowser closed for type={type}, reloading installed items...");
             // Await the reload so UI updates happen on the UI thread properly.
             await tab.LoadAsync();
@@ -498,14 +505,14 @@ public partial class InstallationSettingsWindow : Window
     // Drag & drop for content panels
     private void ContentPanel_DragOver(object sender, DragEventArgs e)
     {
-        e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+        e.DragEffects = e.Data.Contains(Avalonia.Input.DataFormats.Files) ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
 
     private void ContentPanel_Drop(object sender, DragEventArgs e)
     {
-        if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-        var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+        if (!e.Data.Contains(Avalonia.Input.DataFormats.Files)) return;
+        var files = e.Data.GetFiles()?.Select(f => f.TryGetLocalPath() ?? f.Path.LocalPath).Where(p => p != null).Select(p => p!).ToArray();
         if (files == null) return;
 
         EnsureContentTabsInitialized();
@@ -545,8 +552,9 @@ public partial class InstallationSettingsWindow : Window
     }
     private void MapsPanel_Drop(object sender, DragEventArgs e)
     {
-        if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-        var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+        if (!e.Data.Contains(Avalonia.Input.DataFormats.Files)) return;
+        var files = e.Data.GetFiles()?.Select(f => f.TryGetLocalPath() ?? f.Path.LocalPath).Where(p => p != null).Select(p => p!).ToArray();
+        if (files == null) return;
         var zips  = files.Where(f => f.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)
                                   || System.IO.Directory.Exists(f)).ToArray();
         if (zips.Length == 0) return;
@@ -579,8 +587,7 @@ public partial class InstallationSettingsWindow : Window
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Could not install world: {ex.Message}", "Error",
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                _ = MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this, $"Could not install world: {ex.Message}", "Error");
             }
         }
     }
@@ -595,12 +602,12 @@ public partial class InstallationSettingsWindow : Window
         var screenshotsDir = System.IO.Path.Combine(gameDir, "screenshots");
 
         ScreenshotsPanel.Children.Clear();
-        ScreenshotsEmptyState.Visibility = Visibility.Collapsed;
-        ScreenshotsPanel.Visibility      = Visibility.Collapsed;
+        ScreenshotsEmptyState.IsVisible = false;
+        ScreenshotsPanel.IsVisible      = false;
 
         if (!System.IO.Directory.Exists(screenshotsDir))
         {
-            ScreenshotsEmptyState.Visibility = Visibility.Visible;
+            ScreenshotsEmptyState.IsVisible = true;
             ScreenshotCountText.Text         = "No screenshots folder";
             return;
         }
@@ -615,7 +622,7 @@ public partial class InstallationSettingsWindow : Window
 
         if (files.Length == 0)
         {
-            ScreenshotsEmptyState.Visibility = Visibility.Visible;
+            ScreenshotsEmptyState.IsVisible = true;
             ScreenshotCountText.Text         = "No screenshots yet";
             return;
         }
@@ -628,67 +635,60 @@ public partial class InstallationSettingsWindow : Window
             ScreenshotsPanel.Children.Add(card);
         }
 
-        ScreenshotsPanel.Visibility = Visibility.Visible;
+        ScreenshotsPanel.IsVisible = true;
     }
 
-    private System.Windows.Controls.Border BuildScreenshotCard(string filePath)
+    private Avalonia.Controls.Border BuildScreenshotCard(string filePath)
     {
         // Load thumbnail asynchronously on background thread
-        var img = new System.Windows.Controls.Image
+        var img = new Avalonia.Controls.Image
         {
             Width           = 200,
             Height          = 112,
-            Stretch         = System.Windows.Media.Stretch.UniformToFill,
-            SnapsToDevicePixels = true,
-            ToolTip         = System.IO.Path.GetFileNameWithoutExtension(filePath)
+            Stretch         = Stretch.UniformToFill
         };
+        ToolTip.SetTip(img, System.IO.Path.GetFileNameWithoutExtension(filePath));
 
         // Load from disk on background thread
         _ = Task.Run(() =>
         {
             try
             {
-                var bitmap = new System.Windows.Media.Imaging.BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource        = new Uri(filePath, UriKind.Absolute);
-                bitmap.CacheOption      = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-                bitmap.DecodePixelWidth = 400; // decode at 2x thumbnail width for crisp display
-                bitmap.EndInit();
-                bitmap.Freeze();
-                Dispatcher.Invoke(() => img.Source = bitmap);
+                var bitmap = new Bitmap(filePath);
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => img.Source = bitmap);
             }
             catch { /* corrupt / unreadable image — leave blank */ }
         });
 
-        var card = new System.Windows.Controls.Border
+        var card = new Avalonia.Controls.Border
         {
             Width           = 200,
             Height          = 130,
-            CornerRadius    = new System.Windows.CornerRadius(8),
+            CornerRadius    = new CornerRadius(8),
             Margin          = new Thickness(0, 0, 12, 12),
             ClipToBounds    = true,
-            Cursor          = System.Windows.Input.Cursors.Hand,
-            Background      = (System.Windows.Media.Brush)FindResource("BrushPanelElevated"),
-            BorderBrush     = (System.Windows.Media.Brush)FindResource("BrushBorder"),
+            Cursor          = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+            Background      = this.TryFindResource("BrushPanelElevated", out var v1) ? v1 as IBrush : null,
+            BorderBrush     = this.TryFindResource("BrushBorder", out var v2) ? v2 as IBrush : null,
             BorderThickness = new Thickness(1)
         };
 
-        var grid = new System.Windows.Controls.Grid();
+        var grid = new Avalonia.Controls.Grid();
 
-        var nameBar = new System.Windows.Controls.Border
+        var nameBar = new Avalonia.Controls.Border
         {
-            VerticalAlignment = VerticalAlignment.Bottom,
-            Background        = new System.Windows.Media.SolidColorBrush(
-                System.Windows.Media.Color.FromArgb(0xCC, 0x0, 0x0, 0x0)),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
+            Background        = new SolidColorBrush(
+                Color.FromArgb(0xCC, 0x0, 0x0, 0x0)),
             Padding           = new Thickness(8, 4, 8, 4)
         };
-        nameBar.Child = new System.Windows.Controls.TextBlock
+        nameBar.Child = new Avalonia.Controls.TextBlock
         {
             Text              = System.IO.Path.GetFileNameWithoutExtension(filePath),
-            FontFamily        = (System.Windows.Media.FontFamily)FindResource("FontBody"),
+            FontFamily        = this.TryFindResource("FontBody", out var fontVal) && fontVal is FontFamily ff ? ff : new FontFamily("Segoe UI"),
             FontSize          = 10,
-            Foreground        = System.Windows.Media.Brushes.White,
-            TextTrimming      = System.Windows.TextTrimming.CharacterEllipsis
+            Foreground        = Avalonia.Media.Brushes.White,
+            TextTrimming      = TextTrimming.CharacterEllipsis
         };
 
         grid.Children.Add(img);
@@ -696,7 +696,7 @@ public partial class InstallationSettingsWindow : Window
         card.Child = grid;
 
         // Click: open full image in default viewer
-        card.MouseLeftButtonUp += (_, _) =>
+        card.PointerReleased += (_, _) =>
         {
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(filePath) { UseShellExecute = true }); }
             catch { }
@@ -716,7 +716,7 @@ public partial class InstallationSettingsWindow : Window
 
     private void DeleteMapItem_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is System.Windows.Controls.Button { Tag: ContentItem item })
+        if (sender is Avalonia.Controls.Button { Tag: ContentItem item })
         {
             _installedMaps.Remove(item);
             RefreshMapsUI();
@@ -738,7 +738,7 @@ public partial class InstallationSettingsWindow : Window
         try
         {
 
-            if ((sender as System.Windows.Controls.Primitives.ToggleButton)?.DataContext is not ContentItem item) return;
+            if ((sender as Avalonia.Controls.Primitives.ToggleButton)?.DataContext is not ContentItem item) return;
             var tab = item.Type switch
             {
                 ContentType.ResourcePack => _resourcePackTab,
@@ -762,13 +762,13 @@ public partial class InstallationSettingsWindow : Window
         try
         {
 
-            if (sender is not System.Windows.Controls.Button btn) return;
+            if (sender is not Avalonia.Controls.Button btn) return;
             if (btn.DataContext is not ContentItem item) return;
             if (string.IsNullOrWhiteSpace(item.ModrinthId))
             {
-                System.Windows.MessageBox.Show(
+                _ = MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this,
                     "This shader/resource pack was not installed via the built-in browser — version history is only available for items installed from Modrinth through this app.",
-                    "Version picker", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    "Version picker");
                 return;
             }
 
@@ -790,26 +790,26 @@ public partial class InstallationSettingsWindow : Window
                 var versions = await tab.GetVersionsAsync(item);
                 if (versions.Count == 0)
                 {
-                    System.Windows.MessageBox.Show("No versions found on Modrinth for this Minecraft version.",
-                        "Version picker", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    _ = MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this, "No versions found on Modrinth for this Minecraft version.",
+                        "Version picker");
                     return;
                 }
 
                 // Simple picker: show a dialog with a ListBox
-                var picker = new ContentVersionPickerDialog(versions) { Owner = this };
-                if (picker.ShowDialog() == true && picker.SelectedVersion != null)
+                var picker = new ContentVersionPickerDialog(versions);
+                await picker.ShowDialog(this);
+                if (picker.SelectedVersion != null)
                 {
                     var msg = await tab.ChangeVersionAsync(item, picker.SelectedVersion);
-                    System.Windows.MessageBox.Show(msg, "Version changed",
-                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    _ = MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this, msg, "Version changed");
                 }
             }
             catch (Exception ex)
             {
                 _log.LogError("ContentVersionPicker", $"Version picker failed for '{item.Name}'", ex);
-                System.Windows.MessageBox.Show(
+                _ = MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this,
                     $"Could not load versions: {ex.Message}",
-                    "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    "Error");
             }
             finally
             {
@@ -829,19 +829,15 @@ public partial class InstallationSettingsWindow : Window
 
     private Border CreateScreenshotThumb(string filePath)
     {
-        var image = new System.Windows.Controls.Image
+        var image = new Avalonia.Controls.Image
         {
-            Stretch = System.Windows.Media.Stretch.UniformToFill,
-            Cursor = System.Windows.Input.Cursors.Hand
+            Stretch = Stretch.UniformToFill,
+            Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand)
         };
 
         try
         {
-            var bitmap = new System.Windows.Media.Imaging.BitmapImage();
-            bitmap.BeginInit();
-            bitmap.UriSource = new Uri(filePath, UriKind.Absolute);
-            bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-            bitmap.EndInit();
+            var bitmap = new Bitmap(filePath);
             image.Source = bitmap;
         }
         catch { /* Failed to load image */ }
@@ -850,22 +846,22 @@ public partial class InstallationSettingsWindow : Window
         {
             Width = 120,
             Height = 90,
-            CornerRadius = new System.Windows.CornerRadius(6),
-            Margin = new System.Windows.Thickness(6),
-            Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 30, 30)),
-            BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(70, 70, 70)),
-            BorderThickness = new System.Windows.Thickness(1),
+            CornerRadius = new CornerRadius(6),
+            Margin = new Thickness(6),
+            Background = new SolidColorBrush(Color.FromRgb(30, 30, 30)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(70, 70, 70)),
+            BorderThickness = new Thickness(1),
             Child = image,
             Tag = filePath
         };
 
-        var mouseEnter = new System.Windows.Input.MouseEventHandler((s, e) =>
-            border.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(120, 120, 120)));
+        border.PointerEntered += (s, e) =>
+            border.BorderBrush = new SolidColorBrush(Color.FromRgb(120, 120, 120));
 
-        var mouseLeave = new System.Windows.Input.MouseEventHandler((s, e) =>
-            border.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(70, 70, 70)));
+        border.PointerExited += (s, e) =>
+            border.BorderBrush = new SolidColorBrush(Color.FromRgb(70, 70, 70));
 
-        var mouseDown = new System.Windows.Input.MouseButtonEventHandler((s, e) =>
+        border.PointerPressed += (s, e) =>
         {
             if (border.Tag is string path)
                 try
@@ -873,11 +869,7 @@ public partial class InstallationSettingsWindow : Window
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
                 }
                 catch { /* ignore */ }
-        });
-
-        border.MouseEnter += mouseEnter;
-        border.MouseLeave += mouseLeave;
-        border.MouseDown += mouseDown;
+        };
 
         return border;
     }
@@ -923,8 +915,7 @@ public partial class InstallationSettingsWindow : Window
 
         ServerSyncItemsControl.ItemsSource = null;
         ServerSyncItemsControl.ItemsSource = _serverSyncRows;
-        ServerSyncEmptyState.Visibility = _serverSyncRows.Count == 0
-            ? Visibility.Visible : Visibility.Collapsed;
+        ServerSyncEmptyState.IsVisible = _serverSyncRows.Count == 0;
     }
 
     private bool IsServerCompatibleWithInstallation(Server server, Installation inst)
@@ -1099,7 +1090,7 @@ public partial class InstallationSettingsWindow : Window
             "Healthy" => new SolidColorBrush(Colors.Green) { Opacity = 0.8 },
             "Warning" => new SolidColorBrush(Colors.Orange) { Opacity = 0.8 },
             "Critical" => new SolidColorBrush(Colors.Red) { Opacity = 0.8 },
-            _ => (Brush)FindResource("BrushTextMuted")
+            _ => this.TryFindResource("BrushTextMuted", out var v) ? v as IBrush : null
         };
     }
 
@@ -1195,7 +1186,7 @@ public partial class InstallationSettingsWindow : Window
             var health = _viewModel.DetailHealthCheck;
             if (inst == null || health == null)
             {
-                MessageBox.Show("No installation selected or health data unavailable.", "Auto-tune RAM", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this, "No installation selected or health data unavailable.", "Auto-tune RAM");
                 return;
             }
 
@@ -1224,14 +1215,14 @@ public partial class InstallationSettingsWindow : Window
             else
             {
                 // within optimal range — no change
-                MessageBox.Show($"RAM usage is within the healthy range ({usage:F1}%). No change recommended.", "Auto-tune RAM", MessageBoxButton.OK, MessageBoxImage.Information);
+                await MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this, $"RAM usage is within the healthy range ({usage:F1}%). No change recommended.", "Auto-tune RAM");
                 return;
             }
 
             RamRecommendationText.Text = $"Recommended: {recommended} MB";
 
-            var res = MessageBox.Show($"Apply recommended max heap of {recommended} MB to this installation?\n\nThis will update the installation settings and persist the change.", "Auto-tune RAM", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (res != MessageBoxResult.Yes) return;
+            var res = await MinecraftControlHub.UI.Helpers.SimpleDialog.ConfirmAsync(this, $"Apply recommended max heap of {recommended} MB to this installation?\n\nThis will update the installation settings and persist the change.", "Auto-tune RAM");
+            if (!res) return;
 
             inst.MaxMemoryMB = recommended;
             if (_installationService != null)
@@ -1240,12 +1231,12 @@ public partial class InstallationSettingsWindow : Window
             // Save via viewmodel and refresh health
             await _viewModel.LoadDetailHealthCheckAsync();
             UpdateHealthStatusIcons();
-            MessageBox.Show("RAM recommendation applied.", "Auto-tune RAM", MessageBoxButton.OK, MessageBoxImage.Information);
+            await MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this, "RAM recommendation applied.", "Auto-tune RAM");
         }
         catch (Exception ex)
         {
             _log.LogError("AutoTuneRam_Click", $"Auto-tune failed: {ex.Message}", ex);
-            MessageBox.Show($"Auto-tune failed: {ex.Message}", "Auto-tune RAM", MessageBoxButton.OK, MessageBoxImage.Error);
+            await MinecraftControlHub.UI.Helpers.SimpleDialog.InfoAsync(this, $"Auto-tune failed: {ex.Message}", "Auto-tune RAM");
         }
     }
 
@@ -1267,17 +1258,17 @@ public class ServerSyncRow : System.ComponentModel.INotifyPropertyChanged
 
     public string BadgeText => IsCompatible ? "Compatible" : "Different version";
 
-    public System.Windows.Media.Brush BadgeBackground => IsCompatible
-        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x22, 0x22, 0xC5, 0x5E))
-        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x18, 0x80, 0x80, 0x80));
+    public Brush BadgeBackground => IsCompatible
+        ? new SolidColorBrush(Color.FromArgb(0x22, 0x22, 0xC5, 0x5E))
+        : new SolidColorBrush(Color.FromArgb(0x18, 0x80, 0x80, 0x80));
 
-    public System.Windows.Media.Brush BadgeForeground => IsCompatible
-        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x22, 0xC5, 0x5E))
-        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x80, 0x80, 0x80));
+    public Brush BadgeForeground => IsCompatible
+        ? new SolidColorBrush(Color.FromRgb(0x22, 0xC5, 0x5E))
+        : new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80));
 
-    public System.Windows.Media.Brush BadgeBorder => IsCompatible
-        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x44, 0x22, 0xC5, 0x5E))
-        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x30, 0x80, 0x80, 0x80));
+    public Brush BadgeBorder => IsCompatible
+        ? new SolidColorBrush(Color.FromArgb(0x44, 0x22, 0xC5, 0x5E))
+        : new SolidColorBrush(Color.FromArgb(0x30, 0x80, 0x80, 0x80));
 
     private bool _syncEnabled;
     public bool SyncEnabled

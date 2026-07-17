@@ -1,17 +1,17 @@
-﻿<Window x:Class="MinecraftControlHub.UI.Windows.NexoraLoginWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window x:Class="MinecraftControlHub.UI.Windows.NexoraLoginWindow"
+        xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Nexora Login"
         Width="460" Height="560"
         MinWidth="460" MinHeight="560"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
+        CanResize="False"
         Background="{DynamicResource BrushAppBackground}"
-        WindowStyle="SingleBorderWindow"
         ShowInTaskbar="False"
         Closing="Window_Closing">
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <!-- BoolToVisibilityConverter is provided globally via App.axaml
+             (returns bool for IsVisible bindings). -->
     </Window.Resources>
     <Grid Margin="40,36">
 
@@ -22,10 +22,9 @@
                     CornerRadius="20"
                     Background="{DynamicResource BrushAccent}"
                     HorizontalAlignment="Center"
-                    Margin="0,0,0,20">
-                <Border.Effect>
-                    <DropShadowEffect Color="{StaticResource ColorAccent}" BlurRadius="24" ShadowDepth="0" Opacity="0.5"/>
-                </Border.Effect>
+                    Margin="0,0,0,20"
+                    BoxShadow="0 0 24 0 #806C5DD3">
+                <!-- DropShadowEffect converted to BoxShadow (ColorAccent #6C5DD3 @ 0.5 opacity) -->
                 <TextBlock Text="N"
                            FontFamily="{DynamicResource FontDisplay}"
                            FontSize="38"
@@ -55,21 +54,21 @@
                     Click="SignInCard_Click"
                     Height="46"
                     Margin="0,0,0,12"
-                    Style="{StaticResource PrimaryButtonStyle}"
+                    Theme="{StaticResource PrimaryButtonStyle}"
                     FontSize="14.5"/>
 
             <!-- Secondary action -->
             <Button Content="Create Account"
                     Click="SignUp_Click"
                     Height="46"
-                    Style="{StaticResource SecondaryButtonStyle}"
+                    Theme="{StaticResource SecondaryButtonStyle}"
                     FontSize="14.5"/>
 
             <Button Content="Continue without account"
                     Click="ContinueWithoutAccount_Click"
                     Height="36"
                     Margin="0,10,0,0"
-                    Style="{StaticResource SecondaryButtonStyle}"
+                    Theme="{StaticResource SecondaryButtonStyle}"
                     FontSize="13"/>
 
             <TextBlock Text="Some features like Friends will be unavailable"
@@ -81,14 +80,14 @@
         </StackPanel>
 
         <!-- ================= Login Form View ================= -->
-        <StackPanel x:Name="LoginFormView" Visibility="Collapsed" VerticalAlignment="Center">
+        <StackPanel x:Name="LoginFormView" IsVisible="False" VerticalAlignment="Center">
             <!-- Back Button -->
             <Button Content="← Back"
                     Click="Back_Click"
                     Height="30"
                     Width="72"
                     HorizontalAlignment="Left"
-                    Style="{StaticResource SecondaryButtonStyle}"
+                    Theme="{StaticResource SecondaryButtonStyle}"
                     FontSize="12"
                     Padding="10,0"
                     Margin="0,0,0,20"/>
@@ -108,16 +107,17 @@
                        HorizontalAlignment="Center"
                        Margin="0,0,0,28"/>
 
-            <TextBlock Text="Email or Username" Style="{StaticResource InputLabelStyle}"/>
+            <TextBlock Text="Email or Username" Theme="{StaticResource InputLabelStyle}"/>
             <TextBox x:Name="EmailOrUsernameBox"
                      Text="{Binding EmailOrUsername, UpdateSourceTrigger=PropertyChanged}"
-                     Style="{StaticResource InputTextBoxStyle}"
+                     Theme="{StaticResource InputTextBoxStyle}"
                      Margin="0,0,0,16"/>
 
-            <TextBlock Text="Password" Style="{StaticResource InputLabelStyle}"/>
-            <PasswordBox x:Name="PasswordBox"
-                         Style="{StaticResource InputPasswordBoxStyle}"
-                         Margin="0,0,0,18"/>
+            <TextBlock Text="Password" Theme="{StaticResource InputLabelStyle}"/>
+            <TextBox x:Name="PasswordBox"
+                     PasswordChar="●"
+                     Theme="{StaticResource InputPasswordBoxStyle}"
+                     Margin="0,0,0,18"/>
 
             <TextBlock x:Name="ErrorText"
                        Text="{Binding Error}"
@@ -125,17 +125,17 @@
                        TextWrapping="Wrap"
                        FontSize="12"
                        Margin="2,0,0,16"
-                       Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                       IsVisible="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
             <Button Content="Sign In"
                     Command="{Binding LoginCommand}"
                     Height="46"
-                    Style="{StaticResource PrimaryButtonStyle}"
+                    Theme="{StaticResource PrimaryButtonStyle}"
                     FontSize="14.5"/>
         </StackPanel>
 
         <!-- ================= Two-Factor View ================= -->
-        <StackPanel x:Name="TwoFactorView" Visibility="Collapsed" VerticalAlignment="Center">
+        <StackPanel x:Name="TwoFactorView" IsVisible="False" VerticalAlignment="Center">
             <TextBlock Text="Two-Factor Verification"
                        FontFamily="{DynamicResource FontDisplay}"
                        FontSize="26"
@@ -153,11 +153,11 @@
                        TextWrapping="Wrap"
                        Margin="0,0,0,28"/>
 
-            <TextBlock Text="Verification Code" Style="{StaticResource InputLabelStyle}"/>
+            <TextBlock Text="Verification Code" Theme="{StaticResource InputLabelStyle}"/>
             <TextBox x:Name="TwoFactorCodeBox"
                      Text="{Binding TwoFactorCode, UpdateSourceTrigger=PropertyChanged}"
                      MaxLength="6"
-                     Style="{StaticResource InputTextBoxStyle}"
+                     Theme="{StaticResource InputTextBoxStyle}"
                      Height="52"
                      FontSize="24"
                      FontFamily="Consolas"
@@ -169,12 +169,12 @@
                        TextWrapping="Wrap"
                        FontSize="12"
                        Margin="2,0,0,16"
-                       Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                       IsVisible="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
             <Button Content="Verify"
                     Command="{Binding VerifyCommand}"
                     Height="46"
-                    Style="{StaticResource PrimaryButtonStyle}"
+                    Theme="{StaticResource PrimaryButtonStyle}"
                     FontSize="14.5"
                     Margin="0,0,0,10"/>
 
@@ -182,7 +182,7 @@
                     Click="Back_Click"
                     Height="30"
                     HorizontalAlignment="Center"
-                    Style="{StaticResource SecondaryButtonStyle}"
+                    Theme="{StaticResource SecondaryButtonStyle}"
                     FontSize="12"
                     Padding="14,0"/>
         </StackPanel>

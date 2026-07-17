@@ -90,6 +90,18 @@ public class Mod
         UpdateAvailable && !string.IsNullOrEmpty(LatestVersion)
             ? $"Update to {LatestVersion}"
             : "Update";
+
+    // ── Computed UI properties (replaces WPF DataTriggers) ──
+    [JsonIgnore]
+    public bool IsCurseForge => Source == ModSource.CurseForge;
+    [JsonIgnore]
+    public string SourceLabel => IsCurseForge ? "CurseForge" : "Modrinth";
+    [JsonIgnore]
+    public Avalonia.Media.SolidColorBrush SourceBadgeBrush =>
+        Avalonia.Media.SolidColorBrush.Parse(IsCurseForge ? "#33F16436" : "#331DB368");
+    [JsonIgnore]
+    public Avalonia.Media.SolidColorBrush SourceLabelBrush =>
+        Avalonia.Media.SolidColorBrush.Parse(IsCurseForge ? "#F16436" : "#1DB368");
 }
 
 public class ModSearchResult
@@ -116,6 +128,15 @@ public class ModSearchResult
     /// Persisted so the state survives app restarts.
     /// </summary>
     public bool IsEnabled { get; set; } = true;
+
+    // ── Computed UI properties (replaces WPF DataTriggers) ──
+    public bool IsCurseForge => Source == ModSource.CurseForge;
+    public string SourceLabel => IsCurseForge ? "CurseForge" : "Modrinth";
+    public string InstallButtonLabel => IsInstalled ? "Installed" : "Install";
+    public Avalonia.Media.SolidColorBrush SourceBadgeBrush =>
+        Avalonia.Media.SolidColorBrush.Parse(IsCurseForge ? "#33F16436" : "#331DB368");
+    public Avalonia.Media.SolidColorBrush SourceLabelBrush =>
+        Avalonia.Media.SolidColorBrush.Parse(IsCurseForge ? "#F16436" : "#1DB368");
 }
 
 public class ModSearchPage

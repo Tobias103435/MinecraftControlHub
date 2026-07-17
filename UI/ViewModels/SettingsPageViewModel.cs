@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.IO;
-using System.Windows;
 using MinecraftControlHub.AI.Services;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
@@ -136,13 +135,9 @@ public partial class SettingsPageViewModel : ViewModelBase
         RaiseAccountProps();
     }
 
-    public void CopyDeviceCode()
-    {
-        if (!string.IsNullOrEmpty(DeviceCode))
-        {
-            try { Clipboard.SetText(DeviceCode); } catch { /* ignore */ }
-        }
-    }
+    // NOTE: Clipboard access moved to SettingsPage.xaml.cs (the view), since
+    // Avalonia's clipboard is per-TopLevel/window rather than a static WPF-style
+    // System.Windows.Clipboard class the ViewModel could call directly.
 
     private void RaiseAccountProps()
     {

@@ -2,23 +2,33 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
 
     <RootNamespace>MinecraftControlHub</RootNamespace>
     <AssemblyName>MinecraftControlHub</AssemblyName>
 
-    <UseWPF>true</UseWPF>
-
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
-    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationIcon>app.ico</ApplicationIcon>
 
-    <!-- Publish settings -->
+    <!-- Keep classic/dynamic-style bindings working everywhere without
+         requiring x:DataType annotations on every view, matching the
+         original WPF runtime-binding behavior 1:1. -->
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+
+    <!-- Publish settings - support multiple platforms: -->
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!-- Don't set a single RuntimeIdentifier here, so you can specify it at publish time: -->
+    <!-- Windows: -->
+    <!-- - 64-bit: dotnet publish -r win-x64 -c Release -->
+    <!-- - 32-bit: dotnet publish -r win-x86 -c Release -->
+    <!-- Linux: -->
+    <!-- - x64 standalone: dotnet publish -r linux-x64 -c Release -->
+    <!-- macOS: -->
+    <!-- - Apple Silicon (arm64): dotnet publish -r osx-arm64 -c Release -->
+    <!-- - Intel (x64): dotnet publish -r osx-x64 -c Release -->
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <!-- Always extract content files (AI knowledge base) to disk so they can be read -->
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
@@ -27,10 +37,22 @@
     <!-- Reduce publish clutter -->
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
+
+    <!-- These windows are always constructed via DI with required parameters,
+         so they intentionally have no public parameterless constructor and are
+         never loaded through the runtime XAML loader. -->
+    <NoWarn>$(NoWarn);AVLN3001</NoWarn>
   </PropertyGroup>
 
 
   <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.7" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.7" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.7" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.2.7">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
@@ -38,8 +60,9 @@
 
 
   <ItemGroup>
-    <!-- NexoraSection.xaml is a code snippet/template, not a standalone XAML file -->
-    <Page Remove="UI\Pages\SettingsPage.NexoraSection.xaml" />
+    <!-- SettingsPage.NexoraSection.xaml is a code snippet/template, not a
+         standalone view — keep it out of the Avalonia XAML compiler. -->
+    <AvaloniaXaml Remove="UI\Pages\SettingsPage.NexoraSection.xaml" />
     <None Include="UI\Pages\SettingsPage.NexoraSection.xaml" />
   </ItemGroup>
 
@@ -70,7 +93,7 @@
 
 
   <ItemGroup>
-    <Resource Include="app.ico" />
+    <AvaloniaResource Include="app.ico" />
   </ItemGroup>
 
 

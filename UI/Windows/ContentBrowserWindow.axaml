@@ -1,5 +1,5 @@
 <Window x:Class="MinecraftControlHub.UI.Windows.ContentBrowserWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,7 +10,6 @@
         Width="860" Height="700"
         MinWidth="600" MinHeight="460"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="CanResize"
         Background="{StaticResource BrushAppBackground}"
         d:DataContext="{d:DesignInstance viewmodels:ContentBrowserViewModel}">
 
@@ -51,7 +50,7 @@
                      KeyDown="SearchBox_KeyDown"/>
             <Button Grid.Column="1"
                     Content="Search"
-                    Style="{StaticResource PrimaryButtonStyle}"
+                    Theme="{StaticResource PrimaryButtonStyle}"
                     Padding="22,10"
                     Margin="8,0,0,0"
                     Click="Search_Click"/>
@@ -59,9 +58,9 @@
 
         <!-- Dependency check row (hidden for Worlds) -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10"
-                    Visibility="{Binding ShowDependencyCheck, Converter={StaticResource BoolToVisibilityConverter}}">
+                    IsVisible="{Binding ShowDependencyCheck, Converter={StaticResource BoolToVisibilityConverter}}">
             <Button Content="{Binding DependencyCheckLabel}"
-                    Style="{StaticResource SecondaryButtonStyle}"
+                    Theme="{StaticResource SecondaryButtonStyle}"
                     Padding="14,7"
                     IsEnabled="{Binding IsCheckingDeps, Converter={StaticResource InverseBoolConverter}}"
                     Click="CheckDeps_Click"/>
@@ -71,7 +70,7 @@
                        FontFamily="{StaticResource FontBody}"
                        FontSize="12"
                        Foreground="{StaticResource BrushTextSecondary}"
-                       Visibility="{Binding HasDependencyStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                       IsVisible="{Binding HasDependencyStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </StackPanel>
 
         <!-- Sort + result count -->
@@ -97,11 +96,11 @@
                        FontFamily="{StaticResource FontBody}"
                        FontSize="12"
                        Foreground="{StaticResource BrushTextMuted}"
-                       Visibility="{Binding HasResults, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                       IsVisible="{Binding HasResults, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </StackPanel>
 
         <!-- Results list -->
-        <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+        <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto" PointerWheelChanged="ScrollViewer_PreviewMouseWheel">
             <StackPanel>
                 <TextBlock Text="Searching…"
                            FontFamily="{StaticResource FontBody}"
@@ -109,7 +108,7 @@
                            Foreground="{StaticResource BrushTextSecondary}"
                            Margin="0,20,0,0"
                            HorizontalAlignment="Center"
-                           Visibility="{Binding IsSearching, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                           IsVisible="{Binding IsSearching, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                 <TextBlock Text="No results found. Try a different search term."
                            FontFamily="{StaticResource FontBody}"
@@ -117,7 +116,7 @@
                            Foreground="{StaticResource BrushTextSecondary}"
                            Margin="0,20,0,0"
                            HorizontalAlignment="Center"
-                           Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                           IsVisible="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                 <ItemsControl ItemsSource="{Binding SearchResults}">
                     <ItemsControl.ItemTemplate>
@@ -144,7 +143,7 @@
                                         <Image helpers:AsyncImageLoader.SourceUrl="{Binding IconUrl}"
                                                Width="48" Height="48"
                                                Stretch="UniformToFill"
-                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                               RenderOptions.BitmapInterpolationMode="HighQuality"/>
                                     </Border>
 
                                     <!-- Info -->
@@ -174,18 +173,10 @@
                                     <Button Grid.Column="2"
                                             VerticalAlignment="Center"
                                             Padding="18,8"
+                                            Content="Install"
+                                            Theme="{StaticResource PrimaryButtonStyle}"
                                             Click="Install_Click">
-                                        <Button.Style>
-                                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-                                                <Setter Property="Content" Value="Install"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsInstalled}" Value="True">
-                                                        <Setter Property="Content" Value="Installed"/>
-                                                        <Setter Property="IsEnabled" Value="False"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
+                                        <!-- Triggers removed - handled in code-behind -->
                                     </Button>
                                 </Grid>
                             </Border>
@@ -197,9 +188,9 @@
 
         <!-- Pagination -->
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0"
-                    Visibility="{Binding HasPagination, Converter={StaticResource BoolToVisibilityConverter}}">
+                    IsVisible="{Binding HasPagination, Converter={StaticResource BoolToVisibilityConverter}}">
             <Button Content="← Prev"
-                    Style="{StaticResource SecondaryButtonStyle}"
+                    Theme="{StaticResource SecondaryButtonStyle}"
                     Padding="12,6"
                     Margin="0,0,4,0"
                     IsEnabled="{Binding CanGoPrevious}"
@@ -211,7 +202,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Button Content="{Binding}"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Theme="{StaticResource SecondaryButtonStyle}"
                                 Padding="10,6"
                                 Margin="2,0"
                                 Click="PageNumber_Click"/>
@@ -219,7 +210,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <Button Content="Next →"
-                    Style="{StaticResource SecondaryButtonStyle}"
+                    Theme="{StaticResource SecondaryButtonStyle}"
                     Padding="12,6"
                     Margin="4,0,0,0"
                     IsEnabled="{Binding CanGoNext}"
@@ -233,6 +224,6 @@
                    FontSize="12"
                    Foreground="{StaticResource BrushTextSecondary}"
                    Margin="0,8,0,0"
-                   Visibility="{Binding HasInstallStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                   IsVisible="{Binding HasInstallStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
     </Grid>
 </Window>

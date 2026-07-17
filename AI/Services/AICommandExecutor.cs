@@ -1,5 +1,9 @@
 using System.IO;
 using System.IO.Compression;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using MinecraftControlHub.AI.Models;
 using MinecraftControlHub.Core.Models;
 using MinecraftControlHub.Core.Services;
@@ -748,17 +752,24 @@ public class AICommandExecutor
         {
             // Open file picker on the UI thread
             string? picked = null;
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            var topLevel = Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
+            if (topLevel != null)
             {
-                var dlg = new Microsoft.Win32.OpenFileDialog
+                var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
-                    Title       = $"Select mod .jar to import into '{targetName}'",
-                    Filter      = "Mod files (*.jar)|*.jar|All files (*.*)|*.*",
-                    Multiselect = false
-                };
-                if (dlg.ShowDialog() == true)
-                    picked = dlg.FileName;
-            });
+                    Title = $"Select mod .jar to import into '{targetName}'",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[]
+                    {
+                        new FilePickerFileType("Mod files") { Patterns = new[] { "*.jar" } },
+                        new FilePickerFileType("All files") { Patterns = new[] { "*.*" } }
+                    }
+                });
+                if (files != null && files.Count > 0)
+                    picked = files[0].TryGetLocalPath();
+            }
 
             if (string.IsNullOrWhiteSpace(picked))
                 return new AICommandResult { Success = false, Message = "No file selected." };
@@ -1123,22 +1134,26 @@ public class AICommandExecutor
 
         // Ask user for save location on the UI thread
         string? outputPath = null;
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        var topLevel = Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopExport
+            ? desktopExport.MainWindow
+            : null;
+        if (topLevel != null)
         {
             var ext    = format == "prism" ? "zip" : "mrpack";
-            var filter = format == "prism"
-                ? "Prism Launcher zip (*.zip)|*.zip"
-                : "Modrinth pack (*.mrpack)|*.mrpack";
-            var dlg = new Microsoft.Win32.SaveFileDialog
+            var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                Title      = $"Export '{name}' as modpack",
-                FileName   = $"{name}.{ext}",
-                Filter     = filter,
-                DefaultExt = ext
-            };
-            if (dlg.ShowDialog() == true)
-                outputPath = dlg.FileName;
-        });
+                Title = $"Export '{name}' as modpack",
+                SuggestedFileName = $"{name}.{ext}",
+                FileTypeChoices = new[]
+                {
+                    new FilePickerFileType(format == "prism" ? "Prism Launcher zip" : "Modrinth pack")
+                    { Patterns = new[] { $"*.{ext}" } }
+                },
+                DefaultExtension = ext
+            });
+            if (file != null)
+                outputPath = file.TryGetLocalPath();
+        }
 
         if (string.IsNullOrWhiteSpace(outputPath))
             return new AICommandResult { Success = false, Message = "Export cancelled." };
@@ -1167,16 +1182,24 @@ public class AICommandExecutor
 
         if (string.IsNullOrWhiteSpace(filePath))
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            var topLevel = Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopImport
+                ? desktopImport.MainWindow
+                : null;
+            if (topLevel != null)
             {
-                var dlg = new Microsoft.Win32.OpenFileDialog
+                var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
-                    Title  = "Select modpack file to import",
-                    Filter = "Modpack files (*.mrpack;*.zip)|*.mrpack;*.zip|All files (*.*)|*.*"
-                };
-                if (dlg.ShowDialog() == true)
-                    filePath = dlg.FileName;
-            });
+                    Title = "Select modpack file to import",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[]
+                    {
+                        new FilePickerFileType("Modpack files") { Patterns = new[] { "*.mrpack", "*.zip" } },
+                        new FilePickerFileType("All files") { Patterns = new[] { "*.*" } }
+                    }
+                });
+                if (files != null && files.Count > 0)
+                    filePath = files[0].TryGetLocalPath() ?? string.Empty;
+            }
         }
 
         if (string.IsNullOrWhiteSpace(filePath))
