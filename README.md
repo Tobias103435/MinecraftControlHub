@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nexoralauncher)
+[![Discord](https://img.shields.io/discord/139000000000000000?label=Discord&logo=discord&color=5865F2)](https://discord.gg/8ydmqeB3TP)
 
 An all-in-one Minecraft management suite for Windows, Linux, and macOS (x64, ARM, and 32-bit). Launcher, server manager, mod browser, AI assistant, friend system, and tunnel manager — unified in a single desktop application built with .NET 8 and Avalonia UI.
 
