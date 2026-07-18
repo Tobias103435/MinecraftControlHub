@@ -1,0 +1,20 @@
+name: Discord Release Notification
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  discord:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Discord message
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
+        run: |
+          curl \
+          -H "Content-Type: application/json" \
+          -d "{\"content\":\" **New Nexora Launcher Release!**\n\nVersion: ${{ github.event.release.tag_name }}\n\nDownload: ${{ github.event.release.html_url }}\"}" \
+          $DISCORD_WEBHOOK
