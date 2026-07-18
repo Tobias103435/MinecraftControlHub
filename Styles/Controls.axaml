@@ -805,4 +805,31 @@
         </Style>
     </ControlTheme>
 
+    <!-- ================= Discord Button ================= -->
+    <ControlTheme x:Key="DiscordButtonStyle" TargetType="Button">
+        <Setter Property="Height" Value="44"/>
+        <Setter Property="Margin" Value="12,12,12,3"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontFamily" Value="{StaticResource FontBody}"/>
+        <Setter Property="FontSize" Value="13.5"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Background" Value="#5865F2"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="Button">
+                <Border x:Name="Bg"
+                        CornerRadius="8"
+                        Background="{TemplateBinding Background}">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Margin="14,0" VerticalAlignment="Center"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover /template/ Border#Bg">
+            <Setter Property="Background" Value="#4752C4"/>
+        </Style>
+    </ControlTheme>
+
 </ResourceDictionary>

@@ -27,18 +27,20 @@ public record UpdateWindowsDownloads(
     UpdateWindowsVariantDownloads Standalone,
     UpdateWindowsVariantDownloads Installer);
 
+public record UpdateFileInfo(string Url, string Size);
+
 public record UpdateWindowsVariantDownloads(
-    string X64,
-    string X86);
+    UpdateFileInfo X64,
+    UpdateFileInfo X86);
 
 public record UpdateLinuxDownloads(
-    string X64Tar,
-    string X64AppImage
+    UpdateFileInfo X64Tar,
+    UpdateFileInfo X64AppImage
 );
 
 public record UpdateMacOSDownloads(
-    string Arm64,
-    string Intel
+    UpdateFileInfo Arm64,
+    UpdateFileInfo Intel
 );
 
 // GitHub Release Models (for backwards compatibility)
@@ -250,27 +252,27 @@ public class UpdateService : IUpdateService
             if (RuntimeInformation.OSArchitecture == Architecture.X64)
             {
                 // Prefer installer first, then standalone
-                return downloads.Windows?.Installer?.X64 ?? downloads.Windows?.Standalone?.X64;
+                return downloads.Windows?.Installer?.X64?.Url ?? downloads.Windows?.Standalone?.X64?.Url;
             }
             else if (RuntimeInformation.OSArchitecture == Architecture.X86)
             {
-                return downloads.Windows?.Installer?.X86 ?? downloads.Windows?.Standalone?.X86;
+                return downloads.Windows?.Installer?.X86?.Url ?? downloads.Windows?.Standalone?.X86?.Url;
             }
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             // Prefer AppImage first
-            return downloads.Linux?.X64AppImage ?? downloads.Linux?.X64Tar;
+            return downloads.Linux?.X64AppImage?.Url ?? downloads.Linux?.X64Tar?.Url;
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
             {
-                return downloads.MacOS?.Arm64;
+                return downloads.MacOS?.Arm64?.Url;
             }
             else
             {
-                return downloads.MacOS?.Intel;
+                return downloads.MacOS?.Intel?.Url;
             }
         }
 

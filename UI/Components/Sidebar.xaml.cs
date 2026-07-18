@@ -121,4 +121,18 @@ public partial class Sidebar : UserControl
             (window as MainWindow)?.OnNexoraLoginSuccessful();
         }
     }
+
+    private void DiscordButton_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "https://discord.com/invite/8ydmqeB3TP",
+                UseShellExecute = true
+            };
+            System.Diagnostics.Process.Start(psi);
+        }
+        catch { }
+    }
 }
