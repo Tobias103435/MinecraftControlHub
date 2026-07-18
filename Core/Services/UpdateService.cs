@@ -24,9 +24,12 @@ public record UpdateDownloads(
 );
 
 public record UpdateWindowsDownloads(
+    UpdateWindowsVariantDownloads Standalone,
+    UpdateWindowsVariantDownloads Installer);
+
+public record UpdateWindowsVariantDownloads(
     string X64,
-    string X86
-);
+    string X86);
 
 public record UpdateLinuxDownloads(
     string X64Tar,
@@ -246,11 +249,12 @@ public class UpdateService : IUpdateService
         {
             if (RuntimeInformation.OSArchitecture == Architecture.X64)
             {
-                return downloads.Windows?.X64;
+                // Prefer installer first, then standalone
+                return downloads.Windows?.Installer?.X64 ?? downloads.Windows?.Standalone?.X64;
             }
             else if (RuntimeInformation.OSArchitecture == Architecture.X86)
             {
-                return downloads.Windows?.X86;
+                return downloads.Windows?.Installer?.X86 ?? downloads.Windows?.Standalone?.X86;
             }
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
