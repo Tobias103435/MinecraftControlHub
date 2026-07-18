@@ -1,0 +1,64 @@
+name: Build Nexora macOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    strategy:
+      matrix:
+        include:
+          - rid: osx-arm64
+            name: Nexora_Apple_arm64.dmg
+
+          - rid: osx-x64
+            name: Nexora_Apple_Intel.dmg
+
+
+    steps:
+
+    - name: Download source
+      uses: actions/checkout@v4
+
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+
+    - name: Build Nexora
+      run: |
+        dotnet publish MinecraftControlHub.csproj \
+        -r ${{ matrix.rid }} \
+        -c Release \
+        --self-contained true \
+        -p:PublishSingleFile=true
+
+
+    - name: Create App bundle
+      run: |
+        mkdir -p Nexora.app/Contents/MacOS
+
+        cp bin/Release/net8.0/${{ matrix.rid }}/publish/MinecraftControlHub \
+        Nexora.app/Contents/MacOS/Nexora
+
+
+    - name: Create DMG
+      run: |
+        hdiutil create \
+        -volname Nexora \
+        -srcfolder Nexora.app \
+        -ov \
+        -format UDZO \
+        ${{ matrix.name }}
+
+
+    - name: Upload DMG
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.name }}
+        path: ${{ matrix.name }}

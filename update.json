@@ -1,15 +1,21 @@
 {
-  "version": "1.0.0",
-  "build": 100,
+  "version": "1.0.1",
+  "build": 101,
   "mandatory": false,
-  "release_date": "2026-07-17",
+  "release_date": "2026-07-18",
+  "release_notes": ["Small change to versions.json"],
   "downloads": {
-    "windows_x64": "Nexora_Setup_X64.exe",
-    "windows_x86": "Nexora_Setup_X86.exe",
-    "linux_x64": "Nexora_Linux_X64",
-    "linux_appimage": "Nexora_Linux_AppImage.AppImage",
-    "mac_arm64": "Nexora_Apple_arm64",
-    "mac_intel": "Nexora_Apple_Intel"
-  },
-  "release_notes": ["1.0.0 Release!.", "Added Auto Update"]
+    "windows": {
+      "x64": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_Setup_X64.exe",
+      "x86": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_Setup_X86.exe"
+    },
+    "linux": {
+      "x64_tar": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_Linux_X64.tar.gz",
+      "x64_appimage": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_Linux_X64.AppImage"
+    },
+    "macos": {
+      "arm64": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_macOS_ARM64.dmg",
+      "intel": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_macOS_X64.dmg"
+    }
+  }
 }

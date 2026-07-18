@@ -851,7 +851,7 @@
         }
       }
     },
-    "net8.0/osx-x64": {
+    "net8.0/linux-x64": {
       "Avalonia/11.2.7": {
         "type": "package",
         "dependencies": {
@@ -1047,9 +1047,6 @@
           "lib/net8.0/Avalonia.Native.dll": {
             "related": ".xml"
           }
-        },
-        "native": {
-          "runtimes/osx/native/libAvaloniaNative.dylib": {}
         }
       },
       "Avalonia.Remote.Protocol/11.2.7": {
@@ -1181,6 +1178,9 @@
         },
         "runtime": {
           "lib/net6.0/_._": {}
+        },
+        "native": {
+          "runtimes/linux-x64/native/libHarfBuzzSharp.so": {}
         }
       },
       "HarfBuzzSharp.NativeAssets.macOS/7.3.0.3": {
@@ -1190,9 +1190,6 @@
         },
         "runtime": {
           "lib/net6.0/_._": {}
-        },
-        "native": {
-          "runtimes/osx/native/libHarfBuzzSharp.dylib": {}
         }
       },
       "HarfBuzzSharp.NativeAssets.WebAssembly/7.3.0.3": {
@@ -1533,6 +1530,9 @@
         },
         "runtime": {
           "lib/net6.0/_._": {}
+        },
+        "native": {
+          "runtimes/linux-x64/native/libSkiaSharp.so": {}
         }
       },
       "SkiaSharp.NativeAssets.macOS/2.88.9": {
@@ -1542,9 +1542,6 @@
         },
         "runtime": {
           "lib/net6.0/_._": {}
-        },
-        "native": {
-          "runtimes/osx/native/libSkiaSharp.dylib": {}
         }
       },
       "SkiaSharp.NativeAssets.WebAssembly/2.88.9": {
@@ -3023,7 +3020,7 @@
     "C:\\Users\\toobh\\.nuget\\packages\\": {}
   },
   "project": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "restore": {
       "projectUniqueName": "D:\\Eigen project\\MinecraftControlHub\\MinecraftControlHub.csproj",
       "projectName": "MinecraftControlHub",
@@ -3111,15 +3108,15 @@
         "warn": true,
         "downloadDependencies": [
           {
-            "name": "Microsoft.AspNetCore.App.Runtime.osx-x64",
+            "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
             "version": "[8.0.28, 8.0.28]"
           },
           {
-            "name": "Microsoft.NETCore.App.Host.osx-x64",
+            "name": "Microsoft.NETCore.App.Host.linux-x64",
             "version": "[8.0.28, 8.0.28]"
           },
           {
-            "name": "Microsoft.NETCore.App.Runtime.osx-x64",
+            "name": "Microsoft.NETCore.App.Runtime.linux-x64",
             "version": "[8.0.28, 8.0.28]"
           }
         ],
@@ -3132,7 +3129,7 @@
       }
     },
     "runtimes": {
-      "osx-x64": {
+      "linux-x64": {
         "#import": []
       }
     }

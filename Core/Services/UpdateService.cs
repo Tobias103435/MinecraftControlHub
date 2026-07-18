@@ -7,34 +7,64 @@ using MinecraftControlHub.Core.Models;
 
 namespace MinecraftControlHub.Core.Services;
 
-/// <summary>
-/// Represents the structure of the update.json file.
-/// </summary>
+// Models for the new update.json format
 public record UpdateManifest(
     string Version,
     int Build,
     bool Mandatory,
     string ReleaseDate,
-    UpdateDownloads Downloads,
-    string[] ReleaseNotes);
+    string[] ReleaseNotes,
+    UpdateDownloads Downloads
+);
 
 public record UpdateDownloads(
-    string? Windows_x64,
-    string? Windows_x86,
-    string? Linux_x64,
-    string? Linux_AppImage,
-    string? Mac_arm64,
-    string? Mac_intel);
+    UpdateWindowsDownloads Windows,
+    UpdateLinuxDownloads Linux,
+    UpdateMacOSDownloads MacOS
+);
+
+public record UpdateWindowsDownloads(
+    string X64,
+    string X86
+);
+
+public record UpdateLinuxDownloads(
+    string X64Tar,
+    string X64AppImage
+);
+
+public record UpdateMacOSDownloads(
+    string Arm64,
+    string Intel
+);
+
+// GitHub Release Models (for backwards compatibility)
+public record GitHubRelease(
+    string TagName,
+    string Name,
+    bool Prerelease,
+    GitHubAsset[] Assets,
+    string Body
+);
+
+public record GitHubAsset(
+    string Name,
+    string BrowserDownloadUrl,
+    long Size
+);
 
 /// <summary>
 /// Checks whether a newer version of Nexora Launcher is available by
-/// checking the update.json file and comparing semantic versions.
+/// checking either update.json or GitHub Releases.
 /// </summary>
 public class UpdateService : IUpdateService
 {
     private readonly HttpClient _http;
-    // Update this URL to your actual GitHub raw URL or your own server!
+    // Change this to your update.json URL (e.g., https://raw.githubusercontent.com/OWNER/REPO/main/update.json)
     private const string UpdateManifestUrl = "https://raw.githubusercontent.com/Tobias103435/MinecraftControlHub/main/update.json";
+    // Change to your GitHub repo (owner/repo) for GitHub Releases fallback
+    private const string GitHubRepo = "Tobias103435/MinecraftControlHub";
+    private const string GitHubLatestReleaseUrl = $"https://api.github.com/repos/{GitHubRepo}/releases/latest";
 
     public string CurrentVersion { get; }
     public UpdateCheckResult? LastResult { get; private set; }
@@ -44,6 +74,7 @@ public class UpdateService : IUpdateService
     public UpdateService(HttpClient http)
     {
         _http = http;
+        _http.DefaultRequestHeaders.UserAgent.ParseAdd("MinecraftControlHub-UpdateService/1.0");
 
         // Read the version from assembly metadata (set via <Version> in .csproj)
         var ver = Assembly.GetEntryAssembly()?.GetName().Version;
@@ -57,11 +88,12 @@ public class UpdateService : IUpdateService
         UpdateCheckResult result;
         try
         {
+            // First try to get update.json
             var json = await _http.GetStringAsync(UpdateManifestUrl);
             var manifest = JsonSerializer.Deserialize<UpdateManifest>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
 
             if (manifest == null)
@@ -70,15 +102,12 @@ public class UpdateService : IUpdateService
             }
 
             // Get the correct download URL for the current platform
-            string? downloadUrl = GetPlatformDownloadUrl(manifest.Downloads);
+            string? downloadUrl = GetPlatformDownloadUrlFromManifest(manifest.Downloads);
+            // Combine release notes into a single string
+            string? releaseNotes = manifest.ReleaseNotes != null ? string.Join("\n", manifest.ReleaseNotes) : null;
 
             // Compare versions
             var isUpdateAvailable = IsVersionNewer(CurrentVersion, manifest.Version);
-
-            // Join release notes with newlines
-            string? releaseNotes = manifest.ReleaseNotes != null && manifest.ReleaseNotes.Length > 0 
-                ? string.Join(Environment.NewLine, manifest.ReleaseNotes) 
-                : null;
 
             result = new UpdateCheckResult(
                 IsUpdateAvailable: isUpdateAvailable,
@@ -89,13 +118,46 @@ public class UpdateService : IUpdateService
         }
         catch
         {
-            // If anything fails (network error, invalid JSON, etc.), treat as no update
-            result = new UpdateCheckResult(
-                IsUpdateAvailable: false,
-                LatestVersion: CurrentVersion,
-                CurrentVersion: CurrentVersion,
-                DownloadUrl: null,
-                ReleaseNotes: null);
+            // If update.json fails, fall back to GitHub Releases
+            try
+            {
+                var json = await _http.GetStringAsync(GitHubLatestReleaseUrl);
+                var release = JsonSerializer.Deserialize<GitHubRelease>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+                });
+
+                if (release == null)
+                {
+                    throw new InvalidOperationException("Failed to parse GitHub release.");
+                }
+
+                // Get version from tag name (strip leading 'v' if present)
+                string latestVersion = release.TagName.StartsWith('v') ? release.TagName.Substring(1) : release.TagName;
+                string? downloadUrl = GetPlatformDownloadUrlFromGitHub(release.Assets);
+                string? releaseNotes = release.Body;
+
+                // Compare versions
+                var isUpdateAvailable = IsVersionNewer(CurrentVersion, latestVersion);
+
+                result = new UpdateCheckResult(
+                    IsUpdateAvailable: isUpdateAvailable,
+                    LatestVersion: latestVersion,
+                    CurrentVersion: CurrentVersion,
+                    DownloadUrl: downloadUrl,
+                    ReleaseNotes: releaseNotes);
+            }
+            catch
+            {
+                // If both fail, treat as no update
+                result = new UpdateCheckResult(
+                    IsUpdateAvailable: false,
+                    LatestVersion: CurrentVersion,
+                    CurrentVersion: CurrentVersion,
+                    DownloadUrl: null,
+                    ReleaseNotes: null);
+            }
         }
 
         LastResult = result;
@@ -108,7 +170,7 @@ public class UpdateService : IUpdateService
 
     public void OpenDownloadPage()
     {
-        var url = LastResult?.DownloadUrl ?? "https://nexoragames.nl/launcher";
+        var url = LastResult?.DownloadUrl ?? $"https://github.com/{GitHubRepo}/releases/latest";
         try
         {
             Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
@@ -125,13 +187,13 @@ public class UpdateService : IUpdateService
 
         // Download the file to temp
         var tempPath = Path.GetTempPath();
-        // Determine file extension from download URL
+        // Determine file name from download URL
         var uri = new Uri(LastResult.DownloadUrl);
         var fileName = Path.GetFileName(uri.LocalPath);
-        // Fallback to default names if we can't get the filename
         if (string.IsNullOrEmpty(fileName))
         {
-            fileName = "Nexora_Update.exe"; // Default for Windows
+            // Fallback to default name
+            fileName = "Nexora_Update.exe";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 fileName = "Nexora_Update.AppImage";
@@ -178,26 +240,82 @@ public class UpdateService : IUpdateService
         StartInstallerAndClose(installerPath);
     }
 
-    private string? GetPlatformDownloadUrl(UpdateDownloads downloads)
+    private string? GetPlatformDownloadUrlFromManifest(UpdateDownloads downloads)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            return RuntimeInformation.OSArchitecture == Architecture.X64
-                ? downloads.Windows_x64
-                : downloads.Windows_x86;
+            if (RuntimeInformation.OSArchitecture == Architecture.X64)
+            {
+                return downloads.Windows?.X64;
+            }
+            else if (RuntimeInformation.OSArchitecture == Architecture.X86)
+            {
+                return downloads.Windows?.X86;
+            }
         }
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            // Prefer AppImage first, then x64
-            return downloads.Linux_AppImage ?? downloads.Linux_x64;
+            // Prefer AppImage first
+            return downloads.Linux?.X64AppImage ?? downloads.Linux?.X64Tar;
         }
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            return RuntimeInformation.OSArchitecture == Architecture.Arm64
-                ? downloads.Mac_arm64
-                : downloads.Mac_intel;
+            if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
+            {
+                return downloads.MacOS?.Arm64;
+            }
+            else
+            {
+                return downloads.MacOS?.Intel;
+            }
         }
+
         return null;
+    }
+
+    private string? GetPlatformDownloadUrlFromGitHub(GitHubAsset[] assets)
+    {
+        // Match assets by name patterns
+        foreach (var asset in assets)
+        {
+            var name = asset.Name.ToLowerInvariant();
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                if (RuntimeInformation.OSArchitecture == Architecture.X64)
+                {
+                    if (name.Contains("setup") && name.Contains("x64")) return asset.BrowserDownloadUrl;
+                    if (name.Contains("standalone") && name.Contains("x64")) return asset.BrowserDownloadUrl;
+                    if (name.Contains("win-x64")) return asset.BrowserDownloadUrl;
+                }
+                else if (RuntimeInformation.OSArchitecture == Architecture.X86)
+                {
+                    if (name.Contains("setup") && name.Contains("x86")) return asset.BrowserDownloadUrl;
+                    if (name.Contains("standalone") && name.Contains("x86")) return asset.BrowserDownloadUrl;
+                    if (name.Contains("win-x86")) return asset.BrowserDownloadUrl;
+                }
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                // Prefer AppImage first
+                if (name.Contains("appimage")) return asset.BrowserDownloadUrl;
+                if (name.Contains("linux-x64")) return asset.BrowserDownloadUrl;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
+                {
+                    if (name.Contains("arm64") || name.Contains("apple-silicon")) return asset.BrowserDownloadUrl;
+                }
+                else
+                {
+                    if (name.Contains("x64") && !name.Contains("arm64")) return asset.BrowserDownloadUrl;
+                }
+            }
+        }
+
+        // If no match found, return the first asset as fallback
+        return assets.Length > 0 ? assets[0].BrowserDownloadUrl : null;
     }
 
     private bool IsVersionNewer(string currentVersion, string latestVersion)
