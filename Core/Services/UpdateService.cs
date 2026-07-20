@@ -66,9 +66,9 @@ public class UpdateService : IUpdateService
 {
     private readonly HttpClient _http;
     // Change this to your update.json URL (e.g., https://raw.githubusercontent.com/OWNER/REPO/main/update.json)
-    private const string UpdateManifestUrl = "https://raw.githubusercontent.com/Tobias103435/MinecraftControlHub/main/update.json";
+    private const string UpdateManifestUrl = "https://raw.githubusercontent.com/Tobias103435/Nexora-Launcher/main/update.json";
     // Change to your GitHub repo (owner/repo) for GitHub Releases fallback
-    private const string GitHubRepo = "Tobias103435/MinecraftControlHub";
+    private const string GitHubRepo = "Tobias103435/Nexora-Launcher";
     private const string GitHubLatestReleaseUrl = $"https://api.github.com/repos/{GitHubRepo}/releases/latest";
 
     public string CurrentVersion { get; }

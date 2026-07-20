@@ -2,49 +2,51 @@
   "version": "1.0.2",
   "build": 102,
   "mandatory": false,
-  "release_date": "2026-07-18",
-  "release_notes": ["Added Discord link, removed emojis, improved UI"],
+  "release_date": "2026-07-20",
+  "release_notes": [
+    "Added Discord link, removed emojis, improved UI, updated download URLs"
+  ],
   "downloads": {
     "windows": {
       "standalone": {
         "x64": {
-          "url": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_StandAlone_X64.exe",
-          "size": "44.0 MB"
+          "url": "https://github.com/Tobias103435/Nexora-Launcher/releases/latest/download/Nexora_StandAlone_X64.exe",
+          "size": "43.6 MB"
         },
         "x86": {
-          "url": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_StandAlone_X86.exe",
-          "size": "44.0 MB"
+          "url": "https://github.com/Tobias103435/Nexora-Launcher/releases/latest/download/Nexora_StandAlone_X86.exe",
+          "size": "40.1 MB"
         }
       },
       "installer": {
         "x64": {
-          "url": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_Setup_X64.exe",
-          "size": "44.0 MB"
+          "url": "https://github.com/Tobias103435/Nexora-Launcher/releases/latest/download/Nexora_Setup_X64.exe",
+          "size": "39.0 MB"
         },
         "x86": {
-          "url": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_Setup_X86.exe",
-          "size": "44.0 MB"
+          "url": "https://github.com/Tobias103435/Nexora-Launcher/releases/latest/download/Nexora_Setup_X86.exe",
+          "size": "36.3 MB"
         }
       }
     },
     "linux": {
       "x64_tar": {
-        "url": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_Linux_X64.tar.gz",
-        "size": "44.0 MB"
+        "url": "https://github.com/Tobias103435/Nexora-Launcher/releases/latest/download/Nexora_Linux_X64.tar.gz",
+        "size": "36.7 MB"
       },
       "x64_appimage": {
-        "url": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_Linux_X64.AppImage",
-        "size": "44.0 MB"
+        "url": "https://github.com/Tobias103435/Nexora-Launcher/releases/latest/download/Nexora_Linux_AppImage.AppImage",
+        "size": "37.0 MB"
       }
     },
     "macos": {
       "arm64": {
-        "url": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_macOS_ARM64.dmg",
-        "size": "44.0 MB"
+        "url": "https://github.com/Tobias103435/Nexora-Launcher/releases/latest/download/Nexora_Apple_arm64.dmg",
+        "size": "39.4 MB"
       },
       "intel": {
-        "url": "https://github.com/Tobias103435/MinecraftControlHub/releases/latest/download/Nexora_macOS_X64.dmg",
-        "size": "44.0 MB"
+        "url": "https://github.com/Tobias103435/Nexora-Launcher/releases/latest/download/Nexora_Apple_Intel.dmg",
+        "size": "41.7 MB"
       }
     }
   }
