@@ -104,7 +104,6 @@ The codebase follows strict separation between **Core** (pure business logic, no
 
 ## Roadmap
 
-- **World screenshots** — a gallery view per world/installation, surfacing Minecraft's own `screenshots` folder in the content browser.
 - **Cloud sync** — syncing servers, friends, and modpacks across devices via the Nexora backend.
 
 ---
