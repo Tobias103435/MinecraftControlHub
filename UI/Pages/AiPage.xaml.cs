@@ -57,11 +57,24 @@ public partial class AiPage : UserControl
 
     private void ScrollToBottom()
     {
-        Dispatcher.UIThread.Post(
-            () => MessageScroller.ScrollToEnd(),
-            DispatcherPriority.Background);
+        Dispatcher.UIThread.Post(async () =>
+        {
+            // Wait a little for everything to settle
+            await Task.Delay(50);
+            
+            if (_viewModel?.Messages.Count > 0)
+            {
+                var lastIndex = _viewModel.Messages.Count - 1;
+                MessageList.ScrollIntoView(_viewModel.Messages[lastIndex]);
+            }
+        }, DispatcherPriority.Input);
     }
 
+    private void MessageList_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (sender is ListBox listBox && listBox.SelectedItem != null)
+            listBox.SelectedItem = null;
+    }
     private async void Send_Click(object sender, RoutedEventArgs e)
     {
         if (_viewModel != null)
@@ -204,3 +217,4 @@ public partial class AiPage : UserControl
         }
     }
 }
+

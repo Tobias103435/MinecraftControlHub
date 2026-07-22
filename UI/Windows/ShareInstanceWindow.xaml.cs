@@ -119,7 +119,11 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
 
         _friends.Clear();
         foreach (var f in result.Data)
-            _friends.Add(new SelectableFriend(f));
+        {
+            var selectable = new SelectableFriend(f);
+            selectable.PropertyChanged += FriendSelectionChanged;
+            _friends.Add(selectable);
+        }
 
         FriendsScrollViewer.IsVisible = true;
         UpdateSelectionState();
@@ -128,7 +132,15 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
     // ── CheckBox handler ──────────────────────────────────────────────────────
 
     private void FriendCheckBox_Changed(object sender, RoutedEventArgs e)
-        => UpdateSelectionState();
+    {
+        UpdateSelectionState();
+    }
+
+    private void FriendSelectionChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(SelectableFriend.IsSelected))
+            Dispatcher.UIThread.Post(UpdateSelectionState);
+    }
 
     private void UpdateSelectionState()
     {
@@ -155,30 +167,46 @@ public partial class ShareInstanceWindow : Window, INotifyPropertyChanged
 
     private async void Share_Click(object sender, RoutedEventArgs e)
     {
+        // Immediately show that button was clicked
+        SendStatusText.Text = "Clicked! Processing…";
+        
         var selected = _friends.Where(f => f.IsSelected).ToList();
-        if (selected.Count == 0) return;
+        if (selected.Count == 0) 
+        {
+            SendStatusText.Text = "Select at least one friend first!";
+            return;
+        }
 
         ShareButton.IsEnabled = false;
         SendStatusText.Text   = "Packing and sending…";
 
-        var token      = _nexoraService.Current?.Token ?? string.Empty;
-        var senderName = _nexoraService.Current?.Username ?? string.Empty;
-        var recipients = selected.Select(f => f.WebsiteUsername);
-
-        var progress = new Progress<string>(msg => Dispatcher.UIThread.Post(() => SendStatusText.Text = msg));
-        var result   = await _shareService.ShareWithFriendsAsync(token, senderName, _installation, recipients, progress);
-
-        if (result.Success)
+        try
         {
-            SendStatusText.Text = $"✓ Shared with {selected.Count} friend{(selected.Count == 1 ? "" : "s")}!";
-            await Task.Delay(900);
-            Close();
+            var token      = _nexoraService.Current?.Token ?? string.Empty;
+            var senderName = _nexoraService.Current?.Username ?? string.Empty;
+            var recipients = selected.Select(f => f.WebsiteUsername);
+
+            var progress = new Progress<string>(msg => Dispatcher.UIThread.Post(() => SendStatusText.Text = msg));
+            var result   = await _shareService.ShareWithFriendsAsync(token, senderName, _installation, recipients, progress);
+
+            if (result.Success)
+            {
+                SendStatusText.Text = $"✓ Shared with {selected.Count} friend{(selected.Count == 1 ? "" : "s")}!";
+                await Task.Delay(900);
+                Close();
+            }
+            else
+            {
+                ShareButton.IsEnabled = HasSelection;
+                SendStatusText.Text   = string.Empty;
+                ShowStatus(result.Error ?? "Failed to share. Please try again.");
+            }
         }
-        else
+        catch (Exception ex)
         {
             ShareButton.IsEnabled = HasSelection;
             SendStatusText.Text   = string.Empty;
-            ShowStatus(result.Error ?? "Failed to share. Please try again.");
+            ShowStatus($"Error sharing instance: {ex.Message}");
         }
     }
 

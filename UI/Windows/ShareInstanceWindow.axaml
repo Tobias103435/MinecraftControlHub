@@ -8,7 +8,6 @@
         Background="{DynamicResource BrushAppBackground}"
         ShowInTaskbar="False">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
     <Grid Margin="28,24,28,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -194,7 +193,7 @@
                                         <!-- Checkbox -->
                                         <CheckBox Grid.Column="2"
                                                   x:Name="FriendCheckBox"
-                                                  IsChecked="{Binding IsSelected}"
+                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                                   VerticalAlignment="Center"
                                                   Checked="FriendCheckBox_Changed"
                                                   Unchecked="FriendCheckBox_Changed"/>
@@ -323,5 +322,4 @@
                     IsEnabled="False"/>
         </Grid>
     </Grid>
-    </ScrollViewer>
 </Window>

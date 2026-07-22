@@ -178,7 +178,13 @@ public class InstanceShareService : IInstanceShareService
             $"mch-share-{installation.Id:N}.mrpack");
         try
         {
-            await _modpacks.ExportAsync(installation, tempPath, progress);
+            var result = await _modpacks.ExportAsync(installation, tempPath, progress);
+            if (!result.Success)
+                throw new Exception(result.Error ?? "Modpack export failed.");
+            
+            if (!File.Exists(tempPath))
+                throw new Exception("Exported modpack file not found.");
+                
             return await File.ReadAllBytesAsync(tempPath);
         }
         finally
